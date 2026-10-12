@@ -2,11 +2,11 @@
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
   "description": "Syntax highlighting for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "local",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.63.0"
   },
   "categories": [
     "Programming Languages"
@@ -56,6 +56,18 @@
         "scopeName": "source.fmem",
         "path": "./syntaxes/fmem.tmLanguage.json"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "entity.name.type.instruction.custom.flisp",
+            "settings": {
+              "fontStyle": "italic underline"
+            }
+          }
+        ]
+      }
+    }
   }
 }

@@ -25,78 +25,142 @@ const registry = new textmate.Registry({
   },
 });
 
-// Was ein Token bekommen MUSS: [Datei, Zeilenausschnitt, Text, erwarteter Scope-Teil]
+// [Datei, Zeile (eindeutiger Ausschnitt), Token (exakter Text), Scope-Anfang]
+// Ein '!' vor dem Scope heisst: Das Token darf diesen Scope NICHT haben.
 const expectations = [
-  ['sample.sflisp', 'ORG', 'keyword.other.directive'],
-  ['sample.sflisp', 'EQU', 'keyword.other.directive'],
-  ['sample.sflisp', 'FCB', 'keyword.other.directive'],
-  ['sample.sflisp', 'RMB', 'keyword.other.directive'],
-  ['sample.sflisp', 'FCS', 'keyword.other.directive'],
-  ['sample.sflisp', 'LDA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'DECA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'CMPA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'PULCC', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'LSLA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'TFR', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'NOP', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'BEQ', 'keyword.control.flow'],
-  ['sample.sflisp', 'BRA', 'keyword.control.flow'],
-  ['sample.sflisp', 'JSR', 'keyword.control.flow'],
-  ['sample.sflisp', 'RTS', 'keyword.control.flow'],
-  ['sample.sflisp', '$20', 'constant.numeric.hex'],
-  ['sample.sflisp', '$FB', 'constant.numeric.hex'],
-  ['sample.sflisp', '%00000101', 'constant.numeric.binary'],
-  ['sample.sflisp', '#', 'keyword.operator.immediate'],
-  ['sample.sflisp', 'Start', 'entity.name.function.label'],
-  ['sample.sflisp', 'L2', 'entity.name.function.label'],
-  ['sample.sflisp', 'Delay', 'entity.name.function.label'],
-  ['sample.sflisp', 'MorseCode', 'entity.name.function.label'],
-  ['sample.sflisp', '; Verzoegerung', 'comment.line'],
-  ['sample.sflisp', 'HELLO', 'string.quoted'],
-  ['sample.sflisp', 'state_vector', 'entity.name.function.label'],
-  ['sample.sflisp', 'OUTPORT', 'entity.name.function.label'],
-  ['fmem.fmem', '#setMemory', 'keyword.other.directive'],
+  // Direktiven
+  ['sample.sflisp', 'ORG     $20', 'ORG', 'keyword.other.directive'],
+  ['sample.sflisp', 'OUTPORT     EQU', 'EQU', 'keyword.other.directive'],
+  ['sample.sflisp', 'state_vector', 'FCB', 'keyword.other.directive'],
+  ['sample.sflisp', 'Count', 'RMB', 'keyword.other.directive'],
+  ['sample.sflisp', '"HELLO WORLD"', 'FCS', 'keyword.other.directive'],
+  ['sample.sflisp', 'END', 'END', 'keyword.other.directive'],
+
+  // Instruktionen
+  ['sample.sflisp', 'Start       LDA', 'LDA', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'L2          DECA', 'DECA', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'CMPA    #2', 'CMPA', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'LEASP', 'LEASP', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'PSHC', 'PSHC', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', '  PULC', 'PULC', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'PULCC', 'PULCC', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'ASLA', 'ASLA', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'TFR', 'TFR', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'EXG', 'EXG', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'Delay       NOP', 'NOP', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'ldx', 'ldx', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'BEQ', 'BEQ', 'keyword.control.flow'],
+  ['sample.sflisp', 'BRA', 'BRA', 'keyword.control.flow'],
+  ['sample.sflisp', 'JSR', 'JSR', 'keyword.control.flow'],
+  ['sample.sflisp', 'RTS', 'RTS', 'keyword.control.flow'],
+
+  // Selbst definierte Laborinstruktionen: eigener Scope, kein Standard-Mnemonic
+  ['sample.sflisp', 'MOVE', 'MOVE', 'entity.name.type.instruction.custom'],
+  ['sample.sflisp', 'MOVE', 'MOVE', '!keyword.operator.mnemonic'],
+  ['sample.sflisp', 'CMJEQ', 'CMJEQ', 'entity.name.type.instruction.custom'],
+  ['sample.sflisp', 'MOVE', 'OUTPORT', '!entity.name'],
+
+  // Zahlen und Zeichen
+  ['sample.sflisp', 'ORG     $20', '$20', 'constant.numeric.hex'],
+  ['sample.sflisp', 'OUTPORT     EQU', '$FB', 'constant.numeric.hex'],
+  ['sample.sflisp', 'state_vector', '%00000101', 'constant.numeric.binary'],
+  ['sample.sflisp', 'CMPA    #2', '2', 'constant.numeric.decimal'],
+  ['sample.sflisp', 'CMPA    #2', '#', 'keyword.operator.immediate'],
+  ['sample.sflisp', "#'A'", "'A'", 'constant.character'],
+  ['sample.sflisp', 'STA     -3,SP', '-3', 'constant.numeric.decimal'],
+  ['sample.sflisp', '#K-1', '-', 'keyword.operator.arithmetic'],
+  ['sample.sflisp', '#K-1', '1', 'constant.numeric.decimal'],
+
+  // Adressierung
+  ['sample.sflisp', 'LDA     2,X', ',', 'punctuation.separator.operand'],
+  ['sample.sflisp', 'LDA     2,X', 'X', 'variable.language.register'],
+  ['sample.sflisp', 'LDA     A,Y', 'A', 'variable.language.register'],
+  ['sample.sflisp', 'LDA     ,X+', '+', 'keyword.operator.increment'],
+  ['sample.sflisp', 'LDA     ,+Y', '+', 'keyword.operator.increment'],
+  ['sample.sflisp', 'STA     ,-Y', '-', 'keyword.operator.increment'],
+  ['sample.sflisp', 'LEASP', 'SP', 'variable.language.register'],
+  ['sample.sflisp', 'TFR     A,CC', 'CC', 'variable.language.register'],
+  ['sample.sflisp', 'TFR     A,CC', ',', 'punctuation.separator.operand'],
+  ['sample.sflisp', 'EXG     X,SP', ',', 'punctuation.separator.operand'],
+
+  // Labels
+  ['sample.sflisp', 'Start       LDA', 'Start', 'entity.name.function.label'],
+  ['sample.sflisp', 'L2          DECA', 'L2', 'entity.name.function.label'],
+  ['sample.sflisp', 'Delay       NOP', 'Delay', 'entity.name.function.label'],
+  ['sample.sflisp', 'MorseCode', 'MorseCode', 'entity.name.function.label'],
+  ['sample.sflisp', 'state_vector', 'state_vector', 'entity.name.function.label'],
+  ['sample.sflisp', 'OUTPORT     EQU', 'OUTPORT', 'entity.name.function.label'],
+  ['sample.sflisp', 'LOOP:', 'LOOP', 'entity.name.function.label'],
+  ['sample.sflisp', 'LOOP:', ':', 'punctuation.separator.label'],
+  ['sample.sflisp', 'BEQ     Start', 'Start', '!entity.name.function.label'],
+  ['sample.sflisp', 'LDA         #1', 'LDA', 'invalid.illegal'],
+
+  // Kommentare: mit ';' und - wie bei qaflisp - alles nach dem Operand
+  ['sample.sflisp', 'MorseCode', "; Morsecode fuer 'A'", 'comment.line'],
+  ['sample.sflisp', 'MorseCode', '%01000000', 'constant.numeric.binary'],
+  ['sample.sflisp', 'Delay       NOP', 'wartet einen Takt', 'comment.line'],
+  ['sample.sflisp', 'RTS', 'Ruecksprung', 'comment.line'],
+  ['sample.sflisp', '#K + 1', '+ 1', 'comment.line'],
+  ['sample.sflisp', '"HELLO WORLD"', 'HELLO WORLD', 'string.quoted'],
+  ['sample.sflisp', '"HELLO WORLD"', 'Text mit Leerzeichen', 'comment.line'],
+  ['sample.sflisp', 'END', 'Rest wird ignoriert', 'comment.line'],
+
+  // .fmem, so wie qaflisp es erzeugt
+  ['sample.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],
+  ['sample.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.other.directive'],
+  ['sample.fmem', 'ClearAllRegisters', '# ClearAllRegisters', 'keyword.other.directive'],
+  ['sample.fmem', '20=05', '#setMemory', 'keyword.other.directive'],
+  ['sample.fmem', '20=05', '20', 'constant.numeric.address'],
+  ['sample.fmem', '20=05', '05', 'constant.numeric.hex'],
 ];
 
 const files = {
-  'sample.sflisp': ['source.flisp', fs.readFileSync(path.join(__dirname, 'sample.sflisp'), 'utf8')],
-  'fmem.fmem': ['source.fmem', '#setMemory 20=DF\n#setMemory FF=20\n'],
+  'sample.sflisp': 'source.flisp',
+  'sample.fmem': 'source.fmem',
 };
 
 (async () => {
-  const tokensByFile = {};
-  for (const [name, [scope, text]] of Object.entries(files)) {
+  const linesByFile = {};
+  for (const [name, scope] of Object.entries(files)) {
     const grammar = await registry.loadGrammar(scope);
+    const text = fs.readFileSync(path.join(__dirname, name), 'utf8');
     let ruleStack = textmate.INITIAL;
-    const toks = [];
-    for (const line of text.split('\n')) {
+    linesByFile[name] = text.split(/\r?\n/).map((line) => {
       const r = grammar.tokenizeLine(line, ruleStack);
-      for (const t of r.tokens) {
-        toks.push({ text: line.substring(t.startIndex, t.endIndex), scopes: t.scopes });
-      }
       ruleStack = r.ruleStack;
-    }
-    tokensByFile[name] = toks;
+      const tokens = r.tokens.map((t) => ({ text: line.substring(t.startIndex, t.endIndex), scopes: t.scopes }));
+      return { line, tokens };
+    });
   }
 
   let fails = 0;
-  for (const [file, snippet, wantScope] of expectations) {
-    const hit = tokensByFile[file].some(
-      (t) => t.text.includes(snippet.trim()) && t.scopes.some((s) => s.startsWith(wantScope))
-    );
-    if (!hit) {
+  for (const [file, marker, token, scope] of expectations) {
+    const negate = scope.startsWith('!');
+    const want = negate ? scope.slice(1) : scope;
+    const line = linesByFile[file].find((l) => l.line.includes(marker));
+    const tok = line && line.tokens.find((t) => t.text.trim() === token);
+    let ok;
+    if (!tok) ok = false;
+    else {
+      const has = tok.scopes.some((s) => s.startsWith(want));
+      ok = negate ? !has : has;
+    }
+    if (!ok) {
       fails++;
-      const near = tokensByFile[file].filter((t) => t.text.includes(snippet.trim()));
-      console.log(`FAIL  "${snippet}" -> erwartet ${wantScope}`);
-      near.slice(0, 3).forEach((t) => console.log(`        gefunden: "${t.text}" ${JSON.stringify(t.scopes)}`));
+      console.log(`FAIL  [${marker}] "${token}" -> ${negate ? 'darf nicht' : 'erwartet'} ${want}`);
+      if (!line) console.log('        Zeile nicht gefunden');
+      else line.tokens.forEach((t) => console.log(`        "${t.text}" ${t.scopes.slice(1).join(' ')}`));
     }
   }
   console.log(`\n${expectations.length - fails}/${expectations.length} Erwartungen erfuellt`);
 
-  // Gegenprobe: nichts darf voellig ungetaggt durchrutschen, was ein Mnemonic ist
-  const plain = tokensByFile['sample.sflisp'].filter(
-    (t) => /^[A-Z]{2,5}$/.test(t.text.trim()) && t.scopes.length === 1
-  );
-  if (plain.length) console.log('Ungetaggte Grossbuchstaben-Tokens:', plain.map((t) => t.text.trim()));
+  // Gegenprobe: Kein Mnemonic aus dem Handbuch darf ungetaggt durchrutschen.
+  const plain = linesByFile['sample.sflisp']
+    .flatMap((l) => l.tokens)
+    .filter((t) => /^[A-Z]{2,5}$/.test(t.text.trim()) && t.scopes.length === 1);
+  if (plain.length) {
+    fails++;
+    console.log('Ungetaggte Grossbuchstaben-Tokens:', plain.map((t) => t.text.trim()));
+  }
   process.exit(fails ? 1 : 0);
 })();

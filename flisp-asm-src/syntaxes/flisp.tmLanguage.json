@@ -2,19 +2,12 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "FLISP Assembly",
   "scopeName": "source.flisp",
+  "comment": "Zeilenaufbau wie bei qaflisp: [Label] Mnemonic [Operand] [Kommentar]. Spalte 1 ist immer ein Label. Der Operand endet am ersten Leerzeichen (ausser in Strings), alles danach ist Kommentar - auch ohne ';'. Bei Befehlen ohne Operand ist alles nach dem Mnemonic Kommentar.",
   "patterns": [
     { "include": "#comment" },
     { "include": "#label" },
-    { "include": "#directive" },
-    { "include": "#branch" },
-    { "include": "#instruction" },
-    { "include": "#custom-instruction" },
-    { "include": "#string" },
-    { "include": "#immediate" },
-    { "include": "#number" },
-    { "include": "#indexed" },
-    { "include": "#register" },
-    { "include": "#operator" }
+    { "include": "#statement-inherent" },
+    { "include": "#statement-operand" }
   ],
   "repository": {
     "comment": {
@@ -23,51 +16,92 @@
     },
 
     "label": {
-      "comment": "Ein Label steht in Spalte 1 (oder hat einen Doppelpunkt) und ist kein Mnemonic/Direktive.",
+      "comment": "Spalte 1 ist immer ein Label. Steht dort ein Mnemonic oder eine Direktive, meldet qaflisp 'Illegal mnemonic' - das wird als Fehler markiert.",
       "patterns": [
         {
-          "match": "^([A-Za-z_][A-Za-z0-9_]*)(:)",
+          "match": "^(?i:(RTS|RTI|END|NOP|PSHA|PSHX|PSHY|PSHCC|PSHC|PULA|PULX|PULY|PULCC|PULC|CLRA|NEGA|INCA|DECA|TSTA|COMA|LSLA|ASLA|LSRA|ROLA|RORA|ASRA|JSR|JMP|BSR|BRA|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS|ORG|EQU|FCB|FCS|RMB|MOVE|CMJEQ|LDA|LDX|LDY|LDSP|LEAX|LEAY|LEASP|STA|STX|STY|STSP|TFR|EXG|ADDA|ADCA|SUBA|SBCA|CLR|NEG|DEC|INC|CMPA|CMPX|CMPY|CMPSP|BITA|TST|ANDA|ORA|ANDCC|ORCC|EORA|COM|ASR|LSL|ASL|LSR|ROL|ROR))(?![A-Za-z0-9_])",
           "captures": {
-            "1": { "name": "entity.name.function.label.flisp" },
-            "2": { "name": "punctuation.separator.label.flisp" }
+            "1": { "name": "invalid.illegal.mnemonic-in-label-column.flisp" }
           }
         },
         {
-          "match": "^(?!(?i:(ORG|EQU|FCB|FCS|RMB|JSR|JMP|BSR|BRA|RTS|RTI|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS|LEASP|CMPSP|PSHCC|PULCC|LDSP|STSP|LEAX|LEAY|CMPA|CMPX|CMPY|ANDCC|ANDA|ORCC|EORA|BITA|ADCA|ADDA|SBCA|SUBA|CLRA|NEGA|DECA|INCA|TSTA|COMA|ASRA|ASLA|LSLA|LSRA|ROLA|RORA|PSHA|PSHX|PSHY|PSHC|PULA|PULX|PULY|PULC|LDA|LDX|LDY|STA|STX|STY|TFR|EXG|CLR|NEG|DEC|INC|TST|COM|ORA|ASR|ASL|LSL|LSR|ROL|ROR|NOP|MOVE|CMJEQ))(?![A-Za-z0-9_]))([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "^([A-Za-z_][A-Za-z0-9_]*)(:)?",
           "captures": {
-            "2": { "name": "entity.name.function.label.flisp" }
+            "1": { "name": "entity.name.function.label.flisp" },
+            "2": { "name": "punctuation.separator.label.flisp" }
           }
         }
       ]
     },
 
-    "directive": {
-      "name": "keyword.other.directive.flisp",
-      "match": "(?i)(?<![A-Za-z0-9_])(ORG|EQU|FCB|FCS|RMB)(?![A-Za-z0-9_])"
+    "statement-inherent": {
+      "comment": "Befehle ohne Operand. Alles danach ist Kommentar.",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:(RTS|RTI)|(END)|(NOP|PSHA|PSHX|PSHY|PSHCC|PSHC|PULA|PULX|PULY|PULCC|PULC|CLRA|NEGA|INCA|DECA|TSTA|COMA|LSLA|ASLA|LSRA|ROLA|RORA|ASRA))(?![A-Za-z0-9_])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.flisp" },
+        "2": { "name": "keyword.other.directive.flisp" },
+        "3": { "name": "keyword.operator.mnemonic.flisp" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#trailing-comment" }
+      ]
     },
 
-    "branch": {
-      "name": "keyword.control.flow.flisp",
-      "match": "(?i)(?<![A-Za-z0-9_])(JSR|JMP|BSR|BRA|RTS|RTI|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)(?![A-Za-z0-9_])"
+    "statement-operand": {
+      "comment": "Befehle und Direktiven mit Operand. Gruppe 3 sind die selbst definierten Laborinstruktionen.",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:(JSR|JMP|BSR|BRA|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)|(ORG|EQU|FCB|FCS|RMB)|(MOVE|CMJEQ)|(LDA|LDX|LDY|LDSP|LEAX|LEAY|LEASP|STA|STX|STY|STSP|TFR|EXG|ADDA|ADCA|SUBA|SBCA|CLR|NEG|DEC|INC|CMPA|CMPX|CMPY|CMPSP|BITA|TST|ANDA|ORA|ANDCC|ORCC|EORA|COM|ASR|LSL|ASL|LSR|ROL|ROR))(?![A-Za-z0-9_])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.flisp" },
+        "2": { "name": "keyword.other.directive.flisp" },
+        "3": { "name": "entity.name.type.instruction.custom.flisp" },
+        "4": { "name": "keyword.operator.mnemonic.flisp" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#operand" }
+      ]
     },
 
-    "instruction": {
-      "name": "keyword.operator.mnemonic.flisp",
-      "match": "(?i)(?<![A-Za-z0-9_])(LEASP|CMPSP|PSHCC|PULCC|LDSP|STSP|LEAX|LEAY|CMPA|CMPX|CMPY|ANDCC|ANDA|ORCC|EORA|BITA|ADCA|ADDA|SBCA|SUBA|CLRA|NEGA|DECA|INCA|TSTA|COMA|ASRA|ASLA|LSLA|LSRA|ROLA|RORA|PSHA|PSHX|PSHY|PSHC|PULA|PULX|PULY|PULC|LDA|LDX|LDY|STA|STX|STY|TFR|EXG|CLR|NEG|DEC|INC|TST|COM|ORA|ASR|ASL|LSL|LSR|ROL|ROR|NOP)(?![A-Za-z0-9_])"
+    "operand": {
+      "comment": "Beginnt beim ersten Zeichen nach dem Mnemonic und endet am Zeilenende. Das erste Leerzeichen ausserhalb eines Strings leitet den Kommentar ein.",
+      "begin": "(?=[^ \\t;])",
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#string" },
+        { "include": "#char" },
+        { "include": "#immediate" },
+        { "include": "#number" },
+        { "include": "#indexed" },
+        { "include": "#register" },
+        { "include": "#separator" },
+        { "include": "#operator" },
+        { "include": "#trailing-comment" }
+      ]
     },
 
-    "custom-instruction": {
-      "name": "entity.name.function.macro.flisp",
-      "match": "(?i)(?<![A-Za-z0-9_])(MOVE|CMJEQ)(?![A-Za-z0-9_])"
+    "trailing-comment": {
+      "match": "(?<=\\S|^)[ \\t]+(\\S.*)$",
+      "captures": {
+        "1": { "name": "comment.line.trailing.flisp" }
+      }
     },
 
     "string": {
       "name": "string.quoted.double.flisp",
       "begin": "\"",
-      "end": "\"",
+      "end": "\"|$",
       "patterns": [
         { "name": "constant.character.escape.flisp", "match": "\\\\." }
       ]
+    },
+
+    "char": {
+      "name": "constant.character.flisp",
+      "match": "'.'"
     },
 
     "immediate": {
@@ -88,16 +122,13 @@
         {
           "name": "constant.numeric.decimal.flisp",
           "match": "(?<![A-Za-z0-9_$%])-?[0-9]+(?![A-Za-z0-9_])"
-        },
-        {
-          "name": "constant.character.flisp",
-          "match": "'."
         }
       ]
     },
 
     "indexed": {
-      "match": "(,)[ \\t]*([+-])?[ \\t]*(?i:(SP|PC|X|Y))[ \\t]*([+-])?",
+      "comment": "n,SP  n,X  A,Y  ,X+  ,X-  ,+X  ,-X - indiziert wird nur ueber X, Y und SP.",
+      "match": "(,)([+-])?(?i:(SP|X|Y))([+-])?(?![A-Za-z0-9_])",
       "captures": {
         "1": { "name": "punctuation.separator.operand.flisp" },
         "2": { "name": "keyword.operator.increment.flisp" },
@@ -111,9 +142,14 @@
       "match": "(?i)(?<![A-Za-z0-9_])(SP|PC|CC|A|X|Y)(?![A-Za-z0-9_])"
     },
 
+    "separator": {
+      "name": "punctuation.separator.operand.flisp",
+      "match": ","
+    },
+
     "operator": {
-      "name": "keyword.operator.flisp",
-      "match": "[+\\-*/,]"
+      "name": "keyword.operator.arithmetic.flisp",
+      "match": "[+\\-*/]"
     }
   }
 }
