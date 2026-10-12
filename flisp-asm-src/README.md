@@ -2,8 +2,7 @@
 
 Syntax highlighting for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
 
-The grammar follows the *FLISP-Handbok* (version 2025-12-09) and the behaviour of the `qaflisp` assembler (version 1.3). Where the handbook is silent, what qaflisp actually accepts is what counts.
-
+The grammar follows the *FLISP-Handbok* (version 2025-12-09) and the behaviour of the `qaflisp` assembler (version 1.3).
 ## What gets highlighted
 
 **`.sflisp` (source code)**
