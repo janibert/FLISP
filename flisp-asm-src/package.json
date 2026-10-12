@@ -4,6 +4,7 @@
   "description": "Syntax highlighting and assembling (with the bundled qaflisp) for FLISP (FLexible Instruction Set Processor) assembly, as used with DigiFlisp.",
   "version": "0.4.1",
   "publisher": "janibert",
+  "author": "Jan Ebert",
   "license": "MIT",
   "icon": "images/icon.png",
   "repository": {

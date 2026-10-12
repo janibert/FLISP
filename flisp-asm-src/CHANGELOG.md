@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `package.json`: `author` field.
+
 ## 0.4.1
 
 - Documentation only: shorter user README; building, testing and file layout moved to the repository README.
