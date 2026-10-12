@@ -93,7 +93,7 @@ Colours come from the active VS Code theme, not from the extension, so directive
 
 ### Lab instruction highlighting
 
-If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces this default. In that case, add the rule there:
+If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces the extension's default style for the lab instructions `MOVE` and `CMJEQ` (italic and underlined, set via `configurationDefaults` in `package.json`). In that case, add the rule there:
 
 ```json
 "editor.tokenColorCustomizations": {
