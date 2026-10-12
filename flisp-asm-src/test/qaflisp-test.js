@@ -6,7 +6,9 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { parseOutput, buildArgs, candidatePaths, findQaflisp, runQaflisp } = require('../src/qaflisp');
+const {
+  parseOutput, buildArgs, candidatePaths, findDigiflispDirs, bundledQaflisp, findQaflisp, runQaflisp,
+} = require('../src/qaflisp');
 
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
@@ -82,6 +84,41 @@ test('findQaflisp returns the first existing candidate', () => {
   const found = findQaflisp({ sourceDir: path.join(root, 'lab'), workspaceRoots: [root] }, (p) => p === want);
   assert.strictEqual(found, want);
 });
+
+test('candidatePaths puts the DigiFlisp folders after the PATH and the bundled copy last', () => {
+  const bin = path.resolve('/bin');
+  const digi = path.resolve('/pf/GMV/DigiFlisp9');
+  const bundled = path.resolve('/ext/bin/qaflisp.exe');
+  const c = candidatePaths({ sourceDir: path.resolve('/src'), envPath: bin, digiflispDirs: [digi], bundled });
+  const dirs = [...new Set(c.slice(0, -1).map(path.dirname))];
+  assert.deepStrictEqual(dirs, [path.resolve('/src'), bin, digi]);
+  assert.strictEqual(c[c.length - 1], bundled);
+});
+
+test('candidatePaths ignores the bundled copy when a path is configured', () => {
+  const c = candidatePaths({ configured: 'X:\\q.exe', sourceDir: '/src', bundled: '/ext/bin/qaflisp.exe' });
+  assert.deepStrictEqual(c, ['X:\\q.exe']);
+});
+
+if (process.platform === 'win32') {
+  test('findDigiflispDirs lists GMV\\DigiFlisp* folders, newest first', () => {
+    const env = { 'ProgramFiles(x86)': 'C:\\PF86', ProgramFiles: 'C:\\PF' };
+    const dirent = (name, dir = true) => ({ name, isDirectory: () => dir });
+    const fake = {
+      'C:\\PF86\\GMV': [dirent('DigiFlisp9'), dirent('DigiFlisp10'), dirent('Other'), dirent('DigiFlisp.txt', false)],
+    };
+    const readdir = (d) => {
+      if (!fake[d]) throw new Error('ENOENT');
+      return fake[d];
+    };
+    assert.deepStrictEqual(findDigiflispDirs(env, readdir), ['C:\\PF86\\GMV\\DigiFlisp10', 'C:\\PF86\\GMV\\DigiFlisp9']);
+  });
+
+  test('the bundled qaflisp.exe is in bin/', () => {
+    const p = bundledQaflisp(path.join(__dirname, '..'));
+    assert.ok(fs.existsSync(p), p + ' missing');
+  });
+}
 
 // --- Integration with the real qaflisp ---------------------------------------
 

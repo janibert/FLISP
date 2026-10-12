@@ -1,11 +1,13 @@
 const vscode = require('vscode');
 const path = require('path');
-const { findQaflisp, runQaflisp } = require('./src/qaflisp');
+const { findQaflisp, findDigiflispDirs, bundledQaflisp, runQaflisp } = require('./src/qaflisp');
 
 let output;
 let diagnostics;
+let extensionRoot;
 
 function activate(context) {
+  extensionRoot = context.extensionPath;
   output = vscode.window.createOutputChannel('FLISP');
   diagnostics = vscode.languages.createDiagnosticCollection('qaflisp');
   context.subscriptions.push(output, diagnostics);
@@ -53,6 +55,8 @@ async function assemble(doc, { fromSave }) {
     sourceDir: path.dirname(sourceFile),
     workspaceRoots: (vscode.workspace.workspaceFolders || []).map((f) => f.uri.fsPath),
     envPath: process.env.PATH || '',
+    digiflispDirs: findDigiflispDirs(),
+    bundled: bundledQaflisp(extensionRoot),
   });
   if (!exe) {
     reportNotFound(config.get('qaflispPath'));
@@ -138,7 +142,9 @@ function rangeFor(doc, m) {
 async function reportNotFound(configured) {
   const msg = configured
     ? `FLISP: qaflisp not found at "${configured}".`
-    : 'FLISP: qaflisp not found. Put qaflisp.exe next to your source, in the workspace or on the PATH, or set its location.';
+    : process.platform === 'win32'
+      ? 'FLISP: qaflisp not found. Put qaflisp.exe next to your source, in the workspace or on the PATH, or set its location.'
+      : 'FLISP: qaflisp not found. The bundled qaflisp.exe only runs on Windows; set the location of a qaflisp that runs on this system.';
   const choice = await vscode.window.showErrorMessage(msg, 'Set Location…', 'Open Settings');
   if (choice === 'Set Location…') {
     const picked = await vscode.window.showOpenDialog({

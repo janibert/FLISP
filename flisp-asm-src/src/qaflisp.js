@@ -44,7 +44,9 @@ function buildArgs(options, sourceFile) {
 //   2. the source file's folder and its parents, up to the workspace folder
 //   3. the workspace folders
 //   4. the PATH
-function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = '' }) {
+//   5. the DigiFlisp installation folders (DigiFlisp itself expects qaflisp.exe there)
+//   6. the qaflisp.exe bundled with the extension
+function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = '', digiflispDirs = [], bundled }) {
   if (configured) return [configured];
   const dirs = [];
   const roots = workspaceRoots.map((r) => path.resolve(r));
@@ -59,6 +61,7 @@ function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = 
   }
   dirs.push(...roots);
   dirs.push(...envPath.split(path.delimiter).filter(Boolean));
+  dirs.push(...digiflispDirs);
   const seen = new Set();
   const result = [];
   for (const d of dirs) {
@@ -71,7 +74,34 @@ function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = 
       }
     }
   }
+  if (bundled) result.push(bundled);
   return result;
+}
+
+// DigiFlisp installs to <Program Files>/GMV/DigiFlisp<n>. Newest version first.
+function findDigiflispDirs(env = process.env, readdir = (d) => fs.readdirSync(d, { withFileTypes: true })) {
+  if (process.platform !== 'win32') return [];
+  const bases = [env['ProgramFiles(x86)'], env.ProgramFiles].filter(Boolean).map((p) => path.join(p, 'GMV'));
+  const dirs = [];
+  for (const base of [...new Set(bases)]) {
+    let entries;
+    try {
+      entries = readdir(base);
+    } catch {
+      continue;
+    }
+    entries
+      .filter((e) => e.isDirectory() && /^DigiFlisp/i.test(e.name))
+      .map((e) => e.name)
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      .forEach((name) => dirs.push(path.join(base, name)));
+  }
+  return dirs;
+}
+
+// The copy shipped in the extension's bin folder (Windows only).
+function bundledQaflisp(extensionRoot) {
+  return process.platform === 'win32' ? path.join(extensionRoot, 'bin', 'qaflisp.exe') : undefined;
 }
 
 function isInside(child, parent) {
@@ -97,4 +127,4 @@ function runQaflisp(exe, sourceFile, options) {
   });
 }
 
-module.exports = { parseOutput, buildArgs, candidatePaths, findQaflisp, runQaflisp };
+module.exports = { parseOutput, buildArgs, candidatePaths, findDigiflispDirs, bundledQaflisp, findQaflisp, runQaflisp };

@@ -1,16 +1,33 @@
 {
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
-  "description": "Syntax highlighting and assembling with qaflisp for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
-  "version": "0.3.0",
-  "publisher": "local",
+  "description": "Syntax highlighting and assembling (with the bundled qaflisp) for FLISP (FLexible Instruction Set Processor) assembly, as used with DigiFlisp.",
+  "version": "0.4.0",
+  "publisher": "janibert",
   "license": "MIT",
   "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/janibert/FLISP.git",
+    "directory": "flisp-asm-src"
+  },
+  "homepage": "https://github.com/janibert/FLISP/tree/main/flisp-asm-src#readme",
+  "bugs": {
+    "url": "https://github.com/janibert/FLISP/issues"
+  },
   "engines": {
     "vscode": "^1.63.0"
   },
   "categories": [
     "Programming Languages"
+  ],
+  "keywords": [
+    "flisp",
+    "digiflisp",
+    "qaflisp",
+    "assembly",
+    "assembler",
+    "asm"
   ],
   "main": "./extension.js",
   "activationEvents": [
@@ -28,7 +45,8 @@
   },
   "scripts": {
     "test": "node test/qaflisp-test.js && node test/tokenize-test.js",
-    "package": "vsce package --allow-missing-repository"
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.2.0",
@@ -129,7 +147,7 @@
           "type": "string",
           "default": "",
           "scope": "machine-overridable",
-          "markdownDescription": "Path to `qaflisp.exe`. If empty, it is searched for in the source file's folder and its parents up to the workspace folder, in the workspace folders and on the `PATH`."
+          "markdownDescription": "Path to `qaflisp.exe`. If empty, it is searched for in the source file's folder and its parents up to the workspace folder, in the workspace folders, on the `PATH` and in the DigiFlisp installation folder; the copy bundled with the extension (Windows only) is used last."
         },
         "flisp.assembleOnSave": {
           "type": "boolean",
