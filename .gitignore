@@ -1,2 +1,8 @@
 qaflisp.exe
 FlisProcessorHandbok-A4.pdf
+
+# qaflisp output
+*.lst
+*.s19
+*.fmem
+!flisp-asm-src/test/qaflisp-output.fmem

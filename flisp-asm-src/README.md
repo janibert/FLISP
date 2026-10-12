@@ -118,7 +118,7 @@ To develop without packaging: open the folder in VS Code and press `F5`. This la
 ['sample.sflisp', 'BEQ     Start', 'Start', '!entity.name.function.label'],
 ```
 
-`test/sample.fmem` is real qaflisp output. `test/sample.sflisp` assembles with qaflisp without errors, except for the lab instructions and the deliberately wrong line `LDA #1` in column 1.
+`test/qaflisp-output.fmem` is real qaflisp output (deliberately not named `sample.fmem`, so that assembling the sample does not overwrite it). `test/sample.sflisp` assembles with qaflisp without errors, except for the lab instructions and the deliberately wrong line `LDA #1` in column 1.
 
 ### Inspecting scopes in the editor
 
@@ -137,7 +137,7 @@ images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.
 test/qaflisp-test.js             tests for src/qaflisp.js
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
-test/sample.fmem                 qaflisp output for the test
+test/qaflisp-output.fmem         qaflisp output for the test
 .vscodeignore                    what stays out of the package (including any .exe)
 ```
 

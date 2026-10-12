@@ -107,17 +107,17 @@ const expectations = [
   ['sample.sflisp', 'END', 'Startadresse', 'comment.line'],
 
   // .fmem, so wie qaflisp es erzeugt
-  ['sample.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],
-  ['sample.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.control.reset'],
-  ['sample.fmem', 'ClearAllRegisters', '# ClearAllRegisters', 'keyword.control.reset'],
-  ['sample.fmem', '20=05', '#setMemory', 'keyword.other.directive'],
-  ['sample.fmem', '20=05', '20', 'constant.numeric.address'],
-  ['sample.fmem', '20=05', '05', 'constant.numeric.hex'],
+  ['qaflisp-output.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],
+  ['qaflisp-output.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.control.reset'],
+  ['qaflisp-output.fmem', 'ClearAllRegisters', '# ClearAllRegisters', 'keyword.control.reset'],
+  ['qaflisp-output.fmem', '20=05', '#setMemory', 'keyword.other.directive'],
+  ['qaflisp-output.fmem', '20=05', '20', 'constant.numeric.address'],
+  ['qaflisp-output.fmem', '20=05', '05', 'constant.numeric.hex'],
 ];
 
 const files = {
   'sample.sflisp': 'source.flisp',
-  'sample.fmem': 'source.fmem',
+  'qaflisp-output.fmem': 'source.fmem',
 };
 
 (async () => {
