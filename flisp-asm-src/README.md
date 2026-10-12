@@ -69,7 +69,7 @@ Voraussetzung ist Node.js (Version 20 oder neuer).
 ```bash
 npm install          # holt vsce und die Test-Bibliotheken
 npm test             # prueft die Grammatik gegen test/sample.sflisp und test/sample.fmem
-npm run package      # erzeugt flisp-asm-0.2.0.vsix
+npm run package      # erzeugt flisp-asm-0.2.1.vsix
 ```
 
 Die `.vsix` landet im Projektordner. `.vscodeignore` sorgt dafür, dass `test/` und `node_modules/` nicht mit ins Paket wandern.

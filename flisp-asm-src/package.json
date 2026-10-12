@@ -2,7 +2,7 @@
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
   "description": "Syntax highlighting for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "local",
   "license": "MIT",
   "icon": "images/icon.png",
