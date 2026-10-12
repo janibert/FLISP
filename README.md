@@ -17,6 +17,8 @@ See the extension's README: [`flisp-asm-src/README.md`](flisp-asm-src/README.md)
 
 ## Building and Development
 
+Contributions are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the FLISP, qaflisp and DigiFlisp details the extension is built on.
+
 Requires Node.js 20 or later. The extension lives in `flisp-asm-src/`; run all commands there. All paths below are relative to that folder.
 
 ```bash
@@ -54,6 +56,7 @@ If a colour looks wrong: `Ctrl+Shift+P` → *Developer: Inspect Editor Tokens an
 ### Repository layout
 
 ```
+CONTRIBUTING.md   how to contribute; FLISP / qaflisp / DigiFlisp domain knowledge
 flisp-asm-src/    the extension (source, grammars, tests)
 ```
 
