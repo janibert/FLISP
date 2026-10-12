@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `package.json`: `author` field.
+- README: `LICENSE` and `THIRD-PARTY-NOTICES.md` are links to the files on GitHub.
 
 ## 0.4.1
 

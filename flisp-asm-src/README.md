@@ -1,8 +1,8 @@
 # FLISP Assembly for VS Code
 
-Syntax highlighting — and assembling with `qaflisp` — for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
+Syntax highlighting and assembling for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
 
-*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp. The bundled `qaflisp.exe` and the DigiFlisp icon are used under the DigiFlisp software license — see `THIRD-PARTY-NOTICES.md`.*
+*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp. The bundled `qaflisp.exe` and the DigiFlisp icon are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/THIRD-PARTY-NOTICES.md).*
 
 The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 
@@ -42,16 +42,6 @@ The grammar does the same. This has a practical consequence: `LDA #K + 1` loads 
 ### Lab instructions
 
 `MOVE` and `CMJEQ` are not standard instructions; neither the handbook nor qaflisp knows them. They get the scope `entity.name.type.instruction.custom.flisp`, which the extension renders *italic and underlined* by default so they stand out in every theme.
-
-If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces this default. In that case, add the rule there:
-
-```json
-"editor.tokenColorCustomizations": {
-  "textMateRules": [
-    { "scope": "entity.name.type.instruction.custom.flisp", "settings": { "fontStyle": "italic underline" } }
-  ]
-}
-```
 
 ## Assembling
 
@@ -116,4 +106,4 @@ No autocompletion and no debugger. Errors are only checked when you assemble, no
 
 ## License
 
-The extension's own files are MIT-licensed, © 2026 Jan Ebert — see `LICENSE`. The bundled `qaflisp.exe` and the DigiFlisp icon belong to GMV and are distributed under the DigiFlisp software license — see `THIRD-PARTY-NOTICES.md`.
+The extension's own files are MIT-licensed, © 2026 Jan Ebert — see [LICENSE](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/LICENSE). The bundled `qaflisp.exe` and the DigiFlisp icon belong to GMV and are distributed under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/THIRD-PARTY-NOTICES.md).

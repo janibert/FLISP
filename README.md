@@ -91,6 +91,18 @@ The grammar is in `syntaxes/flisp.tmLanguage.json`. A new custom instruction goe
 
 Colours come from the active VS Code theme, not from the extension, so directives and instructions look different depending on the theme. Instructions use the scope `keyword.other.instruction` and are therefore coloured in practically every theme; in the default *Dark+* theme, however, they share their colour with the directives.
 
+### Lab instruction highlighting
+
+If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces this default. In that case, add the rule there:
+
+```json
+"editor.tokenColorCustomizations": {
+  "textMateRules": [
+    { "scope": "entity.name.type.instruction.custom.flisp", "settings": { "fontStyle": "italic underline" } }
+  ]
+}
+```
+
 ## License
 
 The extension's own code is MIT-licensed, © 2026 Jan Ebert — see [`LICENSE`](LICENSE).
