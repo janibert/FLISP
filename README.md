@@ -23,7 +23,6 @@ Requires Node.js 20 or later.
 npm install          # fetches vsce and the test libraries
 npm test             # unit tests for the qaflisp integration, then the grammar tests
 npm run package      # creates flisp-asm-<version>.vsix
-npm run publish      # publishes to the Marketplace (needs `npx vsce login janibert` first)
 ```
 
 The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/` and `node_modules/` out of the package, and every `.exe` except `bin/qaflisp.exe`.
