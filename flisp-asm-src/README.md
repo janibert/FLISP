@@ -100,6 +100,7 @@ package.json                     Metadaten, Dateiendungen, Build-Skripte, Defaul
 language-configuration.json      Kommentarzeichen, Klammerpaare
 syntaxes/flisp.tmLanguage.json   die Grammatik fuer .sflisp
 syntaxes/fmem.tmLanguage.json    die Grammatik fuer .fmem
+images/icon.png                  Logo (DigiFlisp-Icon, aus digiflisp.exe extrahiert)
 test/tokenize-test.js            Scope-Test
 test/sample.sflisp               Beispielcode fuer den Test
 test/sample.fmem                 qaflisp-Ausgabe fuer den Test
