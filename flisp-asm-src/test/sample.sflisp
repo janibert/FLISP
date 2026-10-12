@@ -51,4 +51,4 @@ LDA         #1
 
             ORG     $FF
             FCB     Start
-            END     Rest wird ignoriert
+            END     Start Startadresse

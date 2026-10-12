@@ -35,12 +35,11 @@
     },
 
     "statement-inherent": {
-      "comment": "Befehle ohne Operand. Alles danach ist Kommentar.",
-      "begin": "(?i)(?<![A-Za-z0-9_])(?:(RTS|RTI)|(END)|(NOP|PSHA|PSHX|PSHY|PSHCC|PSHC|PULA|PULX|PULY|PULCC|PULC|CLRA|NEGA|INCA|DECA|TSTA|COMA|LSLA|ASLA|LSRA|ROLA|RORA|ASRA))(?![A-Za-z0-9_])",
+      "comment": "Befehle ohne Operand. Alles danach ist Kommentar. (END gehoert nicht hierher: es hat ein optionales Startsymbol als Operand.)",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:(RTS|RTI)|(NOP|PSHA|PSHX|PSHY|PSHCC|PSHC|PULA|PULX|PULY|PULCC|PULC|CLRA|NEGA|INCA|DECA|TSTA|COMA|LSLA|ASLA|LSRA|ROLA|RORA|ASRA))(?![A-Za-z0-9_])",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.flisp" },
-        "2": { "name": "keyword.other.directive.flisp" },
-        "3": { "name": "keyword.other.instruction.flisp" }
+        "2": { "name": "keyword.other.instruction.flisp" }
       },
       "end": "$",
       "patterns": [
@@ -50,8 +49,8 @@
     },
 
     "statement-operand": {
-      "comment": "Befehle und Direktiven mit Operand. Gruppe 3 sind die selbst definierten Laborinstruktionen.",
-      "begin": "(?i)(?<![A-Za-z0-9_])(?:(JSR|JMP|BSR|BRA|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)|(ORG|EQU|FCB|FCS|RMB)|(MOVE|CMJEQ)|(LDA|LDX|LDY|LDSP|LEAX|LEAY|LEASP|STA|STX|STY|STSP|TFR|EXG|ADDA|ADCA|SUBA|SBCA|CLR|NEG|DEC|INC|CMPA|CMPX|CMPY|CMPSP|BITA|TST|ANDA|ORA|ANDCC|ORCC|EORA|COM|ASR|LSL|ASL|LSR|ROL|ROR))(?![A-Za-z0-9_])",
+      "comment": "Befehle und Direktiven mit Operand. END hat ein optionales Startsymbol (Startadresse im S9-Record der .s19). Gruppe 3 sind die selbst definierten Laborinstruktionen.",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:(JSR|JMP|BSR|BRA|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)|(ORG|EQU|FCB|FCS|RMB|END)|(MOVE|CMJEQ)|(LDA|LDX|LDY|LDSP|LEAX|LEAY|LEASP|STA|STX|STY|STSP|TFR|EXG|ADDA|ADCA|SUBA|SBCA|CLR|NEG|DEC|INC|CMPA|CMPX|CMPY|CMPSP|BITA|TST|ANDA|ORA|ANDCC|ORCC|EORA|COM|ASR|LSL|ASL|LSR|ROL|ROR))(?![A-Za-z0-9_])",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.flisp" },
         "2": { "name": "keyword.other.directive.flisp" },

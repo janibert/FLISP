@@ -103,7 +103,8 @@ const expectations = [
   ['sample.sflisp', '#K + 1', '+ 1', 'comment.line'],
   ['sample.sflisp', '"HELLO WORLD"', 'HELLO WORLD', 'string.quoted'],
   ['sample.sflisp', '"HELLO WORLD"', 'Text mit Leerzeichen', 'comment.line'],
-  ['sample.sflisp', 'END', 'Rest wird ignoriert', 'comment.line'],
+  ['sample.sflisp', 'END', 'Start', '!comment'],
+  ['sample.sflisp', 'END', 'Startadresse', 'comment.line'],
 
   // .fmem, so wie qaflisp es erzeugt
   ['sample.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],

@@ -30,7 +30,8 @@ qaflisp reads every line as `[Label] Mnemonic [Operand] [Comment]`:
 
 - Column 1 is always a label. An instruction must be indented.
 - The operand ends at the first space (except inside a string). Everything after it is a comment, even without `;`.
-- For instructions without an operand (`NOP`, `PSHA`, `RTS`, `INCA` …) and for `END`, everything after the mnemonic is a comment.
+- For instructions without an operand (`NOP`, `PSHA`, `RTS`, `INCA` …), everything after the mnemonic is a comment.
+- `END` takes an optional operand: the start symbol, e.g. `END Start`. It sets the start address in the `.s19` file (S9 record). Text after `END` is therefore *not* a comment unless it starts with `;` — `END Rest of line` makes qaflisp look for a symbol `Rest` and warn *start symbol 'Rest' is defined* (meaning: not defined).
 
 The grammar does the same. This has a practical consequence: `LDA #K + 1` loads `K`, not `K+1` — the ` + 1` is a comment and is shown in grey. Write `LDA #K+1` instead.
 
