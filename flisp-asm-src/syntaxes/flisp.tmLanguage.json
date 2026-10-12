@@ -40,7 +40,7 @@
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.flisp" },
         "2": { "name": "keyword.other.directive.flisp" },
-        "3": { "name": "keyword.operator.mnemonic.flisp" }
+        "3": { "name": "keyword.other.instruction.flisp" }
       },
       "end": "$",
       "patterns": [
@@ -56,7 +56,7 @@
         "1": { "name": "keyword.control.flow.flisp" },
         "2": { "name": "keyword.other.directive.flisp" },
         "3": { "name": "entity.name.type.instruction.custom.flisp" },
-        "4": { "name": "keyword.operator.mnemonic.flisp" }
+        "4": { "name": "keyword.other.instruction.flisp" }
       },
       "end": "$",
       "patterns": [

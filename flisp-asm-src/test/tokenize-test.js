@@ -37,18 +37,18 @@ const expectations = [
   ['sample.sflisp', 'END', 'END', 'keyword.other.directive'],
 
   // Instruktionen
-  ['sample.sflisp', 'Start       LDA', 'LDA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'L2          DECA', 'DECA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'CMPA    #2', 'CMPA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'LEASP', 'LEASP', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'PSHC', 'PSHC', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', '  PULC', 'PULC', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'PULCC', 'PULCC', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'ASLA', 'ASLA', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'TFR', 'TFR', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'EXG', 'EXG', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'Delay       NOP', 'NOP', 'keyword.operator.mnemonic'],
-  ['sample.sflisp', 'ldx', 'ldx', 'keyword.operator.mnemonic'],
+  ['sample.sflisp', 'Start       LDA', 'LDA', 'keyword.other.instruction'],
+  ['sample.sflisp', 'L2          DECA', 'DECA', 'keyword.other.instruction'],
+  ['sample.sflisp', 'CMPA    #2', 'CMPA', 'keyword.other.instruction'],
+  ['sample.sflisp', 'LEASP', 'LEASP', 'keyword.other.instruction'],
+  ['sample.sflisp', 'PSHC', 'PSHC', 'keyword.other.instruction'],
+  ['sample.sflisp', '  PULC', 'PULC', 'keyword.other.instruction'],
+  ['sample.sflisp', 'PULCC', 'PULCC', 'keyword.other.instruction'],
+  ['sample.sflisp', 'ASLA', 'ASLA', 'keyword.other.instruction'],
+  ['sample.sflisp', 'TFR', 'TFR', 'keyword.other.instruction'],
+  ['sample.sflisp', 'EXG', 'EXG', 'keyword.other.instruction'],
+  ['sample.sflisp', 'Delay       NOP', 'NOP', 'keyword.other.instruction'],
+  ['sample.sflisp', 'ldx', 'ldx', 'keyword.other.instruction'],
   ['sample.sflisp', 'BEQ', 'BEQ', 'keyword.control.flow'],
   ['sample.sflisp', 'BRA', 'BRA', 'keyword.control.flow'],
   ['sample.sflisp', 'JSR', 'JSR', 'keyword.control.flow'],
@@ -56,7 +56,7 @@ const expectations = [
 
   // Selbst definierte Laborinstruktionen: eigener Scope, kein Standard-Mnemonic
   ['sample.sflisp', 'MOVE', 'MOVE', 'entity.name.type.instruction.custom'],
-  ['sample.sflisp', 'MOVE', 'MOVE', '!keyword.operator.mnemonic'],
+  ['sample.sflisp', 'MOVE', 'MOVE', '!keyword.other.instruction'],
   ['sample.sflisp', 'CMJEQ', 'CMJEQ', 'entity.name.type.instruction.custom'],
   ['sample.sflisp', 'MOVE', 'OUTPORT', '!entity.name'],
 
@@ -107,8 +107,8 @@ const expectations = [
 
   // .fmem, so wie qaflisp es erzeugt
   ['sample.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],
-  ['sample.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.other.directive'],
-  ['sample.fmem', 'ClearAllRegisters', '# ClearAllRegisters', 'keyword.other.directive'],
+  ['sample.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.control.reset'],
+  ['sample.fmem', 'ClearAllRegisters', '# ClearAllRegisters', 'keyword.control.reset'],
   ['sample.fmem', '20=05', '#setMemory', 'keyword.other.directive'],
   ['sample.fmem', '20=05', '20', 'constant.numeric.address'],
   ['sample.fmem', '20=05', '05', 'constant.numeric.hex'],

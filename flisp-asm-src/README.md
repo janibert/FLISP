@@ -23,7 +23,7 @@ Grundlage sind das *FLISP-Handbok* (Version 2025-12-09) und das Verhalten des As
 | Strings | `"TEXT"` für `FCS` |
 | Fehler | Mnemonic in Spalte 1 (qaflisp liest es als Label: *Illegal mnemonic*) |
 
-**`.fmem` (Speicherabbild, von qaflisp erzeugt)** — `#setMemory`-Direktiven mit Adresse und Wert, `# ClearAllMemory`, `# ClearAllRegisters`; die Kopfzeilen erscheinen als Kommentar.
+**`.fmem` (Speicherabbild, von qaflisp erzeugt)** — `#setMemory`-Direktiven mit Adresse und Wert; `# ClearAllMemory` und `# ClearAllRegisters` mit eigener Hervorhebung (Scope `keyword.control.reset`); die Kopfzeilen erscheinen als Kommentar.
 
 ### Zeilenaufbau und Kommentare
 
@@ -113,7 +113,7 @@ Die Grammatik liegt in `syntaxes/flisp.tmLanguage.json`. Eine neue eigene Instru
 1. in `statement-operand`, Gruppe 3 (`MOVE|CMJEQ`) — bzw. in `statement-inherent`, falls sie keinen Operand hat,
 2. in die Liste der ersten `label`-Regel, damit sie in Spalte 1 als Fehler markiert wird.
 
-Die Farben kommen vom aktiven VS-Code-Theme, nicht von der Extension. Je nach Theme sehen Direktiven und Instruktionen unterschiedlich aus. Im Standard-Theme *Dark+* etwa erscheinen Instruktionen (`keyword.operator`) in normaler Textfarbe.
+Die Farben kommen vom aktiven VS-Code-Theme, nicht von der Extension. Je nach Theme sehen Direktiven und Instruktionen unterschiedlich aus. Instruktionen haben den Scope `keyword.other.instruction` und werden damit in praktisch jedem Theme eingefärbt; im Standard-Theme *Dark+* teilen sie sich allerdings die Farbe mit den Direktiven.
 
 ## Grenzen
 

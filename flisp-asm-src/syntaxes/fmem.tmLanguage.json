@@ -6,6 +6,7 @@
   "patterns": [
     { "include": "#comment" },
     { "include": "#setmemory" },
+    { "include": "#clear" },
     { "include": "#command" },
     { "include": "#header" }
   ],
@@ -23,8 +24,15 @@
         "4": { "name": "constant.numeric.hex.fmem" }
       }
     },
+    "clear": {
+      "comment": "'# ClearAllMemory' und '# ClearAllRegisters' setzen den Simulator zurueck - eigene Hervorhebung, getrennt von #setMemory.",
+      "match": "(?i)^[ \\t]*(#[ \\t]*ClearAll(?:Memory|Registers))(?![A-Za-z0-9_])",
+      "captures": {
+        "1": { "name": "keyword.control.reset.fmem" }
+      }
+    },
     "command": {
-      "comment": "Sonstige Kommandos wie '# ClearAllMemory' oder '# ClearAllRegisters'.",
+      "comment": "Sonstige Kommandos, die mit '#' beginnen.",
       "match": "^[ \\t]*(#[ \\t]*[A-Za-z][A-Za-z0-9_]*)",
       "captures": {
         "1": { "name": "keyword.other.directive.fmem" }

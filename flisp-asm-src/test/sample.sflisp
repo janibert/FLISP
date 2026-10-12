@@ -2,6 +2,7 @@
             ORG     $20
 OUTPORT     EQU     $FB
 INPORT      EQU     $FC
+K           EQU     3
 
 state_vector FCB    %00000101,%00000110,%00001010,%00001001
 Count       RMB     1
@@ -11,22 +12,42 @@ Start       LDA     #$05
 L2          DECA
             CMPA    #2
             BEQ     Start
-            LDA     n,X
+            LDA     2,X
             LDA     A,Y
             LDA     ,X+
+            LDA     ,+Y
             STA     ,-Y
+            STA     -3,SP
+            LEASP   2,SP
             PSHA
+            PSHC
+            PULC
             PULCC
             TFR     A,CC
+            EXG     X,SP
             LSLA
+            ASLA
+            LDA     #'A'
+            LDA     #K-1
+            LDA     #K + 1
             JSR     Delay
             BRA     L2
 
-Delay       NOP                 ; Verzoegerung
-            RTS
+Delay       NOP     wartet einen Takt
+            RTS     Ruecksprung
+LOOP:       INCA
+            ldx     #$ff
 
 MorseCode   FCB     2,%01000000 ; Morsecode fuer 'A'
-            FCS     "HELLO"
+            FCS     "HELLO WORLD" Text mit Leerzeichen
+
+; Selbst definierte Laborinstruktionen (kennt qaflisp nicht)
+            MOVE    #1,OUTPORT
+            CMJEQ   #2,Start
+
+; Fehler: Mnemonic in Spalte 1 wird als Label gelesen
+LDA         #1
 
             ORG     $FF
             FCB     Start
+            END     Rest wird ignoriert
