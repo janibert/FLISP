@@ -1,8 +1,8 @@
 {
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
-  "description": "Syntax highlighting for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
-  "version": "0.2.2",
+  "description": "Syntax highlighting and assembling with qaflisp for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
+  "version": "0.3.0",
   "publisher": "local",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -12,8 +12,22 @@
   "categories": [
     "Programming Languages"
   ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:flisp",
+    "onCommand:flisp.assemble"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Assembling runs qaflisp and is disabled in untrusted workspaces.",
+      "restrictedConfigurations": [
+        "flisp.qaflispPath"
+      ]
+    }
+  },
   "scripts": {
-    "test": "node test/tokenize-test.js",
+    "test": "node test/qaflisp-test.js && node test/tokenize-test.js",
     "package": "vsce package --allow-missing-repository"
   },
   "devDependencies": {
@@ -68,6 +82,75 @@
             }
           }
         ]
+      }
+    },
+    "commands": [
+      {
+        "command": "flisp.assemble",
+        "title": "Assemble",
+        "category": "FLISP",
+        "icon": "$(play)",
+        "enablement": "resourceLangId == flisp"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "flisp.assemble",
+          "when": "resourceLangId == flisp",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "flisp.assemble",
+          "when": "resourceLangId == flisp",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "flisp.assemble",
+          "when": "editorLangId == flisp"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "flisp.assemble",
+        "key": "f7",
+        "when": "editorLangId == flisp"
+      }
+    ],
+    "configuration": {
+      "title": "FLISP",
+      "properties": {
+        "flisp.qaflispPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Path to `qaflisp.exe`. If empty, it is searched for in the source file's folder and its parents up to the workspace folder, in the workspace folders and on the `PATH`."
+        },
+        "flisp.assembleOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Assemble .sflisp files automatically when they are saved."
+        },
+        "flisp.listFile": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Create a list file (`.lst`) — qaflisp option `-L`."
+        },
+        "flisp.warnings": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Report warnings — qaflisp option `-w`."
+        },
+        "flisp.debugInfo": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Generate source-level debug information — qaflisp option `-g`."
+        }
       }
     }
   }

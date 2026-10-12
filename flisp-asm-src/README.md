@@ -1,6 +1,6 @@
 # FLISP Assembly for VS Code
 
-Syntax highlighting for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
+Syntax highlighting — and assembling with `qaflisp` — for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
 
 The grammar follows the *FLISP-Handbok* (version 2025-12-09) and the behaviour of the `qaflisp` assembler (version 1.3).
 ## What gets highlighted
@@ -48,6 +48,35 @@ If you set `editor.tokenColorCustomizations.textMateRules` in your own settings,
 }
 ```
 
+## Assembling
+
+The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor. **qaflisp is not included** — you need your own copy of `qaflisp.exe`.
+
+- **Run it:** the ▶ button in the editor title bar, `F7`, *FLISP: Assemble* in the command palette, or right-click a `.sflisp` file in the Explorer. Unsaved changes are saved first.
+- **Errors and warnings** are underlined in the source and listed in the *Problems* panel. The full qaflisp output is in the *FLISP* output channel.
+- **Output files** (`.s19`, `.lst`, `.fmem`) are written next to the source file. Load the `.fmem` into DigiFlisp.
+
+### Where qaflisp is looked for
+
+1. the path in the `flisp.qaflispPath` setting — if set, nothing else is tried;
+2. the source file's folder and its parent folders, up to the workspace folder;
+3. the workspace folders;
+4. the `PATH`.
+
+So putting `qaflisp.exe` in the top folder of your workspace is enough. If it is not found, a message offers to pick it with a file dialog.
+
+### Settings
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `flisp.qaflispPath` | empty | path to `qaflisp.exe` |
+| `flisp.assembleOnSave` | `false` | assemble automatically on every save |
+| `flisp.listFile` | `true` | create a `.lst` list file (`-L`) |
+| `flisp.warnings` | `true` | report warnings (`-w`) |
+| `flisp.debugInfo` | `false` | generate source-level debug information (`-g`) |
+
+Assembling runs an external program and is therefore disabled in [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust); highlighting works everywhere.
+
 ## Installation
 
 Without the Marketplace, in one of two ways:
@@ -67,7 +96,7 @@ Requires Node.js 20 or later.
 
 ```bash
 npm install          # fetches vsce and the test libraries
-npm test             # checks the grammar against test/sample.sflisp and test/sample.fmem
+npm test             # unit tests for the qaflisp integration, then the grammar tests
 npm run package      # creates flisp-asm-<version>.vsix
 ```
 
@@ -75,7 +104,9 @@ The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/` and `no
 
 To develop without packaging: open the folder in VS Code and press `F5`. This launches a second VS Code window with the extension loaded — open a `.sflisp` file there and check the highlighting directly.
 
-### The test
+### The tests
+
+`test/qaflisp-test.js` tests the qaflisp integration (`src/qaflisp.js`) without VS Code: parsing of qaflisp's messages, the command-line flags and the search order. If a real `qaflisp.exe` is found above the project folder or on the `PATH`, it also assembles a correct and a broken file with it; otherwise those two cases are skipped.
 
 `test/tokenize-test.js` loads the grammar with the same engine VS Code uses (`vscode-textmate` plus `vscode-oniguruma`), tokenizes the sample files and, for each expectation, checks one specific token on one specific line. The cases are in the `expectations` list at the top of the script; adding one is a single line:
 
@@ -95,15 +126,18 @@ If a colour looks wrong: `Ctrl+Shift+P` → *Developer: Inspect Editor Tokens an
 ## Files
 
 ```
-package.json                     metadata, file extensions, build scripts, default style for lab instructions
+package.json                     metadata, file extensions, command, settings, build scripts
 language-configuration.json      comment character, bracket pairs
 syntaxes/flisp.tmLanguage.json   grammar for .sflisp
 syntaxes/fmem.tmLanguage.json    grammar for .fmem
+extension.js                     command, diagnostics, settings (VS Code side)
+src/qaflisp.js                   finding and running qaflisp, parsing its output
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)
+test/qaflisp-test.js             tests for src/qaflisp.js
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
 test/sample.fmem                 qaflisp output for the test
-.vscodeignore                    what stays out of the package
+.vscodeignore                    what stays out of the package (including any .exe)
 ```
 
 ## Customizing
@@ -117,6 +151,6 @@ Colours come from the active VS Code theme, not from the extension, so directive
 
 ## Limitations
 
-Highlighting only — no assembling, no error checking, no autocompletion, no debugger. Use qaflisp or DigiFlisp to assemble.
+No autocompletion and no debugger. Errors are only checked when you assemble, not while you type. Assembling needs your own copy of qaflisp; it is Windows-only. Use DigiFlisp to run and debug the program.
 
 MIT licence, use it as you like.
