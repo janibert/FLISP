@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Documentation only: shorter user README; building, testing and file layout moved to the repository README.
+
 ## 0.4.0
 
 - qaflisp.exe (Windows) is now bundled and used if no other copy is found.

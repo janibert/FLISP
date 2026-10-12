@@ -17,9 +17,10 @@ See the extension's README: [`flisp-asm-src/README.md`](flisp-asm-src/README.md)
 
 ## Building and Development
 
-Requires Node.js 20 or later.
+Requires Node.js 20 or later. The extension lives in `flisp-asm-src/`; run all commands there. All paths below are relative to that folder.
 
 ```bash
+cd flisp-asm-src
 npm install          # fetches vsce and the test libraries
 npm test             # unit tests for the qaflisp integration, then the grammar tests
 npm run package      # creates flisp-asm-<version>.vsix
@@ -57,6 +58,8 @@ flisp-asm-src/    the extension (source, grammars, tests)
 ```
 
 ### Source Files
+
+In `flisp-asm-src/`:
 
 ```
 package.json                     metadata, file extensions, command, settings, build scripts
