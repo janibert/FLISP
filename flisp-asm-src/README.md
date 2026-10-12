@@ -53,7 +53,15 @@ If you set `editor.tokenColorCustomizations.textMateRules` in your own settings,
 
 ## Assembling
 
-The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor. On Windows it works out of the box: a copy of `qaflisp.exe` is included and used if no other copy is found. qaflisp is a Windows program; on macOS and Linux you get highlighting only, unless you set `flisp.qaflispPath` to a qaflisp that runs there.
+The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor. qaflisp comes with [DigiFlisp](https://www.gbgmv.se/studies.html), which is available for Windows, Linux (x64) and macOS (Intel and Apple silicon); the extension finds the qaflisp of an installed DigiFlisp automatically. On Windows it also works without DigiFlisp: a copy of `qaflisp.exe` is bundled with the extension.
+
+| Platform | Status |
+|---|---|
+| Windows | tested |
+| Linux x64 | qaflisp from DigiFlisp 2.08 checked: same messages and same output files as on Windows; the extension itself not yet tested on Linux |
+| macOS | install location and message format checked in the DigiFlisp 2.08 packages; not tested on a Mac |
+
+Feedback from Linux and macOS users is welcome — please open an issue.
 
 - **Run it:** the ▶ button in the editor title bar, `F7`, *FLISP: Assemble* in the command palette, or right-click a `.sflisp` file in the Explorer. Unsaved changes are saved first.
 - **Errors and warnings** are underlined in the source and listed in the *Problems* panel. The full qaflisp output is in the *FLISP* output channel.
@@ -65,8 +73,11 @@ The extension runs the `qaflisp` assembler on the current file and shows its err
 2. the source file's folder and its parent folders, up to the workspace folder;
 3. the workspace folders;
 4. the `PATH`;
-5. the DigiFlisp installation folder (`Program Files (x86)\GMV\DigiFlisp*` or `Program Files\GMV\DigiFlisp*`), where DigiFlisp itself expects `qaflisp.exe`;
-6. the copy bundled with the extension (qaflisp 1.3).
+5. the DigiFlisp installation folder:
+   - Windows: `Program Files (x86)\GMV\DigiFlisp*` or `Program Files\GMV\DigiFlisp*`
+   - Linux: `/usr/share/digiflisp` (the `.deb` package); the `.tar.gz` instructions install to `/usr/bin`, which is on the `PATH`
+   - macOS: `/Applications/Digiflisp.app/Contents/MacOS` or `~/Applications/Digiflisp.app/Contents/MacOS`
+6. on Windows, the copy bundled with the extension (qaflisp 1.3).
 
 So a newer qaflisp in your workspace, on the `PATH` or next to DigiFlisp always takes precedence over the bundled one. The *FLISP* output channel shows which `qaflisp.exe` was used. If none is found, a message offers to pick it with a file dialog.
 
@@ -160,7 +171,7 @@ Colours come from the active VS Code theme, not from the extension, so directive
 
 ## Limitations
 
-No autocompletion and no debugger. Errors are only checked when you assemble, not while you type. Assembling is Windows-only, because qaflisp is. Use DigiFlisp to run and debug the program.
+No autocompletion and no debugger. Errors are only checked when you assemble, not while you type. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
 
 ## License
 

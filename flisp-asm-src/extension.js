@@ -144,7 +144,7 @@ async function reportNotFound(configured) {
     ? `FLISP: qaflisp not found at "${configured}".`
     : process.platform === 'win32'
       ? 'FLISP: qaflisp not found. Put qaflisp.exe next to your source, in the workspace or on the PATH, or set its location.'
-      : 'FLISP: qaflisp not found. The bundled qaflisp.exe only runs on Windows; set the location of a qaflisp that runs on this system.';
+      : 'FLISP: qaflisp not found. Install DigiFlisp from www.gbgmv.se (it includes qaflisp), or set the location of qaflisp.';
   const choice = await vscode.window.showErrorMessage(msg, 'Set Location…', 'Open Settings');
   if (choice === 'Set Location…') {
     const picked = await vscode.window.showOpenDialog({

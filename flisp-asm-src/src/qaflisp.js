@@ -44,8 +44,8 @@ function buildArgs(options, sourceFile) {
 //   2. the source file's folder and its parents, up to the workspace folder
 //   3. the workspace folders
 //   4. the PATH
-//   5. the DigiFlisp installation folders (DigiFlisp itself expects qaflisp.exe there)
-//   6. the qaflisp.exe bundled with the extension
+//   5. the DigiFlisp installation folders, which contain qaflisp (see findDigiflispDirs)
+//   6. the qaflisp.exe bundled with the extension (Windows only)
 function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = '', digiflispDirs = [], bundled }) {
   if (configured) return [configured];
   const dirs = [];
@@ -78,9 +78,22 @@ function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = 
   return result;
 }
 
-// DigiFlisp installs to <Program Files>/GMV/DigiFlisp<n>. Newest version first.
-function findDigiflispDirs(env = process.env, readdir = (d) => fs.readdirSync(d, { withFileTypes: true })) {
-  if (process.platform !== 'win32') return [];
+// Where the DigiFlisp installers (2.08, www.gbgmv.se) put qaflisp:
+//   Windows: <Program Files>\GMV\DigiFlisp<n>\qaflisp.exe   (newest version first)
+//   Linux:   /usr/share/digiflisp/qaflisp (.deb, not on the PATH); the .tar.gz instructions use /usr/bin
+//   macOS:   /Applications/Digiflisp.app/Contents/MacOS/qaflisp (Intel and Apple silicon)
+function findDigiflispDirs(
+  env = process.env,
+  readdir = (d) => fs.readdirSync(d, { withFileTypes: true }),
+  platform = process.platform
+) {
+  if (platform === 'linux') return ['/usr/share/digiflisp'];
+  if (platform === 'darwin') {
+    const dirs = ['/Applications/Digiflisp.app/Contents/MacOS'];
+    if (env.HOME) dirs.push(path.join(env.HOME, 'Applications', 'Digiflisp.app', 'Contents', 'MacOS'));
+    return dirs;
+  }
+  if (platform !== 'win32') return [];
   const bases = [env['ProgramFiles(x86)'], env.ProgramFiles].filter(Boolean).map((p) => path.join(p, 'GMV'));
   const dirs = [];
   for (const base of [...new Set(bases)]) {
@@ -119,7 +132,8 @@ function runQaflisp(exe, sourceFile, options) {
   return new Promise((resolve, reject) => {
     const args = buildArgs(options, sourceFile);
     execFile(exe, args, { cwd: path.dirname(sourceFile), windowsHide: true }, (err, stdout, stderr) => {
-      // qaflisp's exit code is the number of errors, so a non-zero code is normal.
+      // On Windows qaflisp's exit code is the number of errors, so a non-zero code is normal.
+      // The Linux build exits with 0 even on errors - count errors from the messages, not the code.
       if (err && typeof err.code !== 'number') return reject(err);
       const output = stdout + stderr;
       resolve({ args, output, exitCode: err ? err.code : 0, messages: parseOutput(output) });

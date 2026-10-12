@@ -100,6 +100,20 @@ test('candidatePaths ignores the bundled copy when a path is configured', () => 
   assert.deepStrictEqual(c, ['X:\\q.exe']);
 });
 
+test('findDigiflispDirs knows the Linux and macOS install locations', () => {
+  assert.deepStrictEqual(findDigiflispDirs({}, undefined, 'linux'), ['/usr/share/digiflisp']);
+  const mac = findDigiflispDirs({ HOME: '/Users/jan' }, undefined, 'darwin');
+  assert.strictEqual(mac[0], '/Applications/Digiflisp.app/Contents/MacOS');
+  assert.strictEqual(mac[1], path.join('/Users/jan', 'Applications', 'Digiflisp.app', 'Contents', 'MacOS'));
+  assert.deepStrictEqual(findDigiflispDirs({}, undefined, 'freebsd'), []);
+});
+
+test('parseOutput reads the Linux build output (POSIX paths)', () => {
+  // Captured from the Linux qaflisp of DigiFlisp 2.08, which exits with 0 even on errors.
+  const m = parseOutput("/tmp/qt/multi.sflisp (2) Error: Illegal character, Position[6]\n/tmp/qt/multi.sflisp (5) Error: Undefined symbol 'nirgendwo'\n-- 6 error(s).\n");
+  assert.deepStrictEqual(m.map((x) => [x.file, x.line, x.column]), [['/tmp/qt/multi.sflisp', 2, 6], ['/tmp/qt/multi.sflisp', 5, undefined]]);
+});
+
 if (process.platform === 'win32') {
   test('findDigiflispDirs lists GMV\\DigiFlisp* folders, newest first', () => {
     const env = { 'ProgramFiles(x86)': 'C:\\PF86', ProgramFiles: 'C:\\PF' };

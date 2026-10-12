@@ -147,7 +147,7 @@
           "type": "string",
           "default": "",
           "scope": "machine-overridable",
-          "markdownDescription": "Path to `qaflisp.exe`. If empty, it is searched for in the source file's folder and its parents up to the workspace folder, in the workspace folders, on the `PATH` and in the DigiFlisp installation folder; the copy bundled with the extension (Windows only) is used last."
+          "markdownDescription": "Path to qaflisp. If empty, it is searched for in the source file's folder and its parents up to the workspace folder, in the workspace folders, on the `PATH` and in the DigiFlisp installation folder; on Windows, the copy bundled with the extension is used last."
         },
         "flisp.assembleOnSave": {
           "type": "boolean",

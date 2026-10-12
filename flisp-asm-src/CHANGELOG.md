@@ -3,7 +3,8 @@
 ## 0.4.0
 
 - qaflisp.exe (Windows) is now bundled and used if no other copy is found.
-- qaflisp is also looked for in the DigiFlisp installation folder (`Program Files\GMV\DigiFlisp*`).
+- qaflisp is also looked for in the DigiFlisp installation folder on Windows (`Program Files\GMV\DigiFlisp*`), Linux (`/usr/share/digiflisp`) and macOS (`/Applications/Digiflisp.app`).
+- Errors are counted from qaflisp's messages, so the Linux build (which exits with 0 even on errors) is handled too.
 - First release on the Visual Studio Marketplace.
 
 ## 0.3.0
