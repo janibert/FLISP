@@ -1,0 +1,119 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "FLISP Assembly",
+  "scopeName": "source.flisp",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#label" },
+    { "include": "#directive" },
+    { "include": "#branch" },
+    { "include": "#instruction" },
+    { "include": "#custom-instruction" },
+    { "include": "#string" },
+    { "include": "#immediate" },
+    { "include": "#number" },
+    { "include": "#indexed" },
+    { "include": "#register" },
+    { "include": "#operator" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.semicolon.flisp",
+      "match": ";.*$"
+    },
+
+    "label": {
+      "comment": "Ein Label steht in Spalte 1 (oder hat einen Doppelpunkt) und ist kein Mnemonic/Direktive.",
+      "patterns": [
+        {
+          "match": "^([A-Za-z_][A-Za-z0-9_]*)(:)",
+          "captures": {
+            "1": { "name": "entity.name.function.label.flisp" },
+            "2": { "name": "punctuation.separator.label.flisp" }
+          }
+        },
+        {
+          "match": "^(?!(?i:(ORG|EQU|FCB|FCS|RMB|JSR|JMP|BSR|BRA|RTS|RTI|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS|LEASP|CMPSP|PSHCC|PULCC|LDSP|STSP|LEAX|LEAY|CMPA|CMPX|CMPY|ANDCC|ANDA|ORCC|EORA|BITA|ADCA|ADDA|SBCA|SUBA|CLRA|NEGA|DECA|INCA|TSTA|COMA|ASRA|ASLA|LSLA|LSRA|ROLA|RORA|PSHA|PSHX|PSHY|PSHC|PULA|PULX|PULY|PULC|LDA|LDX|LDY|STA|STX|STY|TFR|EXG|CLR|NEG|DEC|INC|TST|COM|ORA|ASR|ASL|LSL|LSR|ROL|ROR|NOP|MOVE|CMJEQ))(?![A-Za-z0-9_]))([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "2": { "name": "entity.name.function.label.flisp" }
+          }
+        }
+      ]
+    },
+
+    "directive": {
+      "name": "keyword.other.directive.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])(ORG|EQU|FCB|FCS|RMB)(?![A-Za-z0-9_])"
+    },
+
+    "branch": {
+      "name": "keyword.control.flow.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])(JSR|JMP|BSR|BRA|RTS|RTI|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)(?![A-Za-z0-9_])"
+    },
+
+    "instruction": {
+      "name": "keyword.operator.mnemonic.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])(LEASP|CMPSP|PSHCC|PULCC|LDSP|STSP|LEAX|LEAY|CMPA|CMPX|CMPY|ANDCC|ANDA|ORCC|EORA|BITA|ADCA|ADDA|SBCA|SUBA|CLRA|NEGA|DECA|INCA|TSTA|COMA|ASRA|ASLA|LSLA|LSRA|ROLA|RORA|PSHA|PSHX|PSHY|PSHC|PULA|PULX|PULY|PULC|LDA|LDX|LDY|STA|STX|STY|TFR|EXG|CLR|NEG|DEC|INC|TST|COM|ORA|ASR|ASL|LSL|LSR|ROL|ROR|NOP)(?![A-Za-z0-9_])"
+    },
+
+    "custom-instruction": {
+      "name": "entity.name.function.macro.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])(MOVE|CMJEQ)(?![A-Za-z0-9_])"
+    },
+
+    "string": {
+      "name": "string.quoted.double.flisp",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.flisp", "match": "\\\\." }
+      ]
+    },
+
+    "immediate": {
+      "name": "keyword.operator.immediate.flisp",
+      "match": "#"
+    },
+
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.flisp",
+          "match": "\\$[0-9A-Fa-f]+"
+        },
+        {
+          "name": "constant.numeric.binary.flisp",
+          "match": "%[01]+"
+        },
+        {
+          "name": "constant.numeric.decimal.flisp",
+          "match": "(?<![A-Za-z0-9_$%])-?[0-9]+(?![A-Za-z0-9_])"
+        },
+        {
+          "name": "constant.character.flisp",
+          "match": "'."
+        }
+      ]
+    },
+
+    "indexed": {
+      "match": "(,)[ \\t]*([+-])?[ \\t]*(?i:(SP|PC|X|Y))[ \\t]*([+-])?",
+      "captures": {
+        "1": { "name": "punctuation.separator.operand.flisp" },
+        "2": { "name": "keyword.operator.increment.flisp" },
+        "3": { "name": "variable.language.register.flisp" },
+        "4": { "name": "keyword.operator.increment.flisp" }
+      }
+    },
+
+    "register": {
+      "name": "variable.language.register.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])(SP|PC|CC|A|X|Y)(?![A-Za-z0-9_])"
+    },
+
+    "operator": {
+      "name": "keyword.operator.flisp",
+      "match": "[+\\-*/,]"
+    }
+  }
+}

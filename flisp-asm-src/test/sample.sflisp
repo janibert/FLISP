@@ -1,0 +1,32 @@
+; Lab 4.3A - Schrittmotor im Uhrzeigersinn
+            ORG     $20
+OUTPORT     EQU     $FB
+INPORT      EQU     $FC
+
+state_vector FCB    %00000101,%00000110,%00001010,%00001001
+Count       RMB     1
+
+Start       LDA     #$05
+            STA     OUTPORT
+L2          DECA
+            CMPA    #2
+            BEQ     Start
+            LDA     n,X
+            LDA     A,Y
+            LDA     ,X+
+            STA     ,-Y
+            PSHA
+            PULCC
+            TFR     A,CC
+            LSLA
+            JSR     Delay
+            BRA     L2
+
+Delay       NOP                 ; Verzoegerung
+            RTS
+
+MorseCode   FCB     2,%01000000 ; Morsecode fuer 'A'
+            FCS     "HELLO"
+
+            ORG     $FF
+            FCB     Start

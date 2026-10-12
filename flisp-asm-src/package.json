@@ -1,0 +1,61 @@
+{
+  "name": "flisp-asm",
+  "displayName": "FLISP Assembly",
+  "description": "Syntax highlighting for FLISP (FLexible Instruction Set Processor) assembly, as used in the Grudat course labs with DigiFlisp.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "scripts": {
+    "test": "node test/tokenize-test.js",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.1.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "flisp",
+        "aliases": [
+          "FLISP Assembly",
+          "flisp"
+        ],
+        "extensions": [
+          ".sflisp"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "fmem",
+        "aliases": [
+          "FLISP Memory Image",
+          "fmem"
+        ],
+        "extensions": [
+          ".fmem"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "flisp",
+        "scopeName": "source.flisp",
+        "path": "./syntaxes/flisp.tmLanguage.json"
+      },
+      {
+        "language": "fmem",
+        "scopeName": "source.fmem",
+        "path": "./syntaxes/fmem.tmLanguage.json"
+      }
+    ]
+  }
+}
