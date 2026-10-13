@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build:grammar": "node scripts/build-grammar.js",
-    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/tokenize-test.js",
+    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/format-test.js && node test/tokenize-test.js",
     "vscode:prepublish": "node scripts/build-grammar.js",
     "package": "vsce package",
     "publish": "vsce publish"
@@ -116,6 +116,17 @@
             }
           }
         ]
+      },
+      "[flisp]": {
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.rulers": [
+          12,
+          20,
+          36
+        ],
+        "editor.guides.indentation": false
       }
     },
     "commands": [
@@ -125,6 +136,16 @@
         "category": "FLISP",
         "icon": "$(play)",
         "enablement": "resourceLangId == flisp"
+      },
+      {
+        "command": "flisp.nextColumn",
+        "title": "Move to next column",
+        "category": "FLISP"
+      },
+      {
+        "command": "flisp.previousColumn",
+        "title": "Move to previous column",
+        "category": "FLISP"
       }
     ],
     "menus": {
@@ -146,6 +167,14 @@
         {
           "command": "flisp.assemble",
           "when": "editorLangId == flisp"
+        },
+        {
+          "command": "flisp.nextColumn",
+          "when": "false"
+        },
+        {
+          "command": "flisp.previousColumn",
+          "when": "false"
         }
       ]
     },
@@ -154,6 +183,16 @@
         "command": "flisp.assemble",
         "key": "f7",
         "when": "editorLangId == flisp"
+      },
+      {
+        "command": "flisp.nextColumn",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == flisp && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
+      },
+      {
+        "command": "flisp.previousColumn",
+        "key": "shift+tab",
+        "when": "editorTextFocus && editorLangId == flisp && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
       }
     ],
     "configuration": {
@@ -184,6 +223,21 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Generate source-level debug information — qaflisp option `-g`."
+        },
+        "flisp.columns": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "default": [
+            12,
+            20,
+            36
+          ],
+          "markdownDescription": "Start columns of mnemonic, operand and comment in `.sflisp` files (the label starts in column 0). Used by Tab / Shift+Tab and by *Format Document*. If you change them, also adjust `editor.rulers` for `[flisp]`."
         }
       }
     }

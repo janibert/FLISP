@@ -7,6 +7,7 @@ const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
 const instructionHover = require('./instructionHover');
 const { analyzeFmem } = require('./fmem');
+const format = require('./format');
 
 const SELECTOR = { language: 'flisp' };
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
@@ -159,8 +160,61 @@ function register(context, qaflispDiagnostics) {
         for (const s of [...defs, ...refs]) edit.replace(doc.uri, rangeOf(s), newName);
         return edit;
       },
+    }),
+
+    // Column layout: formatter and Tab / Shift+Tab to the next / previous column.
+    vscode.languages.registerDocumentFormattingEditProvider(SELECTOR, {
+      provideDocumentFormattingEdits: (doc) => formatEdits(doc, 0, doc.lineCount - 1),
+    }),
+    vscode.languages.registerDocumentRangeFormattingEditProvider(SELECTOR, {
+      provideDocumentRangeFormattingEdits: (doc, range) => formatEdits(doc, range.start.line, range.end.line),
+    }),
+    vscode.commands.registerTextEditorCommand('flisp.nextColumn', (editor, edit) => {
+      const columns = columnsFor(editor.document);
+      const tabSize = Number(editor.options.tabSize) || 4;
+      for (const sel of editor.selections) {
+        const text = editor.document.lineAt(sel.active.line).text;
+        const col = format.visualColumn(text, sel.active.character, tabSize);
+        edit.insert(sel.active, ' '.repeat(format.nextStop(col, columns, tabSize) - col));
+      }
+    }),
+    vscode.commands.registerTextEditorCommand('flisp.previousColumn', (editor, edit) => {
+      const columns = columnsFor(editor.document);
+      const tabSize = Number(editor.options.tabSize) || 4;
+      const deletions = [];
+      const moves = editor.selections.map((sel) => {
+        const pos = sel.active;
+        const text = editor.document.lineAt(pos.line).text;
+        const col = format.visualColumn(text, pos.character, tabSize);
+        const stop = format.previousStop(col, columns, tabSize);
+        // Character position of the stop (lines with tabs: walk back until the visual column fits).
+        let ch = pos.character;
+        while (ch > 0 && format.visualColumn(text, ch, tabSize) > stop) ch--;
+        const between = text.slice(ch, pos.character);
+        // Only blanks before the cursor: remove them; otherwise just move the cursor.
+        if (/^[ \t]+$/.test(between)) deletions.push(new vscode.Range(pos.line, ch, pos.line, pos.character));
+        return new vscode.Selection(pos.line, ch, pos.line, ch);
+      });
+      // Deletions go through the command's own edit builder, so they are done when the command returns.
+      if (deletions.length) deletions.forEach((r) => edit.delete(r));
+      else editor.selections = moves;
     })
   );
+
+  function columnsFor(doc) {
+    return format.normalizeColumns(vscode.workspace.getConfiguration('flisp', doc.uri).get('columns'));
+  }
+
+  function formatEdits(doc, first, last) {
+    const columns = columnsFor(doc);
+    const edits = [];
+    for (let line = first; line <= last; line++) {
+      const old = doc.lineAt(line).text;
+      const neu = format.formatLine(old, columns);
+      if (neu !== old) edits.push(vscode.TextEdit.replace(doc.lineAt(line).range, neu));
+    }
+    return edits;
+  }
 
   vscode.workspace.textDocuments.forEach(refresh);
   return { refresh };

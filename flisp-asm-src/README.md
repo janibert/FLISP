@@ -63,6 +63,16 @@ The extension knows every label and `EQU` constant in the file:
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
 
+## Columns: Tab and formatting
+
+FLISP code reads best as a table: label, mnemonic, operand, comment. The extension keeps these columns aligned (default: columns 0, 12, 20 and 36):
+
+- **Tab** jumps to the next column, filling with blanks; **Shift+Tab** goes back to the previous one (removing the blanks before the cursor). With a selection, Tab indents as usual.
+- **Format Document** (`Shift+Alt+F`) or *Format Selection* aligns all lines. Only blanks change, never the meaning: comments without `;` stay comments, strings stay untouched, and lines with a structural error (e.g. an indented label) are left as they are, so the live check can still point to them.
+- Vertical **rulers** show the column borders; VS Code's indentation guides (useful for nested code, not for assembly) are switched off for FLISP. `.sflisp` files use blanks instead of tab characters.
+
+To format on every save, add `"[flisp]": { "editor.formatOnSave": true }` to your settings. Other columns: set `flisp.columns` (and `editor.rulers` for `[flisp]` to match).
+
 ## Instruction reference on hover
 
 Hover over a mnemonic to see what it does — tailored to the line you are on:
@@ -104,6 +114,7 @@ Feedback from Linux and macOS users is welcome — please open an issue.
 | `flisp.listFile` | `true` | create a `.lst` list file (`-L`) |
 | `flisp.warnings` | `true` | report warnings (`-w`) |
 | `flisp.debugInfo` | `false` | generate source-level debug information (`-g`) |
+| `flisp.columns` | `[12, 20, 36]` | start columns of mnemonic, operand and comment, for Tab and formatting |
 
 Assembling runs an external program and is therefore disabled in [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust); highlighting works everywhere.
 

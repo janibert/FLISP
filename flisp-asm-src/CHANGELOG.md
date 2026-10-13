@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Column layout for `.sflisp`: Tab / Shift+Tab jump to the next / previous column (label, mnemonic, operand, comment; default 0, 12, 20, 36, setting `flisp.columns`), *Format Document* aligns all lines without changing their meaning, rulers show the columns, and blanks are used instead of tab characters.
 - Syntax check for `.fmem` files while typing: unknown commands (with a hint for typos), invalid hex addresses and values, missing `=` or value, commands without `#`, and addresses set twice. Messages explain what DigiFlisp silently does instead (e.g. `2G` is read as `20`); `#setRegister` gets a warning because it had no effect in DigiFlisp 2.08.
 
 ## 0.7.0
