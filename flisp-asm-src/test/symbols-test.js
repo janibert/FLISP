@@ -133,8 +133,10 @@ const PROBES = {
   multiple: '\tORG\t$20\nL\tNOP\nL\tNOP\nK\tEQU\t1\nK\tEQU\t2\nM\tNOP\nM\tEQU\t2\n',
   afterEnd: '\tORG\t$20\n\tBRA\tLate\n\tEND\nLate\tNOP\n',
   structure: '\tORG\t$20\n Start\tLDA\t#1\n  Alone\n\tLDAA\t#1\nLDA\t#1\n1abc\tNOP\n\tlda\t#1\n',
+  operands: '\tORG\t$20\n\tSTA\t#5\n\tCLR\t,X+\n\tTFR\tA,X\n\tLDA\n\tANDCC\t$20\n\tJMP\t#5\n\tBEQ\t3,X\n\tLEAX\t3,Y\n' +
+    '\tEXG\tA,X\n\tLDA\t#5,X\n\tLSL\n\tCMPSP\t3,X\n\tLDA\t,Z+\n\tSTA\t3,PC\n\tLDA\tA,SP\n\tLDA\t,X\n\tEXG\tY,X\n\tLDA\t-3,y\n',
 };
-const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label/;
+const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label|Illegal [Aa]ddressing [Mm]ode|Illegal register combination|Syntax Error/;
 
 if (realExe) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flisp-symbols-'));

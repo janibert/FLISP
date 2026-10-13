@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Live check for operands: addressing modes an instruction does not have (`STA #5`, `CLR ,X+`), wrong register pairs (`TFR A,X`), missing operands and malformed operands (`#5,X`, `3,PC`, `A,SP`, `,X`) are underlined while typing; the message lists the allowed forms.
 - Instruction reference on hover: hovering a mnemonic shows the addressing mode, operation, opcode, bytes and cycles of the variant used on that line, the flags it changes, and a table of all variants. Directives and lab instructions get a short explanation. Opcodes and lengths are checked against qaflisp.
 
 ## 0.6.0

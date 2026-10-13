@@ -9,6 +9,7 @@ const path = require('path');
 const { INSTRUCTIONS, MODES, DIRECTIVES, LAB } = require('../src/instructions');
 const mnemonics = require('../src/mnemonics');
 const { hoverAt, modeOf, operationOf } = require('../src/instructionHover');
+const { checkOperand } = require('../src/addressing');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 
 const tests = [];
@@ -64,7 +65,7 @@ test('hoverAt: variant of the line, unsupported mode, directive, lab instruction
   assert.match(h.markdown, /opcode `F5` · 1 byte · 4 cycles/);
   assert.deepStrictEqual([h.start, h.end], [12, 15]);
   assert.match(hoverAt('\tSTA\t#5', 2).markdown, /STA has no immediate addressing/);
-  assert.match(hoverAt('\tTFR\tA,X', 2).markdown, /not a valid register pair/);
+  assert.match(hoverAt('\tTFR\tA,X', 2).markdown, /Illegal register combination 'A,X'/);
   assert.match(hoverAt('\tORG\t$20', 2).markdown, /assembler directive/);
   assert.match(hoverAt('\tMOVE\t#1,2', 2).markdown, /Lab-specific/);
   assert.match(hoverAt('\tPSHCC', 2).markdown, /same as `PSHC`/);
@@ -77,9 +78,24 @@ test('hoverAt: compact form for one addressing mode, legend only for used flag s
   assert.match(rts, /`M\(SP\) → PC; SP \+ 1 → SP` · opcode `43` · 1 byte · 2 cycles/);
   assert.match(rts, /\*\*Flags\*\* \(– unchanged\)/);
   assert.match(hoverAt('\tBEQ\tLoop', 2).markdown, /· Relative `BEQ Adr`/);
-  assert.match(hoverAt('\tANDCC\t$20', 2).markdown, /\*\*This line:\*\* ANDCC has no absolute addressing/);
+  assert.match(hoverAt('\tANDCC\t$20', 2).markdown, /\*\*This line:\*\* Illegal addressing mode — ANDCC has no absolute addressing/);
   assert.match(hoverAt('\tLDA\t#5', 2).markdown, /\*\*Flags\*\* \(Δ changed, 0 cleared, – unchanged\)/);
   assert.match(hoverAt('\tCLR\t$20', 2).markdown, /\*\*Flags\*\* \(0 cleared, 1 set\)/);
+});
+
+test('checkOperand: illegal mode, register pair, missing and malformed operands', () => {
+  const kind = (mn, op) => (checkOperand(mn, op) || {}).kind;
+  assert.strictEqual(kind('LDA', '#5'), undefined);
+  assert.strictEqual(kind('STA', '#5'), 'mode');
+  assert.strictEqual(kind('CLR', ',X+'), 'mode');
+  assert.strictEqual(kind('BEQ', '3,X'), 'mode');
+  assert.strictEqual(kind('TFR', 'A,X'), 'pair');
+  assert.strictEqual(kind('EXG', 'y,x'), undefined);
+  assert.strictEqual(kind('LDA', undefined), 'missing');
+  assert.strictEqual(kind('RTS', undefined), undefined);
+  for (const op of ['#5,X', ',Z+', '3,PC', 'A,SP', ',X']) assert.strictEqual(kind('LDA', op), 'bad', op);
+  assert.match(checkOperand('STA', '#5').message, /allowed: Adr  n,SP/);
+  assert.match(checkOperand('LDA', ',X').message, /write 0,X/);
 });
 
 // --- Comparison with the real qaflisp ----------------------------------------

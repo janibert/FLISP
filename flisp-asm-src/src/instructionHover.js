@@ -3,31 +3,7 @@
 
 const { INSTRUCTIONS, MODES, DIRECTIVES, LAB } = require('./instructions');
 const { parseLine } = require('./symbols');
-
-const BRANCHES = new Set(Object.entries(INSTRUCTIONS)
-  .filter(([, d]) => d.variants.some((v) => v.mode === 'rel')).map(([mn]) => mn));
-
-// Addressing mode of an operand as written in the source.
-function modeOf(mnemonic, operand) {
-  const mn = mnemonic.toUpperCase();
-  if (!operand) return { mode: 'inh' };
-  const o = operand.trim();
-  if (mn === 'TFR' || mn === 'EXG') return { mode: 'reg', operand: o.toUpperCase() };
-  if (o.startsWith('#')) return { mode: 'imm' };
-  let m = /^,([+-]?)([XY])([+-]?)$/i.exec(o);
-  if (m) {
-    const r = m[2].toLowerCase();
-    if (m[1] === '+') return { mode: `inc${r}` };
-    if (m[1] === '-') return { mode: `dec${r}` };
-    if (m[3] === '+') return { mode: `${r}inc` };
-    if (m[3] === '-') return { mode: `${r}dec` };
-  }
-  m = /^A,([XY])$/i.exec(o);
-  if (m) return { mode: `a${m[1].toLowerCase()}` };
-  m = /^.+,(SP|X|Y)$/i.exec(o);
-  if (m) return { mode: m[1].toUpperCase() === 'SP' ? 'nsp' : `n${m[1].toLowerCase()}` };
-  return { mode: BRANCHES.has(mn) ? 'rel' : 'abs' };
-}
+const { modeOf, checkOperand } = require('./addressing');
 
 function variantSyntax(mn, v) {
   if (v.mode === 'reg') return `${mn} ${v.operand}`;
@@ -84,9 +60,8 @@ function instructionMarkdown(mnemonic, operand) {
 
   const used = modeOf(mn, operand);
   const v = d.variants.find((x) => x.mode === used.mode && (used.mode !== 'reg' || x.operand === used.operand));
-  const wrongMode = !v && (used.mode === 'reg'
-    ? `\`${mn} ${operand}\` is not a valid register pair for ${mn}.`
-    : `${mn} has no ${MODES[used.mode].name.toLowerCase()} addressing (\`${MODES[used.mode].syntax || 'no operand'}\`).`);
+  const problem = !v && checkOperand(mn, operand);
+  const wrongMode = problem && problem.message;
 
   if (d.variants.length === 1) {
     // Only one addressing mode: no "this line" section, just the facts.

@@ -57,7 +57,7 @@ The extension knows every label and `EQU` constant in the file:
 | Overview of all labels | *Outline* view, breadcrumbs, or `Ctrl+Shift+O` — code labels, data (`FCB`, `FCS`, `RMB`) and constants (`EQU`) have their own icons |
 | Show the definition | hover over a symbol: its defining line and the number of uses |
 | Rename | `F2` on a symbol renames its definition and every use |
-| Check while typing | undefined symbols, labels defined twice, unknown mnemonics and labels that do not start in column 1 are underlined immediately, without assembling |
+| Check while typing | undefined symbols, labels defined twice, unknown mnemonics, labels that do not start in column 1, addressing modes an instruction does not have (`STA #5`), wrong register pairs (`TFR A,X`) and missing or malformed operands are underlined immediately, without assembling — with the allowed forms in the message |
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
 
@@ -135,7 +135,7 @@ So a newer qaflisp in your workspace, on the `PATH` or next to DigiFlisp always 
 
 ## Limitations
 
-No autocompletion and no debugger. While you type, symbols and the line structure are checked (undefined or duplicate symbols, unknown mnemonics, labels not in column 1); all other errors, such as wrong operands or values out of range, are found when you assemble. Labels and symbols work within one file. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
+No autocompletion and no debugger. While you type, symbols, the line structure and the addressing modes are checked; other errors, such as values out of range or branch targets too far away, are found when you assemble. Labels and symbols work within one file. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
 
 ## License
 

@@ -6,6 +6,7 @@
 //   - nothing after END is assembled
 
 const { isMnemonic, isInherent, takesOperand, isRegister } = require('./mnemonics');
+const { checkOperand } = require('./addressing');
 
 const IDENT = /[A-Za-z_][A-Za-z0-9_]*/y;
 
@@ -118,6 +119,12 @@ function lineProblems(p, line) {
     const hint = looksLikeLabel ? ` — if '${word.replace(/:$/, '')}' is a label, it must start in column 1` : '';
     return [at(p.mnemonic, 'error', `Illegal mnemonic '${word}'${hint}`)];
   }
+  if (p.mnemonic) {
+    // Addressing mode / operand of an instruction (qaflisp: "Illegal Addressing Mode",
+    // "Illegal register combination", "Syntax Error").
+    const problem = checkOperand(p.mnemonic.text, p.operand ? p.operand.text : undefined);
+    if (problem) return [at(p.operand || p.mnemonic, 'error', problem.message)];
+  }
   return [];
 }
 
@@ -138,7 +145,9 @@ function analyze(source) {
         kind: kindOf(mnemonic), mnemonic, operand: p.operand ? p.operand.text : undefined, text,
       });
     }
-    if (p.operand) {
+    // A malformed operand (e.g. ",Z+") is reported as such; its words are not symbol uses.
+    const malformed = p.operand && (checkOperand(mnemonic, p.operand.text) || {}).kind === 'bad';
+    if (p.operand && !malformed) {
       for (const s of operandSymbols(p.operand)) references.push({ ...s, line });
     }
     if (mnemonic && mnemonic.toUpperCase() === 'END') break; // qaflisp stops here

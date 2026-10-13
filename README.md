@@ -87,6 +87,7 @@ src/instructions.js              instruction set: variants, opcodes, bytes, cycl
                                  directives and lab instructions (single source)
 src/mnemonics.js                 mnemonic lists derived from src/instructions.js, register names
 src/instructionHover.js          hover text for mnemonics and directives (no VS Code API)
+src/addressing.js                addressing mode of an operand, operand check (no VS Code API)
 src/qaflisp.js                   finding and running qaflisp, parsing its output
 bin/qaflisp.exe                  bundled qaflisp 1.3 (GMV, see THIRD-PARTY-NOTICES.md)
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)

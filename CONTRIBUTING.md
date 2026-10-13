@@ -56,6 +56,17 @@ The live symbol check (`src/symbols.js`) follows these rules; `test/symbols-test
 - A mnemonic in column 1 (`LDA #1` without indentation) is read as a label: *Illegal mnemonic*. A digit or `*` in column 1 gives *Illegal label*.
 - Mnemonics are accepted in any case (`lda`).
 
+### Wrong operands
+
+| Example | qaflisp message |
+|---|---|
+| addressing mode the instruction does not have: `STA #5`, `CLR ,X+`, `ANDCC $20`, `JMP #5`, `BEQ 3,X`, `LEAX 3,Y` | *Illegal Addressing Mode* (`BEQ 3,X`: *Illegal addressing mode*) |
+| register pair not allowed: `TFR A,X`, `EXG A,X` | *Illegal register combination* |
+| missing operand: `LDA`, `LSL` | *Syntax Error* |
+| malformed operand: `#5,X`, `,Z+`, `3,PC`, `A,SP`, `,X` (use `0,X`) | *Syntax Error* |
+
+`EXG` accepts both register orders. The live check reports the same lines with the allowed forms (`src/addressing.js`).
+
 ### Phase error between passes
 
 qaflisp works in two passes: pass 1 assigns an address to every label, pass 2 generates the code. If a label ends up at a different address in pass 2, qaflisp reports *Phase error between passes* at that label. Two causes are known:
