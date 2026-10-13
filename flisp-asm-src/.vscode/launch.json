@@ -1,0 +1,17 @@
+{
+  // F5 starts a second VS Code window (Extension Development Host)
+  // with this extension loaded. Used when flisp-asm-src itself is the workspace;
+  // the repository root has its own launch.json.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run FLISP extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "${workspaceFolder}/test"
+      ]
+    }
+  ]
+}

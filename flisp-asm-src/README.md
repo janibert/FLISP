@@ -14,6 +14,7 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 |---|---|
 | Comments | `; text to end of line` and everything after the operand
 | Labels | name in column 1, optionally followed by `:` |
+| Symbols | labels and `EQU` constants used in an operand, e.g. `BRA Loop`, `STA LEDS` |
 | Assembler directives | `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END` |
 | Flow-control instructions | `JMP`, `JSR`, `BSR`, `BRA`, `RTS`, `RTI`, all `B…` branches |
 | Other instructions | from the FLISP handbook, plus aliases `ASLA`/`ASL`, `PSHCC`, `PULCC` |

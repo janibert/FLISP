@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Symbols used in operands (labels, `EQU` constants) are highlighted (`variable.parameter.symbol`).
 - `package.json`: `author` field.
 - README: `LICENSE` and `THIRD-PARTY-NOTICES.md` are links to the files on GitHub.
 

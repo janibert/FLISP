@@ -30,7 +30,7 @@ npm run package      # creates flisp-asm-<version>.vsix
 
 The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/` and `node_modules/` out of the package, and every `.exe` except `bin/qaflisp.exe`.
 
-To develop without packaging: open the folder in VS Code and press `F5`. This launches a second VS Code window with the extension loaded — open a `.sflisp` file there and check the highlighting directly.
+To develop without packaging: open the repository folder in VS Code and press `F5` (configuration *Run FLISP extension* in `.vscode/launch.json`). This launches a second VS Code window with the extension from `flisp-asm-src/` loaded and the `test/` folder open — open a `.sflisp` file there, e.g. `running-light.sflisp`, and check the highlighting directly.
 
 ### The tests
 

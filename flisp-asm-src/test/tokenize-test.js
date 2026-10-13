@@ -95,6 +95,20 @@ const expectations = [
   ['sample.sflisp', 'BEQ     Start', 'Start', '!entity.name.function.label'],
   ['sample.sflisp', 'LDA         #1', 'LDA', 'invalid.illegal'],
 
+  // Symbols used in operands
+  ['sample.sflisp', 'BEQ     Start', 'Start', 'variable.parameter.symbol'],
+  ['sample.sflisp', 'STA     OUTPORT', 'OUTPORT', 'variable.parameter.symbol'],
+  ['sample.sflisp', 'JSR     Delay', 'Delay', 'variable.parameter.symbol'],
+  ['sample.sflisp', '#K-1', 'K', 'variable.parameter.symbol'],
+  ['sample.sflisp', 'MOVE    #1,OUTPORT', 'OUTPORT', 'variable.parameter.symbol'],
+  ['sample.sflisp', 'END     Start', 'Start', 'variable.parameter.symbol'],
+  ['sample.sflisp', 'LDA     A,Y', 'A', '!variable.parameter.symbol'],
+  ['sample.sflisp', 'TFR     A,CC', 'CC', '!variable.parameter.symbol'],
+  ['sample.sflisp', 'ldx     #$ff', '$ff', 'constant.numeric.hex'],
+  ['sample.sflisp', "#'A'", "'A'", '!variable.parameter.symbol'],
+  ['sample.sflisp', '#K + 1', '+ 1', '!variable.parameter.symbol'],
+  ['sample.sflisp', 'END     Start', 'Startadresse', '!variable.parameter.symbol'],
+
   // Kommentare: mit ';' und - wie bei qaflisp - alles nach dem Operand
   ['sample.sflisp', 'MorseCode', "; Morsecode fuer 'A'", 'comment.line'],
   ['sample.sflisp', 'MorseCode', '%01000000', 'constant.numeric.binary'],

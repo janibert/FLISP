@@ -76,6 +76,7 @@
         { "include": "#number" },
         { "include": "#indexed" },
         { "include": "#register" },
+        { "include": "#symbol" },
         { "include": "#separator" },
         { "include": "#operator" },
         { "include": "#trailing-comment" }
@@ -139,6 +140,12 @@
     "register": {
       "name": "variable.language.register.flisp",
       "match": "(?i)(?<![A-Za-z0-9_])(SP|PC|CC|A|X|Y)(?![A-Za-z0-9_])"
+    },
+
+    "symbol": {
+      "comment": "Verwendung eines Symbols im Operanden (Label oder EQU-Konstante). Ob es definiert ist, kann die Grammatik nicht pruefen - sie sieht nur die aktuelle Zeile. Register werden vorher erkannt.",
+      "name": "variable.parameter.symbol.flisp",
+      "match": "(?<![A-Za-z0-9_$%])[A-Za-z_][A-Za-z0-9_]*"
     },
 
     "separator": {

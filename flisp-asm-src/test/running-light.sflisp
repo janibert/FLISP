@@ -1,0 +1,39 @@
+; Running light for DigiFlisp
+; Shows the patterns of a table on the LEDs, one after another.
+; The DIL switches set the speed.
+
+LEDS        EQU     $FC             ; output port: bargraph
+SWITCHES    EQU     $FB             ; input port: DIL switches
+END_MARK    EQU     0               ; end of the pattern table
+
+            ORG     $00             ; ---- data ----
+Patterns    FCB     %00000001,%00000010,%00000100,%00001000
+            FCB     %00010000,%00100000,%01000000,%10000000
+            FCB     END_MARK
+Title       FCS     "RUNNING LIGHT"
+Count       RMB     1               ; patterns shown so far
+
+            ORG     $20             ; ---- program ----
+Start       LDSP    #$FB            ; stack grows down from $FA
+            CLR     Count
+Restart     LDX     #Patterns
+Next        LDA     ,X+             ; read pattern, then X+1
+            CMPA    #END_MARK
+            BEQ     Restart         ; end of table: start over
+            STA     LEDS
+            INC     Count
+            JSR     Delay
+            BRA     Next
+
+; Delay: the higher the switches, the longer the wait
+Delay       PSHA                    save A
+            LDA     SWITCHES
+            ORA     #1              ; at least one loop
+Wait        DECA
+            BNE     Wait
+            PULA                    restore A
+            RTS
+
+            ORG     $FF             ; reset vector
+            FCB     Start
+            END     Start
