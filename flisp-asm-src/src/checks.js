@@ -197,7 +197,18 @@ function valueProblems(p, line, valueOf, firstDef, layout) {
     }
     if (string.type !== 'string') return [at(0, o.length, 'error', 'fcsNotString', 'Bad operand syntax — FCS takes a string in double quotes, e.g. FCS "TEXT"; for single bytes use FCB')];
     if (!string.closed) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
-    return [];
+    // Accepted silently by qaflisp, but hardly meant: a string starting with "" and text after the string.
+    const out = [];
+    if (o.startsWith('""')) {
+      out.push(at(0, string.end, 'warning', 'fcsQuoteFirst', `qaflisp reads ${o.slice(0, string.end)} as the string ${o.slice(1, string.end - 1)} — the second '"' is its first character, not the end of an empty string`));
+    }
+    if (string.end < o.length) {
+      const rest = o.slice(string.end);
+      const hint = rest.startsWith(',') ? `for more bytes add a line FCB ${rest.slice(1).replace(/#/g, '') || '0'}`
+        : rest.startsWith('"') ? 'write \\" for a \'"\' inside the string' : 'put a blank before a comment';
+      out.push(at(string.end, o.length, 'warning', 'fcsIgnoredRest', `'${rest}' after the closing '"' is silently ignored by qaflisp — FCS takes one string; ${hint}`));
+    }
+    return out;
   }
   // A syntax problem is the only message of the line; values out of range are all reported.
   const out = [];

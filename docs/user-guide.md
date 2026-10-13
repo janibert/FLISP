@@ -67,6 +67,7 @@ A label may be named like a mnemonic (`Neg EQU 3`, `End NOP`) — qaflisp accept
 | `ORG`, `RMB`, `FCB`, `FCS`, `K EQU` without a value | error — the directive needs an operand |
 | `EQU 5` without a name in column 1 | error — no label for `EQU` |
 | `FCS Text`, `FCS 'A'`, `FCS ""` | error — `FCS` needs a string with at least one character; for single bytes use `FCB` |
+| `FCS ""x"`, `FCS "a""b"`, `FCS "a"Foo` | warning — qaflisp silently takes the second `"` as the first character, or ignores what follows the string; write `\"` for a quote inside a string |
 | `ASLA Data`, `NOP #5` | warning — the instruction has no operand, qaflisp silently treats the rest as a comment; for `ASLA Data` the message suggests `ASL Data` |
 
 ![Warning on ASLA LEDS: ASLA has no operand, qaflisp silently treats LEDS as a comment; to work on memory write ASL LEDS](../flisp-asm-src/images/live-check-warning.png)

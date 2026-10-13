@@ -47,6 +47,15 @@ test('directives without operand or label; the layout goes on after them as in q
   assert.deepStrictEqual(a.layout.lines.get(9), { address: 0x20, size: 1 });
 });
 
+test('FCS: warnings for what qaflisp does silently ("" at the start, text after the string)', () => {
+  const kinds = (src) => analyze(src).diagnostics.map((d) => [d.line, d.severity, d.kind]);
+  assert.deepStrictEqual(kinds('\tFCS\t""x"\n\tFCS\t"a""b"\n\tFCS\t"a"Foo\n\tFCS\t"" ab"cd\n'), [
+    [0, 'warning', 'fcsQuoteFirst'], [1, 'warning', 'fcsIgnoredRest'], [2, 'warning', 'fcsIgnoredRest'],
+    [3, 'warning', 'fcsQuoteFirst'], [3, 'warning', 'fcsIgnoredRest'],
+  ]);
+  assert.deepStrictEqual(kinds('\tFCS\t"a\\"b"\n\tFCS\t"a b" ; c\n'), []);
+});
+
 test('an undefined start symbol after END is only a warning, as in qaflisp', () => {
   const a = analyze('Start\tNOP\n\tEND\tstart\n');
   assert.deepStrictEqual(a.diagnostics.map((d) => [d.line, d.severity, d.kind]), [[1, 'warning', 'undefinedStartSymbol']]);

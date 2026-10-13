@@ -51,6 +51,7 @@
    "13:20-26 error: Branch target 440 ($1B8) is 398 bytes ahead — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
    "14:20-21 error: Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)",
    "15:20-26 error: Bad operand '#(1,2)' — immediate data cannot be combined with an index register",
+   "16:23-25 warning: ',3' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; for more bytes add a line FCB 3",
    "20:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
    "22:21-22 error: Integer divide by zero",
    "23:23-24 error: Integer divide by zero"
@@ -234,8 +235,13 @@
   "diagnostics": [
    "2:5-7 error: Bad operand syntax: empty string — FCS needs at least one character; qaflisp takes the second '\"' as a character and reads on to the end of the line",
    "3:5-11 error: Bad operand syntax: empty string — FCS needs at least one character; qaflisp takes the second '\"' as a character and reads on to the end of the line",
+   "4:5-11 warning: qaflisp reads \"\" ab\" as the string \" ab — the second '\"' is its first character, not the end of an empty string",
+   "4:11-13 warning: 'cd' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; put a blank before a comment",
+   "5:5-9 warning: qaflisp reads \"\"x\" as the string \"x — the second '\"' is its first character, not the end of an empty string",
    "6:5-9 error: Bad operand syntax: empty string — FCS needs at least one character; qaflisp takes the second '\"' as a character and reads on to the end of the line",
+   "7:8-11 warning: '\"b\"' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; write \\\" for a '\"' inside the string",
    "8:5-8 error: Bad operand syntax — FCS takes a string in double quotes, e.g. FCS \"TEXT\"; for single bytes use FCB",
+   "9:8-11 warning: 'Foo' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; put a blank before a comment",
    "10:5-8 error: Bad operand syntax — FCS takes a string in double quotes, e.g. FCS \"TEXT\"; for single bytes use FCB"
   ],
   "layout": [
@@ -553,6 +559,7 @@
    "2:22-23 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
    "3:21-22 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
    "4:23-24 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "8:24-27 warning: ',#0' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; for more bytes add a line FCB 0",
    "9:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU 1",
    "11:21-22 error: Illegal character '#' — directives take plain values without '#': write FCB -1"
   ],
@@ -574,6 +581,8 @@
  },
  "probes/dirhash-w.sflisp": {
   "diagnostics": [
+   "2:24-27 warning: ',#0' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; for more bytes add a line FCB 0",
+   "3:24-25 warning: '#' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; put a blank before a comment",
    "4:20-21 error: Bad operand syntax — FCS takes a string without '#', e.g. FCS \"TEXT\""
   ],
   "layout": [
@@ -2382,6 +2391,8 @@
  },
  "probes/where-g.sflisp": {
   "diagnostics": [
+   "2:24-26 warning: '+1' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; put a blank before a comment",
+   "3:23-25 warning: ',K' after the closing '\"' is silently ignored by qaflisp — FCS takes one string; for more bytes add a line FCB K",
    "4:20-25 error: Illegal register combination 'A+0,X' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y"
   ],
   "layout": [
