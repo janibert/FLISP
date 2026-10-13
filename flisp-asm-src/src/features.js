@@ -24,6 +24,9 @@ const COMPLETION_KIND = {
 
 const SELECTOR = { language: 'flisp' };
 const FMEM = { language: 'fmem' };
+// Documents that get live diagnostics: the user's files, not e.g. the git: copy in a diff view
+// (its messages would show up twice in Problems).
+const CHECKED_SCHEMES = new Set(['file', 'untitled', 'vscode-vfs', 'vscode-remote']);
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
 const SYMBOL_KIND = {
   code: vscode.SymbolKind.Function,
@@ -63,6 +66,7 @@ function register(context, qaflispDiagnostics) {
   };
 
   function refresh(doc) {
+    if (doc.isClosed || !CHECKED_SCHEMES.has(doc.uri.scheme)) return;
     if (doc.languageId === 'fmem') {
       live.set(doc.uri, analyzeFmem(doc.getText()).map((d) => toDiagnostic(d, 'fmem')));
       return;
@@ -85,8 +89,11 @@ function register(context, qaflispDiagnostics) {
     vscode.workspace.onDidOpenTextDocument(refresh),
     vscode.workspace.onDidChangeTextDocument((e) => refreshSoon(e.document)),
     vscode.workspace.onDidCloseTextDocument((doc) => {
+      const key = doc.uri.toString();
+      clearTimeout(timers.get(key)); // a pending refresh would bring the diagnostics back
+      timers.delete(key);
       live.delete(doc.uri);
-      cache.delete(doc.uri.toString());
+      cache.delete(key);
     }),
 
     vscode.languages.registerDefinitionProvider(SELECTOR, {

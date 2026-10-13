@@ -50,6 +50,21 @@ test('live check: an undefined symbol is reported and disappears when it is fixe
   await diagnosticsWhen(doc, (l) => l.length === 0, 'no diagnostics expected after the fix');
 });
 
+test('live check: documents of other schemes (a git: copy in a diff view) get no diagnostics', async () => {
+  const provider = vscode.workspace.registerTextDocumentContentProvider('flisptest', {
+    provideTextDocumentContent: () => `${SOURCE}\tBRA\tStrat\n`,
+  });
+  try {
+    const doc = await vscode.workspace.openTextDocument(vscode.Uri.parse('flisptest:/copy.sflisp'));
+    await vscode.window.showTextDocument(doc);
+    assert.strictEqual(doc.languageId, 'flisp');
+    await sleep(800);
+    assert.deepStrictEqual(vscode.languages.getDiagnostics(doc.uri), []);
+  } finally {
+    provider.dispose();
+  }
+});
+
 test('hover: address of a label, description of an instruction', async () => {
   const doc = await openFile('hover.sflisp', SOURCE);
   assert.match(await hoverText(doc, 4, 6), /Start[\s\S]*\$20/);
