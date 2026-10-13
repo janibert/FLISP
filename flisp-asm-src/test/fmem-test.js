@@ -16,27 +16,59 @@ test('qaflisp-output.fmem passes without messages', () => {
   assert.deepStrictEqual(messages(fs.readFileSync(path.join(__dirname, 'qaflisp-output.fmem'), 'utf8')), []);
 });
 
-test('commands are case-insensitive and may have blanks after #', () => {
-  assert.deepStrictEqual(messages(' # ClearAllMemory\n#clearallregisters\n#SETMEMORY 20=f0\n #setMemory  21=5 ; comment\n#setRegister A=05\n'), []);
+test('commands are case-insensitive and may have blanks after # and around =', () => {
+  assert.deepStrictEqual(messages(' # ClearAllMemory\n#clearallregisters\n#SETMEMORY 20=f0\n #setMemory  21=5 ; comment\n#setMemory 23 = 44\n'), []);
 });
 
 test('unknown commands, with a hint for typos', () => {
   assert.deepStrictEqual(messages('#setMemroy 20=05\n#foo 1\n'), [
-    "1:error:Unknown command '#setMemroy' — did you mean '#setMemory'?",
-    "2:error:Unknown command '#foo' — DigiFlisp knows #setMemory, #setRegister, #ClearAllMemory, #ClearAllRegisters",
+    "1:error:Unknown command '#setMemroy' — DigiFlisp skips this line without a message; did you mean '#setMemory'?",
+    "2:error:Unknown command '#foo' — DigiFlisp skips this line without a message; known commands: #setMemory, #setRegister, #ClearAllMemory, #ClearAllRegisters",
   ]);
 });
+
+const NOT_HEX = 'is not a hex number (digits 0–9, A–F) — DigiFlisp reports nothing and reads invalid digits as 0 (\'2G\' becomes 20)';
 
 test('#setMemory: hex digits, missing parts, extra text', () => {
   const m = messages('#setMemory 2G=05\n#setMemory 120=05\n#setMemory 21 05\n#setMemory 22=\n#setMemory\n#setMemory 23=XY\n#setMemory 24=05 06\n');
   assert.deepStrictEqual(m, [
-    "1:error:Address '2G' is not a hex number (digits 0–9, A–F)",
+    `1:error:Address '2G' ${NOT_HEX}`,
     "2:error:Address '120' has too many digits — use 1–2 hex digits (00–FF)",
     "3:error:Missing '=' — write #setMemory AA=DD (hex), e.g. #setMemory 20=F0",
     "4:error:Missing value after '=' — write #setMemory AA=DD (hex)",
     '5:error:Missing address and value — write #setMemory AA=DD (hex), e.g. #setMemory 20=F0',
-    "6:error:Value 'XY' is not a hex number (digits 0–9, A–F)",
+    `6:error:Value 'XY' ${NOT_HEX}`,
     "7:warning:Unexpected text after the value: '06'",
+  ]);
+});
+
+// Hand test with DigiFlisp 2.08 (FLISP Monitor, "Load memory from file"), 2026-10-13.
+// Result in DigiFlisp: $20=88 (line 11 overwrote line 4!), $21=22, $22=33, $23=44, $24=05,
+// $25=00 and $26=00 (lines 9, 10 skipped), $27=99, $28=BB; registers all 00, CC=10 (no #setRegister
+// form had an effect). DigiFlisp showed no message. The check must flag exactly the lines that
+// DigiFlisp silently skips or misreads.
+test('DigiFlisp hand test: flagged lines match what DigiFlisp skipped or misread', () => {
+  const src = [
+    'DigiFlisp .fmem test - which lines are accepted? (this header line has no \'#\')',
+    ' # ClearAllMemory', ' # ClearAllRegisters',
+    ' #setMemory  20=11', '#setmemory 21=22', '#SETMEMORY 22=33', '#setMemory 23 = 44', '#setMemory 24=5',
+    '#setMemroy 25=66', 'setMemory 26=77', '#setMemory 2G=88', '#setMemory 27=99 ; trailing comment',
+    '#setMemory 28=AA', '#setMemory 28=BB',
+    '#setRegister A=A1', '#setRegister X B2', '#setRegister Y=C3', '#setRegister SP=D4', '#setRegister PC=20', '#setRegister CC=05',
+  ].join('\n');
+  const flagged = analyzeFmem(src).map((d) => `${d.line + 1}:${d.severity}`);
+  assert.deepStrictEqual(flagged, [
+    '9:error', // #setMemroy: skipped
+    '10:warning', // no '#': skipped
+    '11:error', // 2G: written to $20
+    '14:warning', // 28 again: later value wins
+    '15:warning', '16:warning', '17:warning', '18:warning', '19:warning', '20:warning', // #setRegister: no effect
+  ]);
+});
+
+test('#setRegister is known but flagged as having no effect', () => {
+  assert.deepStrictEqual(messages('#setRegister A=05\n'), [
+    '1:warning:#setRegister had no effect in DigiFlisp 2.08 (tested forms: A=A1, X B2, SP=D4, PC=20, CC=05) — set registers in your program instead, e.g. LDSP #$FB',
   ]);
 });
 

@@ -31,7 +31,7 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 **`.fmem` (memory image)** — `#setMemory` directives with address and value;
 `# ClearAllMemory` and `# ClearAllRegisters` with their own highlighting (scope `keyword.control.reset`); the header lines are shown as comments.
 
-`.fmem` files are also checked while typing: unknown commands (with a hint for typos such as `#setMemroy`), addresses and values that are not 1–2 hex digits (`#setMemory 2G=05`), a missing `=` or value, a command without `#` (DigiFlisp ignores such lines), and an address that is set twice.
+`.fmem` files are also checked while typing: unknown commands (with a hint for typos such as `#setMemroy`), addresses and values that are not 1–2 hex digits (`#setMemory 2G=05`), a missing `=` or value, a command without `#`, and an address that is set twice. DigiFlisp itself reports none of these: it skips unknown lines silently and reads invalid hex digits as 0 (`#setMemory 2G=88` writes to `$20`). `#setRegister` gets a warning, because it had no effect in DigiFlisp 2.08.
 
 ### Line structure and comments
 

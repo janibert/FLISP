@@ -92,7 +92,18 @@ The extension adds this explanation to the message and links to the nearest mult
 
 DigiFlisp loads `.fmem` files ("FLISP memory source"). Its program contains these command names, in lower case — so they are compared case-insensitively: `setmemory`, `setregister`, `clearallmemory`, `clearallregisters`. They are translated to internal commands (`wm<addr><data>` for memory; `wa`, `wx`, `wy`, `wp`, `ws`, `wc` for the registers A, X, Y, PC, SP, CC). Lines without `#` are ignored, which is why qaflisp's header lines do no harm.
 
-The syntax of `#setRegister` is not documented and qaflisp never writes it; the check (`src/fmem.js`) therefore knows the command but does not check its arguments. If you know the exact format (e.g. `#setRegister A=05`?), please add it.
+Tested by hand with DigiFlisp 2.08 (FLISP Monitor, *Load memory from file*); DigiFlisp showed **no message** for any line:
+
+| Line | Effect |
+|---|---|
+| `#setmemory 21=22`, `#SETMEMORY 22=33` | accepted — commands are case-insensitive |
+| `#setMemory 23 = 44`, `#setMemory 24=5`, `#setMemory 27=99 ; comment` | accepted — blanks around `=`, one hex digit and text after the value are fine |
+| `#setMemory 28=AA` then `#setMemory 28=BB` | `$28` = BB — the later line wins |
+| `#setMemroy 25=66` (typo), `setMemory 26=77` (no `#`) | skipped silently |
+| `#setMemory 2G=88` | **written to `$20`** — invalid hex digits are read as 0, overwriting another cell without a warning |
+| `#setRegister A=A1`, `X B2`, `Y=C3`, `SP=D4`, `PC=20`, `CC=05` | no effect: afterwards all registers were 00 and CC = 10 (as after a reset) |
+
+So `#setRegister` either has another, unknown syntax, or DigiFlisp resets the registers after loading. The check (`src/fmem.js`) flags typos, invalid hex digits and lines without `#` (all silently mishandled by DigiFlisp) and warns about `#setRegister`. `test/fmem-test.js` contains this hand test as a test case.
 
 ## The instruction table (`src/instructions.js`)
 

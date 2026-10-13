@@ -1,12 +1,15 @@
 // Syntax check for .fmem memory images (DigiFlisp load files), without the VS Code API.
 //
-// Format, as written by qaflisp and read by DigiFlisp (see CONTRIBUTING.md):
+// Format, as written by qaflisp and read by DigiFlisp (see CONTRIBUTING.md; tested with DigiFlisp 2.08):
 //   header lines without '#'      ignored by DigiFlisp
-//   # ClearAllMemory              commands are case-insensitive; blanks after '#' are allowed
+//   # ClearAllMemory              commands are case-insensitive; blanks after '#' and around '=' are allowed
 //   # ClearAllRegisters
-//   #setMemory  20=F0             address and value: 1-2 hex digits each
-//   #setRegister ...              known to DigiFlisp (registers A, X, Y, PC, SP, CC);
-//                                 its arguments are not checked because no example is known
+//   #setMemory  20=F0             address and value: 1-2 hex digits each; a later line for the same
+//                                 address wins; text after the value is ignored
+//   #setRegister ...              name known to DigiFlisp (registers A, X, Y, PC, SP, CC), but no tested
+//                                 form (A=A1, X B2, SP=D4, ...) had any effect when loading
+// DigiFlisp reports nothing: unknown commands are skipped silently, and invalid hex digits are
+// read as 0 ('#setMemory 2G=88' writes to $20).
 
 const COMMANDS = ['setMemory', 'setRegister', 'ClearAllMemory', 'ClearAllRegisters'];
 const BY_LOWER = new Map(COMMANDS.map((c) => [c.toLowerCase(), c]));
@@ -39,7 +42,7 @@ function checkHex(text, what, line, start, out) {
   if (HEX.test(text)) return true;
   const message = /^[0-9A-Fa-f]+$/.test(text)
     ? `${what} '${text}' has too many digits — use 1–2 hex digits (00–FF)`
-    : `${what} '${text}' is not a hex number (digits 0–9, A–F)`;
+    : `${what} '${text}' is not a hex number (digits 0–9, A–F) — DigiFlisp reports nothing and reads invalid digits as 0 ('2G' becomes 20)`;
   out.push({ line, start, end: start + text.length, severity: 'error', message });
   return false;
 }
@@ -66,9 +69,9 @@ function analyzeFmem(source) {
     const command = BY_LOWER.get(name.toLowerCase());
     if (!command) {
       const similar = name && similarCommand(name);
-      const hint = similar ? ` — did you mean '#${similar}'?` : ` — DigiFlisp knows ${COMMANDS.map((c) => '#' + c).join(', ')}`;
+      const hint = similar ? `did you mean '#${similar}'?` : `known commands: ${COMMANDS.map((c) => '#' + c).join(', ')}`;
       diagnostics.push({ line, start: Math.max(0, nameStart - (name ? 0 : 1)), end: nameStart + Math.max(name.length, 1), severity: 'error',
-        message: `Unknown command '#${name}'${hint}` });
+        message: `Unknown command '#${name}' — DigiFlisp skips this line without a message; ${hint}` });
       return;
     }
     const rest = text.slice(nameStart + name.length);
@@ -119,7 +122,12 @@ function analyzeFmem(source) {
           message: `#${command} takes no arguments` });
       }
     }
-    // #setRegister: arguments not checked (format not documented).
+    if (command === 'setRegister') {
+      // Known name, but no tested form changed a register when the file was loaded in DigiFlisp 2.08.
+      diagnostics.push({ line, start: nameStart, end: nameStart + name.length, severity: 'warning',
+        message: '#setRegister had no effect in DigiFlisp 2.08 (tested forms: A=A1, X B2, SP=D4, PC=20, CC=05) — ' +
+          'set registers in your program instead, e.g. LDSP #$FB' });
+    }
   });
 
   return diagnostics;
