@@ -67,30 +67,46 @@ function flagsTable(flags) {
   ].join('\n');
 }
 
+// Legend for the flag symbols that actually occur, e.g. "Δ changed, – unchanged".
+const LEGEND = [['Δ', 'Δ changed'], ['0', '0 cleared'], ['1', '1 set'], ['-', '– unchanged']];
+const flagsLegend = (flags) => LEGEND.filter(([c]) => flags.includes(c)).map(([, text]) => text).join(', ');
+
+// "M(X) → A; X + 1 → X · opcode F5 · 1 byte · 4 cycles"
+const variantFacts = (d, v) =>
+  `\`${operationOf(d, v)}\` · opcode \`${v.opcode}\` · ${v.bytes} byte${v.bytes === 1 ? '' : 's'} · ${v.cycles} cycles`;
+
 function instructionMarkdown(mnemonic, operand) {
   const mn = mnemonic.toUpperCase();
   const d = INSTRUCTIONS[mn];
   const out = [];
   out.push(`**${mn}** — ${d.title}${d.alias ? ` (same as \`${d.alias}\`)` : ''}`);
   out.push('');
-  out.push(`\`${generalOperation(d)}\``);
 
   const used = modeOf(mn, operand);
   const v = d.variants.find((x) => x.mode === used.mode && (used.mode !== 'reg' || x.operand === used.operand));
-  out.push('');
-  if (v) {
-    const mode = MODES[v.mode];
-    out.push(`**This line:** \`${variantSyntax(mn, v)}\` — ${mode.name}${v.mode === 'inh' || v.mode === 'reg' ? '' : `: ${mode.text}`}`);
-    out.push('');
-    out.push(`\`${operationOf(d, v)}\` · opcode \`${v.opcode}\` · ${v.bytes} byte${v.bytes === 1 ? '' : 's'} · ${v.cycles} cycles`);
-  } else if (used.mode === 'reg') {
-    out.push(`**This line:** \`${mn} ${operand}\` is not a valid register pair for ${mn}.`);
+  const wrongMode = !v && (used.mode === 'reg'
+    ? `\`${mn} ${operand}\` is not a valid register pair for ${mn}.`
+    : `${mn} has no ${MODES[used.mode].name.toLowerCase()} addressing (\`${MODES[used.mode].syntax || 'no operand'}\`).`);
+
+  if (d.variants.length === 1) {
+    // Only one addressing mode: no "this line" section, just the facts.
+    const only = d.variants[0];
+    const mode = only.mode === 'inh' ? '' : ` · ${MODES[only.mode].name} \`${variantSyntax(mn, only)}\``;
+    if (wrongMode) out.push(`**This line:** ${wrongMode}`, '');
+    out.push(`${variantFacts(d, only)}${mode}`);
   } else {
-    out.push(`**This line:** ${mn} has no ${MODES[used.mode].name.toLowerCase()} addressing (\`${MODES[used.mode].syntax || 'no operand'}\`).`);
+    out.push(`\`${generalOperation(d)}\``, '');
+    if (v) {
+      const mode = MODES[v.mode];
+      out.push(`**This line:** \`${variantSyntax(mn, v)}\` — ${mode.name}${v.mode === 'reg' ? '' : `: ${mode.text}`}`);
+      out.push('', variantFacts(d, v));
+    } else {
+      out.push(`**This line:** ${wrongMode}`);
+    }
   }
 
   out.push('');
-  out.push('**Flags** (Δ changed, 0 cleared, 1 set, – unchanged)');
+  out.push(`**Flags** (${flagsLegend(d.flags)})`);
   out.push('');
   out.push(flagsTable(d.flags));
   if (d.note) out.push('', d.note);

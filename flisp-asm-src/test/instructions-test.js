@@ -71,6 +71,17 @@ test('hoverAt: variant of the line, unsupported mode, directive, lab instruction
   assert.strictEqual(hoverAt('\tLDA\t#5', 6), undefined, 'operand is not the mnemonic');
 });
 
+test('hoverAt: compact form for one addressing mode, legend only for used flag symbols', () => {
+  const rts = hoverAt('\tRTS', 2).markdown;
+  assert.ok(!/This line/.test(rts), 'no "This line" for a single variant');
+  assert.match(rts, /`M\(SP\) → PC; SP \+ 1 → SP` · opcode `43` · 1 byte · 2 cycles/);
+  assert.match(rts, /\*\*Flags\*\* \(– unchanged\)/);
+  assert.match(hoverAt('\tBEQ\tLoop', 2).markdown, /· Relative `BEQ Adr`/);
+  assert.match(hoverAt('\tANDCC\t$20', 2).markdown, /\*\*This line:\*\* ANDCC has no absolute addressing/);
+  assert.match(hoverAt('\tLDA\t#5', 2).markdown, /\*\*Flags\*\* \(Δ changed, 0 cleared, – unchanged\)/);
+  assert.match(hoverAt('\tCLR\t$20', 2).markdown, /\*\*Flags\*\* \(0 cleared, 1 set\)/);
+});
+
 // --- Comparison with the real qaflisp ----------------------------------------
 
 const realExe = findQaflisp({
