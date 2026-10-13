@@ -1,0 +1,4 @@
+	ORG	$20
+L	NOP
+L	NOP
+L	NOP

@@ -1,0 +1,5 @@
+	ORG	$20
+Start	NOP
+K	EQU	Start+4
+	ORG	K
+L1	NOP

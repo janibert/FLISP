@@ -1,0 +1,3 @@
+	ORG	$20
+Lbl LDA #1
+  Lb2 LDA #2

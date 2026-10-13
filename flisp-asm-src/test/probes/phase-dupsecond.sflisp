@@ -1,0 +1,5 @@
+	ORG	$20
+Start	NOP
+Start	LDA	#1
+Next	NOP
+	BRA	Next

@@ -1,0 +1,4 @@
+	ORG	$20
+K	EQU	1
+K	EQU	2
+	LDA	#K

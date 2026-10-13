@@ -1,0 +1,25 @@
+            ORG     $20
+L17         LDA     2*(3,X
+L19         MOVE    #1,2
+L19b        CMJEQ   1,2,L1
+L22         LSL
+L23         LDA     #1+
+L24         FCS     "abc
+L26         FCB     1,2 ,3
+L27         FCB     1,2, 3
+L28         LDA     #'A
+L29         JMP     #5
+L30         LDA     X+1
+L31         BRA     L1+200
+L32         FCB     ,1
+L33         LDA     #(1,2)
+L34         FCS     "x",3
+L35         EQU     L1
+L36         ORG     $F0
+L1          NOP
+L37         RMB     $20
+L38         NOP
+L39         LDA     5/0
+L40         FCB     1,5/0,3
+            END
+L41         NOP

@@ -1,0 +1,12 @@
+            ORG     $20
+A$b         NOP
+x.y         NOP
+q#r         NOP
+Lb:         NOP
+            LDA     1=2
+            LDA     #1.5
+            LDA     1<2
+            LDA     #2:
+            FCB     1=2,3
+            FCB     4,1.5,6
+            NOP

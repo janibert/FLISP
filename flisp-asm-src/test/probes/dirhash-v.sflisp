@@ -1,0 +1,12 @@
+            ORG     $20
+Start       LDA     2+#1
+            LDA     ##1
+            LDA     #1+#2
+            LDA     #'#'
+            FCB     '#',2
+            FCS     "a#b"
+            FCS     "ab",#0
+            EQU     #1
+            LDA     #(1+2)
+            FCB     -#1
+            END     Start

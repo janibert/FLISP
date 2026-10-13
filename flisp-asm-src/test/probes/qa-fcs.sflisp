@@ -1,0 +1,2 @@
+	ORG	$20
+	FCS	"a b" rest text

@@ -1,0 +1,4 @@
+	ORG	$20
+	PSHA	hallo welt
+	NOP x
+	RTS	A,X

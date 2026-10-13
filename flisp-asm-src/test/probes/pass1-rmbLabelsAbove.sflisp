@@ -1,0 +1,4 @@
+	ORG	$20
+Start	NOP
+	RMB	Start+2-Start
+Later	NOP

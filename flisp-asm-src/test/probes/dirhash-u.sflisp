@@ -1,0 +1,6 @@
+P1          EQU     #$FB
+P2          EQU     $FB
+            ORG     $20
+Start       LDA     #P1
+            FCB     P2+#1
+            END     #Start

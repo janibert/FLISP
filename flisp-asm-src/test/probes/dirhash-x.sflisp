@@ -1,0 +1,11 @@
+            ORG     $20
+            FCB     1,2, 3,4
+            FCB     1,2 ,3
+            FCB     1,2 3,4
+            FCB     1, $FF
+            FCB     1,2 first two
+            FCB     1,2 %0101,'A'
+            FCB     1,2 Start,3
+Start       FCB     1,2 4 bytes
+            FCB     1,2 ; ok
+            FCB     1,2 3 cycles, then more

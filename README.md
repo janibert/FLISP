@@ -31,7 +31,8 @@ Requires Node.js 20 or later. The extension lives in `flisp-asm-src/`; run all c
 cd flisp-asm-src
 npm install          # fetches vsce and the test libraries
 npm run build:grammar  # generates syntaxes/flisp.tmLanguage.json from the template and src/instructions.js
-npm test             # grammar up to date?, qaflisp integration, symbol analysis, grammar tests
+npm test             # all tests: grammar up to date?, qaflisp integration, live check, snapshot, grammar
+npm run test:update-snapshot  # after an intended change of messages or addresses (see below)
 npm run package      # creates flisp-asm-<version>.vsix (regenerates the grammar first)
 ```
 
@@ -48,6 +49,8 @@ To develop without packaging: open the repository folder in VS Code and press `F
 `test/symbols-test.js` tests the symbol analysis (`src/symbols.js`) behind Go to Definition, references, outline, rename and the live check. If a real qaflisp is found, it also assembles probe files and checks that every line qaflisp reports as an error (undefined symbols, multiple definitions, addressing modes, expressions, numbers, value ranges, branch distances, …) is reported by the live check as well — for most probes exactly the same lines — and that a file qaflisp accepts gives no live errors. It also compares the computed address and length of every line (`src/layout.js`) with qaflisp's listing.
 
 `test/examples-test.js` checks the files in `test/examples/`: every code line ends with a comment `; OK`, `; ERROR` or `; WARNING`, and the live check must report exactly that. If qaflisp is found, it must report an error on exactly the `ERROR` lines (the few lines where qaflisp stays silent on purpose are listed in the test). The examples are meant for trying the live check in the editor; each file starts with suggestions what to change.
+
+`test/probes-test.js` is the regression net. `test/probes/` holds about 160 small probe files written while measuring qaflisp (file names start with the topic: `pass1-`, `phase-`, `sym-`, `expr-` …). For them and for all other `.sflisp` fixtures, `test/probes/expected.json` stores every live-check message and the computed address and length of every line; any change of behaviour fails the test. After an intended change, look at the reported differences and update the snapshot with `npm run test:update-snapshot` — commit `expected.json` together with the change. If qaflisp is found, the test also compares the layout of every file with qaflisp's listing, checks that every error qaflisp reports is reported by the live check (except *Phase error* and the lab instructions), and assembles one file with every mnemonic and every operand form.
 
 `test/instructions-test.js` checks the instruction table (`src/instructions.js`) and the hover text. If a real qaflisp is found, it assembles every listed variant and compares opcode and length, and it checks that qaflisp rejects every addressing mode that is not listed — so the table is complete and has nothing extra.
 
@@ -115,9 +118,11 @@ test/fmem-test.js                tests for src/fmem.js
 test/format-test.js              tests for src/format.js, incl. same machine code before/after formatting
 test/completion-test.js          tests for src/completion.js
 test/examples-test.js            checks the OK / ERROR / WARNING comments in test/examples/ (live check and qaflisp)
+test/probes-test.js              snapshot of all messages and addresses; layout and errors compared with qaflisp
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
 test/examples/                   examples to try the live check in the editor, one topic per file
+test/probes/                     probe files from measuring qaflisp; expected.json = snapshot for probes-test.js
 test/invalid-numbers.sflisp      numbers that do not fit their base, for the scope test
 test/running-light.sflisp        example program (used for the screenshot)
 test/qaflisp-output.fmem         qaflisp output for the test

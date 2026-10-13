@@ -1,0 +1,4 @@
+	ORG	$20
+	NOP
+	END	foo bar
+	NOP

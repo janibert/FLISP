@@ -1,0 +1,4 @@
+	ORG	$20
+	LDA	Tab+1
+	LDX	#Tab
+Tab	FCB	1,2

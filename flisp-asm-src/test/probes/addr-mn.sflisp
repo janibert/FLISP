@@ -1,0 +1,13 @@
+            ORG     $20
+Neg         EQU     3
+End         NOP
+NOP
+lda
+Org         FCB     Neg
+            LDA     #Neg
+            BRA     End
+Tfr         RTS
+LDA         LDA     #1
+LDA #1
+RTS         ; c
+Inc         INCA

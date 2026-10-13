@@ -1,0 +1,4 @@
+	ORG	$20
+	BRA	Late
+	END
+Late	NOP

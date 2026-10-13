@@ -1,0 +1,4 @@
+K	EQU	M
+M	EQU	$30
+	ORG	K
+L1	NOP

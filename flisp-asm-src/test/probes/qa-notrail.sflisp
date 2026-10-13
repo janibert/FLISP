@@ -1,0 +1,2 @@
+	ORG	$20
+	LDA	#1 ohne semikolon kommentar

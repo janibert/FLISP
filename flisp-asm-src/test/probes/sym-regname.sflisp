@@ -1,0 +1,3 @@
+	ORG	$20
+X	EQU	3
+	LDA	#X

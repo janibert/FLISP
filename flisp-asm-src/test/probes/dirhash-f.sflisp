@@ -1,0 +1,17 @@
+            ORG     $20
+            FCB     2<<1+1
+            FCB     1|2&0
+            FCB     6&3+1
+            FCB     3^1&1
+            FCB     8>>1+1
+            FCB     10-4/2
+            FCB     2*3%4
+            FCB     1|2^3
+            FCB     -2*3
+            FCB     ~0&$F
+            FCB     7%10
+            FCB     %11%%10
+            FCB     -1/2
+            FCB     -7%3
+            FCB     -1>>1
+            FCB     $FF+1-1

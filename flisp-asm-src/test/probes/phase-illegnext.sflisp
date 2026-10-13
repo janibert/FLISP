@@ -1,0 +1,4 @@
+	ORG	$20
+	FOO	1
+Next	NOP
+	BRA	Next

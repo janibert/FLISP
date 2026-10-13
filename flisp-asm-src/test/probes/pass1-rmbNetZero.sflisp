@@ -1,0 +1,6 @@
+	ORG	$20
+Start	NOP
+End1	NOP
+K	EQU	End1-Start+Start-Start
+	RMB	K
+L1	NOP

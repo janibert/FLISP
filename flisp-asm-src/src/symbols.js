@@ -351,6 +351,11 @@ function analyze(source) {
         name: p.label.name, line, start: p.label.start, end: p.label.end,
         kind: kindOf(mnemonic), mnemonic, operand: p.operand ? p.operand.text : undefined, text,
       });
+    } else if (p.invalidLabel && p.invalidLabel.reason === 'mnemonic') {
+      // "LDA #1" in column 1: qaflisp still defines the label LDA (then fails on "#1"), so a
+      // second "LDA ..." in column 1 is a multiple definition there too.
+      const l = p.invalidLabel;
+      definitions.push({ name: l.name, line, start: l.start, end: l.end, kind: 'code', mnemonic: undefined, operand: undefined, text });
     }
     // A malformed operand (e.g. ",Z+") is reported as such; its words are not symbol uses.
     const malformed = p.operand && (checkOperand(mnemonic, p.operand.text) || {}).kind === 'bad';

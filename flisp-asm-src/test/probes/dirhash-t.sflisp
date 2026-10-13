@@ -1,0 +1,10 @@
+A           EQU     #$FB
+B           EQU     #0
+            ORG     #$00
+C           FCB     #1,2
+D           RMB     #2
+            FCB     2,#3
+E           FCS     #"AB"
+            ORG     $20
+Start       LDA     #A
+            END     #Start

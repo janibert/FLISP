@@ -1,0 +1,9 @@
+	ORG	$20
+	LDA	#'A
+LDA	#1
+	FOO	1
+	BRA	nirgendwo
+X1	EQU	1
+X1	EQU	2
+	LDA	300
+	NOP

@@ -1,0 +1,4 @@
+	ORG	$20
+Loop	NOP
+loop	NOP
+	BRA	Loop

@@ -1,0 +1,16 @@
+	ORG	$20
+	STA	#5
+	CLR	,X+
+	TFR	A,X
+	LDA
+	ANDCC	$20
+	JMP	#5
+	BEQ	3,X
+	LEAX	3,Y
+	EXG	A,X
+	LDA	#5,X
+	LSL
+	CMPSP	3,X
+	LDA	,Z+
+	STA	3,PC
+	LDA	A,SP

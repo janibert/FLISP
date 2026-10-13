@@ -1,0 +1,4 @@
+	ORG	$20
+Start	NOP
+	ORG	Start+4
+L2	NOP

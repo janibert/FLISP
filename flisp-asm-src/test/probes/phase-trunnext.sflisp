@@ -1,0 +1,4 @@
+	ORG	$20
+	LDA	300
+Next	NOP
+	BRA	Next

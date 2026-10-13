@@ -1,0 +1,6 @@
+	ORG	$20
+Start	NOP
+K	EQU	Start+4
+	FCB	K
+	LDA	#K
+L1	NOP

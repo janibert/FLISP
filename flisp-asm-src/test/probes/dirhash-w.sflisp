@@ -1,0 +1,5 @@
+            ORG     $20
+            FCS     "ab",#0
+            FCS     "cd"#
+            FCS     #
+            FCB     $FF

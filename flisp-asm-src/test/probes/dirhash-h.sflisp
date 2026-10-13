@@ -1,0 +1,12 @@
+            ORG     $20
+            FCB     5&6/2
+            FCB     1<<2*2
+            FCB     8>>1*2
+            FCB     2*3+1
+            FCB     -2-2
+            FCB     !1+!0
+            LDA     -257,X
+            LDA     #-257
+            ORG     $100
+            FCB     1
+            RMB     -1

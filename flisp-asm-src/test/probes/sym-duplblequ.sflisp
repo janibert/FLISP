@@ -1,0 +1,3 @@
+	ORG	$20
+K	NOP
+K	EQU	2

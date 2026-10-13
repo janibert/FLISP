@@ -1,0 +1,3 @@
+; kommentar
+	ORG	$20
+	LDA	#1 ; rest

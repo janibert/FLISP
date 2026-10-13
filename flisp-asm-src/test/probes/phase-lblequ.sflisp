@@ -1,0 +1,4 @@
+	ORG	$20
+K	NOP
+K	EQU	$40
+	BRA	K

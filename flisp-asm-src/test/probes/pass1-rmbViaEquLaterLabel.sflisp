@@ -1,0 +1,5 @@
+	ORG	$20
+K	EQU	Later-Start
+Start	RMB	K
+	NOP
+Later	NOP

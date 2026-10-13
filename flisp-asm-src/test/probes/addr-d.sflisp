@@ -1,0 +1,21 @@
+            ORG     $20
+L1          FCB     2,#3
+L2          FCB     0a
+L3          FCB     1,0a,2
+L4          LDA     0a
+L5          LDA     2+#1
+L6          FCB     1,X
+L7          FCB     1,Foo,2
+L8          FCB     1,300,2
+L9          LDA     #$FG
+L10         FCB     1,2 3,4
+L11         STA     $100
+L12         FCS     ""
+L13         FCS     #"AB"
+L14         FCB     1,1~2,3
+L15         FCB     1,(2+),3
+L16         LDA     #()
+L17         LDA     #1~2
+L18         FCB     %0102,1
+L19         ANDCC   $20
+L20         NOP

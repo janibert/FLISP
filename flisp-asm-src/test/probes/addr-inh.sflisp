@@ -1,0 +1,9 @@
+            ORG     $20
+Data        FCB     1
+            PSHA    $3              ; Kommentar
+            NOP     #5              ; Kommentar
+            ASLA    Data            ; Kommentar
+            RTS     zurueck zum Aufrufer
+            CLRA    ,X
+            INCA    2,X
+            NOP

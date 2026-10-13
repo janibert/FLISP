@@ -1,0 +1,6 @@
+            ORG     $20
+L1          FCS     "AB"+1
+            FCS     "A",K
+            TFR     A+0,X
+K           EQU     L2-L1
+L2          FCB     K

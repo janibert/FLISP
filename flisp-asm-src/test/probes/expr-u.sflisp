@@ -1,0 +1,26 @@
+K           EQU     2
+Z           EQU     0
+            ORG     $20
+            FCB     (2**3)
+            FCB     (&2)
+            FCB     (+5)
+            FCB     (2,)
+            FCB     LDA
+            FCB     ORG
+            FCB     end
+            FCB     K%Z
+            FCB     K/Z
+            FCB     1/(1-1)
+            FCB     K'A'
+            FCB     (1)'A'
+            FCB     1 2
+            FCB     Kx
+            FCB     sp
+            FCB     Pc+1
+            FCB     <<1
+            FCB     >>1
+            FCB     1>2
+            FCB     1!2
+            FCB     1~2
+            FCB     (1)2
+            FCB     2(

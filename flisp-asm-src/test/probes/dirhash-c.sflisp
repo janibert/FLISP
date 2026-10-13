@@ -1,0 +1,11 @@
+            ORG     $20
+            FCB     -1000
+            FCB     -255
+            FCB     -256
+            FCB     -257
+            FCB     -65536
+            LDA     -129,X
+            LDA     200,X
+            BRA     $FF
+            ORG     $FE
+            FCB     1,2,3

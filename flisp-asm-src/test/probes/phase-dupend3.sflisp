@@ -1,0 +1,5 @@
+	ORG	$20
+Start	LDA	#1
+	BRA	Start
+Start
+	END	Start

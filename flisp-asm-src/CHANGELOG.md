@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Live check: `LDA #1` in column 1 also defines the label `LDA`, as in qaflisp, so a second `LDA …` in column 1 is reported as a multiple definition.
+
 ## 0.10.1
 
 - Documentation only: shorter extension description; fixed the repository layout table on GitHub.

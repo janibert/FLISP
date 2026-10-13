@@ -1,0 +1,3 @@
+	ORG	$20
+AVeryLongLabelName_123456789	NOP
+	BRA	AVeryLongLabelName_123456789

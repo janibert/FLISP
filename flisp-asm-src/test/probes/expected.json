@@ -1,0 +1,2815 @@
+{
+ "probes/addr-a.sflisp": {
+  "diagnostics": [
+   "4:20-22 error: Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)",
+   "7:20-21 error: Undetermined size for reservation of storage — RMB 0: the number of bytes must be at least 1",
+   "9:20-23 error: Undefined symbol 'Foo'",
+   "10:20-22 error: Illegal addressing mode — STA has no immediate addressing (#Data); allowed: Adr  n,SP  n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,Y  A,Y  ,Y+  ,Y-  ,+Y  ,-Y",
+   "11:12-16 error: Illegal mnemonic 'LDAA'",
+   "12:20-23 error: Illegal register combination 'A,X' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y",
+   "13:21-24 error: Value 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C",
+   "14:20-23 error: Bad operand ',Z+' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP",
+   "15:23-24 error: Missing Parenthesis: '(' is not closed",
+   "16:0-3 error: Multiple definition of 'L15' (also in line 17)",
+   "17:0-3 error: Multiple definition of 'L15' (also in line 16)",
+   "18:20-23 error: Illegal addressing mode — CLR has no indexed, post-increment addressing (,X+); allowed: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "19:23-24 error: Missing Parenthesis: '(' is not closed",
+   "24:12-15 error: Missing operand — LSL needs one of: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "25:22-23 error: Unterminated expression: a value is missing at the end",
+   "26:20-24 error: Bad operand syntax: the string has no closing '\"' (qaflisp adds a newline byte)"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +3",
+   "4: 37 +2",
+   "5: 39 +3",
+   "6: 42 +3",
+   "7: 45 +0",
+   "8: 45 +3",
+   "9: 48 +2",
+   "10: 50 +0",
+   "11: 50 +0",
+   "12: 50 +0",
+   "13: 50 +2",
+   "14: 52 +0",
+   "15: 52 +1"
+  ],
+  "stoppedAt": 16
+ },
+ "probes/addr-b.sflisp": {
+  "diagnostics": [
+   "2:23-24 error: Missing Parenthesis: '(' is not closed",
+   "5:12-15 error: Missing operand — LSL needs one of: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "6:22-23 error: Unterminated expression: a value is missing at the end",
+   "7:20-24 error: Bad operand syntax: the string has no closing '\"' (qaflisp adds a newline byte)",
+   "8:24-26 warning: Blank in the FCB list — the rest of the line is a comment, so 3 is not assembled; remove the blank: FCB 1,2,3",
+   "9:23-24 error: Unterminated expression: the list ends with ',' — the blank ends the operand; remove it: FCB 1,2,3",
+   "10:21-23 error: Character constant without closing quote — write 'A'",
+   "11:20-22 error: Illegal addressing mode — JMP has no immediate addressing (#Data); allowed: Adr  n,X  A,X  n,Y  A,Y",
+   "12:20-21 error: Illegal use of reserved word 'X' — register names cannot be used in expressions",
+   "13:20-26 error: Branch target 440 ($1B8) is 398 bytes ahead — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
+   "14:20-21 error: Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)",
+   "15:20-26 error: Bad operand '#(1,2)' — immediate data cannot be combined with an index register",
+   "20:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "22:21-22 error: Integer divide by zero",
+   "23:23-24 error: Integer divide by zero"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +0",
+   "6: 32 +0",
+   "7: 32 +4",
+   "8: 36 +2",
+   "9: 38 +2",
+   "10: 40 +0",
+   "11: 40 +0",
+   "12: 40 +0",
+   "13: 40 +2",
+   "14: 42 +0",
+   "15: 42 +0",
+   "16: 42 +1",
+   "17: 43 +0",
+   "18: 240 +0",
+   "19: 240 +1",
+   "20: 241 +32",
+   "21: 273 +1",
+   "22: 274 +2",
+   "23: 276 +3",
+   "24: 279 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/addr-c.sflisp": {
+  "diagnostics": [
+   "6:20-24 error: Branch target 32 ($20) is 130 bytes back — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
+   "8:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "14:20-23 error: Branch target 16 ($10) is 226 bytes back — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)"
+  ],
+  "layout": [
+   "1: 0 +1",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +125",
+   "5: 158 +2",
+   "6: 160 +2",
+   "7: 162 +2",
+   "8: 164 +126",
+   "9: 290 +1",
+   "10: 291 +2",
+   "11: 293 +127",
+   "12: 420 +1",
+   "13: 240 +0",
+   "14: 240 +2",
+   "15: 242 +2",
+   "16: 244 +2",
+   "17: 246 +2",
+   "18: 248 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/addr-d.sflisp": {
+  "diagnostics": [
+   "2:22-23 error: Illegal character '#' — directives take plain values without '#': write FCB 2,3",
+   "3:20-22 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "4:22-24 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "5:20-22 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "6:22-23 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "7:22-23 error: Illegal use of reserved word 'X' — register names cannot be used in expressions",
+   "8:22-25 error: Undefined symbol 'Foo'",
+   "9:22-25 error: Value 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C",
+   "10:21-24 error: Illegal hexadecimal digit in '$FG' — hexadecimal numbers use only 0–9 and A–F",
+   "11:24-27 warning: Blank in the FCB list — the rest of the line is a comment, so 3,4 is not assembled; remove the blank: FCB 1,2,3,4",
+   "12:20-24 error: Address 256 ($100) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "13:20-22 error: Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)",
+   "14:20-21 error: Bad operand syntax — FCS takes a string without '#', e.g. FCS \"TEXT\"",
+   "15:23-24 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "16:25-26 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "17:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "18:22-23 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "19:20-25 error: Illegal binary digit in '%0102' — binary numbers use only 0 and 1",
+   "20:20-23 error: Illegal addressing mode — ANDCC has no absolute addressing (Adr); allowed: #Data"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +1",
+   "5: 34 +0",
+   "6: 34 +0",
+   "7: 34 +1",
+   "8: 35 +3",
+   "9: 38 +3",
+   "10: 41 +0",
+   "11: 41 +2",
+   "12: 43 +2",
+   "13: 45 +2",
+   "14: 47 +0",
+   "15: 47 +3",
+   "16: 50 +3",
+   "17: 53 +2",
+   "18: 55 +2",
+   "19: 57 +0",
+   "20: 57 +0",
+   "21: 57 +1",
+   "22: 58 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/addr-e.sflisp": {
+  "diagnostics": [
+   "4:1-3 error: Illegal mnemonic '#r'",
+   "6:21-22 error: Unexpected character '=' in the expression",
+   "7:22-23 error: Unexpected character '.' in the expression",
+   "8:21-22 error: Unexpected character '<' — there are no comparisons; for a shift write <<",
+   "9:22-23 error: Unexpected character ':' in the expression",
+   "10:21-22 error: Unexpected character '=' in the expression",
+   "11:23-24 error: Unexpected character '.' in the expression"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0",
+   "5: 34 +1",
+   "6: 35 +0",
+   "7: 35 +0",
+   "8: 35 +2",
+   "9: 37 +0",
+   "10: 37 +1",
+   "11: 38 +2",
+   "12: 40 +1",
+   "13: 41 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/addr-inh.sflisp": {
+  "diagnostics": [
+   "3:20-22 warning: PSHA has no operand — qaflisp silently treats '$3' as a comment; remove it, or put a comment after ';'",
+   "4:20-22 warning: NOP has no operand — qaflisp silently treats '#5' as a comment; remove it, or put a comment after ';'",
+   "5:20-24 warning: ASLA has no operand — qaflisp silently treats 'Data' as a comment; to work on memory write ASL Data",
+   "7:20-22 warning: CLRA has no operand — qaflisp silently treats ',X' as a comment; remove it, or put a comment after ';'",
+   "8:20-23 warning: INCA has no operand — qaflisp silently treats '2,X' as a comment; to work on memory write INC 2,X"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/addr-mn.sflisp": {
+  "diagnostics": [
+   "4:0-3 warning: 'NOP' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction",
+   "5:0-3 warning: 'lda' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction",
+   "10:0-3 error: Multiple definition of 'LDA' (also in line 11)",
+   "11:0-3 error: Illegal mnemonic: 'LDA' in column 1 is read as a label — indent instructions",
+   "11:0-3 error: Multiple definition of 'LDA' (also in line 10)",
+   "12:0-3 warning: 'RTS' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +0",
+   "5: 33 +0",
+   "6: 33 +1",
+   "7: 34 +2",
+   "8: 36 +2",
+   "9: 38 +1"
+  ],
+  "stoppedAt": 10
+ },
+ "probes/dirhash-b.sflisp": {
+  "diagnostics": [
+   "3:20-23 error: Value 256 ($100) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "4:20-24 error: Value 511 ($1FF) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "8:20-30 error: Value 511 ($1FF) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "9:20-24 error: Value 1000 ($3E8) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $E8",
+   "10:20-25 error: Value 65536 ($10000) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "11:20-27 error: Value 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C",
+   "12:21-24 error: Value 256 ($100) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "14:20-24 error: Address 256 ($100) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "15:20-24 warning: ORG 256 ($100) is outside the memory ($00–$FF) — qaflisp silently uses $00",
+   "16:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "18:20-23 error: Value 70000 ($11170) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $70"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +1",
+   "12: 42 +2",
+   "13: 44 +2",
+   "14: 46 +2",
+   "15: 256 +0",
+   "16: 256 +300",
+   "17: 556 +0",
+   "18: 556 +1",
+   "19: 557 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-c.sflisp": {
+  "diagnostics": [
+   "2:20-25 error: Value -1000 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $18",
+   "5:20-24 error: Value -257 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "6:20-26 error: Value -65536 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "9:20-23 error: Branch target 255 ($FF) is 212 bytes ahead — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
+   "11:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +2",
+   "8: 39 +2",
+   "9: 41 +2",
+   "10: 254 +0",
+   "11: 254 +3",
+   "12: 257 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-d.sflisp": {
+  "diagnostics": [
+   "1:20-25 warning: ORG 4660 ($1234) is outside the memory ($00–$FF) — qaflisp silently uses $34",
+   "2:12-15 warning: From here on, code or data lies beyond $FF ($1234…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "3:20-23 warning: ORG 300 ($12C) is outside the memory ($00–$FF) — qaflisp silently uses $2C"
+  ],
+  "layout": [
+   "1: 4660 +0",
+   "2: 4660 +1",
+   "3: 300 +0",
+   "4: 300 +4096",
+   "5: 4396 +1",
+   "6: 4397 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-e.sflisp": {
+  "diagnostics": [
+   "15:20-21 error: Operand expected: there is no location counter '*' — put a label on the line and use it",
+   "18:20-21 error: Operand expected: '+' needs a value before it"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +1",
+   "12: 42 +1",
+   "13: 43 +1",
+   "14: 44 +1",
+   "15: 45 +0",
+   "16: 45 +1",
+   "17: 46 +1",
+   "18: 47 +0",
+   "19: 47 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-f.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +1",
+   "12: 42 +1",
+   "13: 43 +1",
+   "14: 44 +1",
+   "15: 45 +1",
+   "16: 46 +1",
+   "17: 47 +1",
+   "18: 48 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-g.sflisp": {
+  "diagnostics": [
+   "10:23-24 error: Missing Parenthesis: '(' is not closed",
+   "12:20-23 error: Offset 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C",
+   "14:20-22 warning: ORG -1 is outside the memory ($00–$FF) — qaflisp silently uses $FF",
+   "15:12-15 warning: From here on, code or data lies beyond $FF (-1…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +0",
+   "11: 40 +1",
+   "12: 41 +2",
+   "13: 43 +2",
+   "14: -1 +0",
+   "15: -1 +1",
+   "16: 0 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-h.sflisp": {
+  "diagnostics": [
+   "8:20-24 error: Offset -257 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "9:21-25 error: Value -257 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "10:20-24 warning: ORG 256 ($100) is outside the memory ($00–$FF) — qaflisp silently uses $00",
+   "11:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "12:20-22 error: Undetermined size for reservation of storage — RMB -1: the number of bytes must be at least 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +2",
+   "9: 40 +2",
+   "10: 256 +0",
+   "11: 256 +1",
+   "12: 257 +0",
+   "13: 257 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-n.sflisp": {
+  "diagnostics": [
+   "2:20-22 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "3:20-30 error: Illegal binary digit in '%000200100' — binary numbers use only 0 and 1",
+   "4:20-23 error: Illegal hexadecimal digit in '$FG' — hexadecimal numbers use only 0–9 and A–F",
+   "5:20-24 error: Illegal decimal digit in '12AB' — decimal numbers use only 0–9; for hex write $12AB",
+   "6:20-21 error: Illegal binary digit: '%' without digits — write e.g. %0101",
+   "7:20-21 error: Illegal hexadecimal digit: '$' without digits — write e.g. $1F",
+   "8:20-24 error: Illegal decimal digit in '0x1F' — decimal numbers use only 0–9; for hex write $1F",
+   "9:20-22 error: Illegal decimal digit in '1F' — decimal numbers use only 0–9; for hex write $1F",
+   "10:20-25 error: Illegal binary digit in '%0102' — binary numbers use only 0 and 1",
+   "11:20-23 error: Illegal hexadecimal digit in '$1g' — hexadecimal numbers use only 0–9 and A–F",
+   "12:21-24 error: Illegal binary digit in '%12' — binary numbers use only 0 and 1",
+   "15:20-24 error: Illegal binary digit in '%1_0' — binary numbers use only 0 and 1",
+   "16:20-23 error: Illegal decimal digit in '1_0' — decimal numbers use only 0–9",
+   "18:20-23 error: Illegal binary digit in '%0b' — binary numbers use only 0 and 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +0",
+   "6: 32 +0",
+   "7: 32 +0",
+   "8: 32 +0",
+   "9: 32 +0",
+   "10: 32 +0",
+   "11: 32 +0",
+   "12: 32 +0",
+   "13: 32 +2",
+   "14: 34 +1",
+   "15: 35 +0",
+   "16: 35 +0",
+   "17: 35 +1",
+   "18: 36 +0",
+   "19: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-t.sflisp": {
+  "diagnostics": [
+   "1:0-1 warning: 'A' is a register name and cannot be used as a symbol",
+   "1:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU $FB",
+   "2:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU 0",
+   "3:20-21 error: Illegal character '#' — directives take plain values without '#': write ORG $00",
+   "4:20-21 error: Illegal character '#' — directives take plain values without '#': write FCB 1,2",
+   "5:20-21 error: Illegal character '#' — directives take plain values without '#': write RMB 2",
+   "6:22-23 error: Illegal character '#' — directives take plain values without '#': write FCB 2,3",
+   "7:20-21 error: Bad operand syntax — FCS takes a string without '#', e.g. FCS \"TEXT\"",
+   "9:21-22 error: Illegal use of reserved word 'A' — register names cannot be used in expressions"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/dirhash-u.sflisp": {
+  "diagnostics": [
+   "1:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU $FB",
+   "5:23-24 error: Illegal character '#' — directives take plain values without '#': write FCB P2+1"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 32 +0",
+   "4: 32 +2",
+   "5: 34 +0",
+   "6: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-v.sflisp": {
+  "diagnostics": [
+   "2:22-23 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "3:21-22 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "4:23-24 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "9:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU 1",
+   "11:21-22 error: Illegal character '#' — directives take plain values without '#': write FCB -1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +2",
+   "6: 34 +2",
+   "7: 36 +3",
+   "8: 39 +2",
+   "9: 41 +0",
+   "10: 41 +2",
+   "11: 43 +0",
+   "12: 43 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-w.sflisp": {
+  "diagnostics": [
+   "4:20-21 error: Bad operand syntax — FCS takes a string without '#', e.g. FCS \"TEXT\""
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +0",
+   "5: 36 +1",
+   "6: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-x.sflisp": {
+  "diagnostics": [
+   "2:23-24 error: Unterminated expression: the list ends with ',' — the blank ends the operand; remove it: FCB 1,2,3,4",
+   "3:24-26 warning: Blank in the FCB list — the rest of the line is a comment, so 3 is not assembled; remove the blank: FCB 1,2,3",
+   "4:24-27 warning: Blank in the FCB list — the rest of the line is a comment, so 3,4 is not assembled; remove the blank: FCB 1,2,3,4",
+   "5:21-22 error: Unterminated expression: the list ends with ',' — the blank ends the operand; remove it: FCB 1,$FF",
+   "7:24-33 warning: Blank in the FCB list — the rest of the line is a comment, so %0101,'A' is not assembled; remove the blank: FCB 1,2,%0101,'A'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +2",
+   "5: 38 +1",
+   "6: 39 +2",
+   "7: 41 +2",
+   "8: 43 +2",
+   "9: 45 +2",
+   "10: 47 +2",
+   "11: 49 +2",
+   "12: 51 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-y.sflisp": {
+  "diagnostics": [
+   "2:23-24 error: Unterminated expression: the list ends with ',' — remove the last ',' or add a value",
+   "3:23-24 error: Unterminated expression: the list ends with ',' — remove the last ',' or add a value",
+   "5:24-31 warning: Blank in the FCB list — the rest of the line is a comment, so $1F,%01 is not assembled; remove the blank: FCB 1,2,$1F,%01"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +2",
+   "5: 38 +2",
+   "6: 40 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/dirhash-z.sflisp": {
+  "diagnostics": [
+   "2:24-27 warning: Blank in the FCB list — the rest of the line is a comment, so 3,4 is not assembled; remove the blank: FCB 1,2,3,4",
+   "3:24-26 warning: Blank in the FCB list — the rest of the line is a comment, so 3 is not assembled; remove the blank: FCB 1,2,3"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/expr-p.sflisp": {
+  "diagnostics": [
+   "4:23-24 error: Missing Parenthesis: '(' is not closed",
+   "5:23-24 error: Unexpected Parenthesis: ')' without '('",
+   "6:21-22 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "7:21-22 error: Unterminated expression: a value is missing at the end",
+   "8:22-23 error: Operand expected: '*' needs a value before it",
+   "9:23-24 error: Unexpected Parenthesis: ')' without '('",
+   "10:21-22 error: Missing operator before '('",
+   "11:22-23 error: Operand expected: '*' needs a value before it",
+   "12:20-21 error: Unterminated expression: a value is missing at the end",
+   "13:20-21 error: Unterminated expression: a value is missing at the end",
+   "14:21-22 error: Unexpected character '<' — there are no comparisons; for a shift write <<",
+   "15:22-23 error: Unterminated expression: a value is missing at the end",
+   "16:23-24 error: Unexpected character '<' — there are no comparisons; for a shift write <<",
+   "17:23-24 error: Unexpected character '>' — there are no comparisons; for a shift write >>",
+   "18:21-22 error: Unexpected character '=' in the expression",
+   "21:21-22 error: Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '(1' is not closed; for a list of bytes write FCB 1,2",
+   "26:21-22 error: Integer divide by zero",
+   "28:20-21 error: Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)",
+   "29:21-22 error: Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)",
+   "30:21-22 error: Unterminated expression: the list ends with ',' — remove the last ',' or add a value",
+   "32:20-21 error: Unexpected Parenthesis: ')' without '('",
+   "36:23-24 error: Missing Parenthesis: '(' is not closed",
+   "37:23-24 error: Unexpected Parenthesis: ')' without '('",
+   "38:21-22 error: Missing operator before '('",
+   "39:20-21 error: Illegal use of reserved word 'X' — register names cannot be used in expressions",
+   "40:20-21 error: Illegal use of reserved word 'A' — register names cannot be used in expressions",
+   "41:22-23 error: Illegal use of reserved word 'A' — register names cannot be used in expressions",
+   "42:21-22 error: Unterminated expression: a value is missing at the end",
+   "43:21-22 error: Missing operator before '('",
+   "44:23-24 error: Unterminated expression: a value is missing at the end",
+   "45:23-26 error: Missing operator before 'B'",
+   "46:21-24 error: Missing operator before 'A'",
+   "47:21-22 error: Unexpected character '.' in the expression",
+   "48:21-22 error: Unexpected character '?' in the expression",
+   "49:21-22 error: Unexpected character '@' in the expression",
+   "50:20-21 error: Unexpected character '[' in the expression",
+   "51:20-21 error: Unexpected character '{' in the expression",
+   "52:21-22 error: Unexpected character ':' in the expression",
+   "54:24-25 error: Missing Parenthesis: '(' is not closed",
+   "55:22-23 error: Unterminated expression: a value is missing at the end",
+   "58:21-22 error: Unterminated expression: a value is missing at the end",
+   "59:20-25 error: Bad operand '(1,X)' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP",
+   "62:21-22 error: Unterminated expression: a value is missing at the end",
+   "63:20-24 error: Bad operand ',X+1' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP",
+   "65:25-26 error: Unterminated expression: a value is missing at the end",
+   "67:23-24 error: Missing Parenthesis: '(' is not closed",
+   "68:21-22 error: Missing Parenthesis: '(' is not closed",
+   "69:21-22 error: Unterminated expression: a value is missing at the end"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +0",
+   "5: 33 +0",
+   "6: 33 +1",
+   "7: 34 +0",
+   "8: 34 +0",
+   "9: 34 +0",
+   "10: 34 +0",
+   "11: 34 +0",
+   "12: 34 +0",
+   "13: 34 +0",
+   "14: 34 +1",
+   "15: 35 +0",
+   "16: 35 +0",
+   "17: 35 +0",
+   "18: 35 +1",
+   "19: 36 +1",
+   "20: 37 +1",
+   "21: 38 +0",
+   "22: 38 +1",
+   "23: 39 +1",
+   "24: 40 +1",
+   "25: 41 +1",
+   "26: 42 +1",
+   "27: 43 +1",
+   "28: 44 +0",
+   "29: 44 +1",
+   "30: 45 +1",
+   "31: 46 +1",
+   "32: 47 +0",
+   "33: 47 +1",
+   "34: 48 +1",
+   "35: 49 +1",
+   "36: 50 +0",
+   "37: 50 +0",
+   "38: 50 +0",
+   "39: 50 +0",
+   "40: 50 +0",
+   "41: 50 +0",
+   "42: 50 +0",
+   "43: 50 +0",
+   "44: 50 +0",
+   "45: 50 +0",
+   "46: 50 +0",
+   "47: 50 +1",
+   "48: 51 +0",
+   "49: 51 +0",
+   "50: 51 +0",
+   "51: 51 +0",
+   "52: 51 +1",
+   "53: 52 +2",
+   "54: 54 +0",
+   "55: 54 +0",
+   "56: 54 +2",
+   "57: 56 +2",
+   "58: 58 +0",
+   "59: 58 +0",
+   "60: 58 +2",
+   "61: 60 +2",
+   "62: 62 +0",
+   "63: 62 +0",
+   "64: 62 +2",
+   "65: 64 +0",
+   "66: 64 +2"
+  ],
+  "stoppedAt": 67
+ },
+ "probes/expr-t.sflisp": {
+  "diagnostics": [
+   "2:21-22 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "3:21-22 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "4:21-22 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "5:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "6:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "7:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "8:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "9:23-24 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "10:21-22 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "11:20-22 error: Undefined symbol 'PC'",
+   "12:20-22 error: Undefined symbol 'pc'",
+   "13:20-22 error: Illegal use of reserved word 'CC' — register names cannot be used in expressions",
+   "14:20-22 error: Illegal use of reserved word 'cc' — register names cannot be used in expressions",
+   "15:20-21 error: Illegal use of reserved word 'a' — register names cannot be used in expressions",
+   "16:20-21 error: Illegal use of reserved word 'y' — register names cannot be used in expressions",
+   "17:20-21 error: Illegal use of reserved word 'x' — register names cannot be used in expressions",
+   "18:20-22 error: Illegal use of reserved word 'SP' — register names cannot be used in expressions",
+   "19:20-21 error: Undefined symbol 'B'",
+   "20:20-21 error: Undefined symbol 'D'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +1",
+   "12: 42 +1",
+   "13: 43 +0",
+   "14: 43 +0",
+   "15: 43 +0",
+   "16: 43 +0",
+   "17: 43 +0",
+   "18: 43 +0",
+   "19: 43 +1",
+   "20: 44 +1",
+   "21: 45 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/expr-u.sflisp": {
+  "diagnostics": [
+   "4:23-24 error: Operand expected: '*' needs a value before it",
+   "5:21-22 error: Operand expected: '&' needs a value before it",
+   "6:21-22 error: Operand expected: '+' needs a value before it",
+   "7:21-22 error: Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '(2' is not closed; for a list of bytes write FCB 2,",
+   "8:20-23 error: Undefined symbol 'LDA'",
+   "9:20-23 error: Undefined symbol 'ORG'",
+   "10:20-23 error: Undefined symbol 'end'",
+   "12:21-22 error: Integer divide by zero",
+   "13:21-22 error: Integer divide by zero",
+   "14:21-24 error: Missing operator before 'A'",
+   "15:23-26 error: Missing operator before 'A'",
+   "17:20-22 error: Undefined symbol 'Kx'",
+   "18:20-22 error: Illegal use of reserved word 'sp' — register names cannot be used in expressions",
+   "19:20-22 error: Undefined symbol 'Pc'",
+   "20:20-22 error: Operand expected: '<<' needs a value before it",
+   "21:20-22 error: Operand expected: '>>' needs a value before it",
+   "22:21-22 error: Unexpected character '>' — there are no comparisons; for a shift write >>",
+   "23:21-22 warning: Missing operator before '!' — qaflisp silently drops the value before it (1!2 is !2)",
+   "24:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)",
+   "25:23-24 error: Missing operator before '2'",
+   "26:21-22 error: Missing operator before '('"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +0",
+   "6: 32 +0",
+   "7: 32 +0",
+   "8: 32 +1",
+   "9: 33 +1",
+   "10: 34 +1",
+   "11: 35 +1",
+   "12: 36 +1",
+   "13: 37 +1",
+   "14: 38 +0",
+   "15: 38 +0",
+   "16: 38 +1",
+   "17: 39 +1",
+   "18: 40 +0",
+   "19: 40 +1",
+   "20: 41 +0",
+   "21: 41 +0",
+   "22: 41 +1",
+   "23: 42 +1",
+   "24: 43 +1",
+   "25: 44 +0",
+   "26: 44 +0",
+   "27: 44 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/expr-v.sflisp": {
+  "diagnostics": [
+   "2:21-22 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "3:21-22 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "11:20-21 error: Operand expected: '&' needs a value before it",
+   "12:20-21 error: Operand expected: '|' needs a value before it",
+   "13:20-21 error: Operand expected: '^' needs a value before it",
+   "14:23-24 error: Missing operator before '('",
+   "15:23-24 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "16:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "17:22-23 error: Operand expected: '|' needs a value before it",
+   "18:22-23 error: Operand expected: '&' needs a value before it",
+   "19:22-23 error: Operand expected: '^' needs a value before it",
+   "21:21-22 error: Missing Parenthesis: '(' is not closed",
+   "22:24-25 warning: Missing value before ')' — qaflisp silently uses 0 here"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +0",
+   "12: 41 +0",
+   "13: 41 +0",
+   "14: 41 +0",
+   "15: 41 +1",
+   "16: 42 +1",
+   "17: 43 +0",
+   "18: 43 +0",
+   "19: 43 +0",
+   "20: 43 +1",
+   "21: 44 +0",
+   "22: 44 +1",
+   "23: 45 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/expr-w.sflisp": {
+  "diagnostics": [
+   "9:23-24 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "10:23-24 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "11:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "12:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "13:20-21 error: Unterminated expression: a value is missing at the end",
+   "14:25-26 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "15:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "16:23-24 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "19:22-23 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "20:23-24 error: Missing Parenthesis: '(' is not closed",
+   "21:23-24 error: Unexpected Parenthesis: ')' without '('"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +1",
+   "7: 37 +1",
+   "8: 38 +1",
+   "9: 39 +1",
+   "10: 40 +1",
+   "11: 41 +1",
+   "12: 42 +1",
+   "13: 43 +0",
+   "14: 43 +1",
+   "15: 44 +1",
+   "16: 45 +1",
+   "17: 46 +1",
+   "18: 47 +1",
+   "19: 48 +1",
+   "20: 49 +0",
+   "21: 49 +0",
+   "22: 49 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/modes-m.sflisp": {
+  "diagnostics": [
+   "2:5-7 error: Illegal addressing mode — STA has no immediate addressing (#Data); allowed: Adr  n,SP  n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,Y  A,Y  ,Y+  ,Y-  ,+Y  ,-Y",
+   "3:5-8 error: Illegal addressing mode — CLR has no indexed, post-increment addressing (,X+); allowed: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "4:5-8 error: Illegal register combination 'A,X' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y",
+   "5:1-4 error: Missing operand — LDA needs one of: #Data  Adr  n,SP  n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,Y  A,Y  ,Y+  ,Y-  ,+Y  ,-Y",
+   "6:7-10 error: Illegal addressing mode — ANDCC has no absolute addressing (Adr); allowed: #Data",
+   "7:5-7 error: Illegal addressing mode — JMP has no immediate addressing (#Data); allowed: Adr  n,X  A,X  n,Y  A,Y",
+   "8:5-8 error: Illegal addressing mode — BEQ has no indexed addressing (n,X); allowed: Adr",
+   "9:6-9 error: Illegal addressing mode — LEAX has no indexed addressing (n,Y); allowed: n,SP  n,X",
+   "10:5-8 error: Illegal register combination 'A,X' — EXG allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y",
+   "11:5-9 error: Bad operand '#5,X' — immediate data cannot be combined with an index register",
+   "12:1-4 error: Missing operand — LSL needs one of: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "13:7-10 error: Illegal addressing mode — CMPSP has no indexed addressing (n,X); allowed: #Data  Adr",
+   "14:5-8 error: Bad operand ',Z+' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP",
+   "15:5-9 error: Bad operand '3,PC' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP",
+   "16:5-9 error: Bad operand 'A,SP' — the A offset works with X and Y only (A,X  A,Y)"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +0",
+   "6: 32 +0",
+   "7: 32 +0",
+   "8: 32 +0",
+   "9: 32 +0",
+   "10: 32 +0",
+   "11: 32 +0",
+   "12: 32 +0",
+   "13: 32 +0",
+   "14: 32 +0",
+   "15: 32 +0",
+   "16: 32 +0",
+   "17: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/modes-n.sflisp": {
+  "diagnostics": [
+   "2:5-7 error: Bad operand ',X' — write 0,X for the address in X itself"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-chainForward.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: RMB uses 'K', but 'K' uses 'M', which is defined further down (line 2) — qaflisp does not know the value in its first pass (\"Phase error between passes\"); define 'M' first"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/pass1-chainInOrder.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 32 +0",
+   "4: 32 +2",
+   "5: 34 +1",
+   "6: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-equAfterLabel.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: RMB uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/pass1-equLabelLaterThanEqu.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: RMB uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 32 +0",
+   "3: 32 +1"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/pass1-fcbViaEqu.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +1",
+   "5: 34 +2",
+   "6: 36 +1",
+   "7: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-orgChainForward.sflisp": {
+  "diagnostics": [
+   "3:5-6 error: ORG uses 'K', but 'K' uses 'M', which is defined further down (line 2) — qaflisp does not know the value in its first pass (\"Phase error between passes\"); define 'M' first"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/pass1-orgLabelAbove.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 36 +0",
+   "4: 36 +1",
+   "5: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-orgLaterConst.sflisp": {
+  "diagnostics": [
+   "1:5-6 error: Forward reference: 'K' is defined further down (line 3) — ORG can only use symbols defined above it"
+  ],
+  "layout": [],
+  "stoppedAt": 1
+ },
+ "probes/pass1-orgLaterLabel.sflisp": {
+  "diagnostics": [
+   "3:5-10 error: Forward reference: 'Later' is defined further down (line 5) — ORG can only use symbols defined above it"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/pass1-orgViaEquLabelAbove.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: ORG uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the ORG"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/pass1-orgViaEquLaterLabel.sflisp": {
+  "diagnostics": [
+   "2:5-6 error: ORG uses 'K', which depends on the label 'Later' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the ORG"
+  ],
+  "layout": [
+   "1: 0 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/pass1-rmbDirectLabelDiff.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +1",
+   "6: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-rmbLabelMul.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: RMB uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/pass1-rmbLabelsAbove.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +1",
+   "5: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-rmbLaterChain.sflisp": {
+  "diagnostics": [
+   "2:5-6 error: RMB uses 'K', but 'K' uses 'M', which is defined further down (line 4) — qaflisp does not know the value in its first pass (\"Phase error between passes\"); define 'M' first"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/pass1-rmbLaterConst.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +4",
+   "3: 36 +1",
+   "4: 37 +0",
+   "5: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-rmbLaterEquOfLaterLabels.sflisp": {
+  "diagnostics": [
+   "2:5-6 error: RMB uses 'K', which depends on the label 'L2' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/pass1-rmbLaterLabel.sflisp": {
+  "diagnostics": [
+   "3:5-10 error: RMB depends on label 'Later', which is defined further down (line 5) — qaflisp cannot know the size in its first pass (\"Phase error between passes\" or \"Undetermined size\")"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/pass1-rmbNetZero.sflisp": {
+  "diagnostics": [
+   "5:5-6 error: RMB uses 'K', which depends on the label 'End1' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": 5
+ },
+ "probes/pass1-rmbOwnLabel.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/pass1-rmbSelf.sflisp": {
+  "diagnostics": [
+   "2:7-9 error: RMB depends on label 'L1', which is defined further down (line 3) — qaflisp cannot know the size in its first pass (\"Phase error between passes\" or \"Undetermined size\")"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/pass1-rmbTwoEqus.sflisp": {
+  "diagnostics": [
+   "5:5-6 error: RMB uses 'J', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +0"
+  ],
+  "stoppedAt": 5
+ },
+ "probes/pass1-rmbViaEquLaterLabel.sflisp": {
+  "diagnostics": [
+   "3:10-11 error: RMB uses 'K', which depends on the label 'Later' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/pass1-rmbViaEquSelfDiff.sflisp": {
+  "diagnostics": [
+   "4:5-6 error: RMB uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/phase-col0dig.sflisp": {
+  "diagnostics": [
+   "2:0-4 error: Illegal label — a label must start with a letter or '_'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-col0mn.sflisp": {
+  "diagnostics": [
+   "2:0-3 error: Illegal mnemonic: 'LDA' in column 1 is read as a label — indent instructions"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-col0star.sflisp": {
+  "diagnostics": [
+   "2:0-2 error: Illegal label — a label must start with a letter or '_'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-dupcode.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 4)",
+   "4:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupend.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 4)",
+   "4:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupend3.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 4)",
+   "4:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupequ.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'K' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'K' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupnext.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 4)",
+   "4:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupsame.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'L' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'L' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupsecond.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 3)",
+   "3:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupvec.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 3)",
+   "3:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-dupvec2.sflisp": {
+  "diagnostics": [
+   "2:0-5 error: Multiple definition of 'Start' (also in line 4)",
+   "4:0-5 error: Multiple definition of 'Start' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-equfwd.sflisp": {
+  "diagnostics": [
+   "4:7-8 error: RMB uses 'K', but 'K' uses 'M', which is defined further down (line 3) — qaflisp does not know the value in its first pass (\"Phase error between passes\"); define 'M' first"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/phase-fcbfwd.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-illegnext.sflisp": {
+  "diagnostics": [
+   "2:1-4 error: Illegal mnemonic 'FOO'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +2",
+   "5: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-indlbl.sflisp": {
+  "diagnostics": [
+   "2:1-6 error: Illegal mnemonic 'Start' — if 'Start' is a label, it must start in column 1",
+   "3:5-10 error: Undefined symbol 'Start'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-indonly.sflisp": {
+  "diagnostics": [
+   "2:2-7 error: Illegal mnemonic 'Start' — if 'Start' is a label, it must start in column 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-lblcolon.sflisp": {
+  "diagnostics": [
+   "2:1-7 error: Illegal mnemonic 'Start:' — if 'Start' is a label, it must start in column 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-lblequ.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'K' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'K' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/phase-lbllater.sflisp": {
+  "diagnostics": [
+   "3:0-1 error: Multiple definition of 'L' (also in line 4)",
+   "4:0-1 error: Multiple definition of 'L' (also in line 3)"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2"
+  ],
+  "stoppedAt": 3
+ },
+ "probes/phase-lowermn.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-rl.sflisp": {
+  "diagnostics": [
+   "17:0-5 error: Multiple definition of 'Start' (also in line 36)",
+   "36:0-5 error: Multiple definition of 'Start' (also in line 17)"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +4",
+   "11: 4 +4",
+   "12: 8 +1",
+   "13: 9 +13",
+   "14: 22 +1",
+   "15: 23 +0",
+   "16: 32 +0"
+  ],
+  "stoppedAt": 17
+ },
+ "probes/phase-rmbfwd.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +3",
+   "3: 35 +1",
+   "4: 36 +0",
+   "5: 36 +2",
+   "6: 38 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-trunnext.sflisp": {
+  "diagnostics": [
+   "2:5-8 error: Address 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +2",
+   "5: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-typo.sflisp": {
+  "diagnostics": [
+   "2:1-5 error: Illegal mnemonic 'LDAA'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/phase-undefnext.sflisp": {
+  "diagnostics": [
+   "2:5-8 error: Undefined symbol 'Foo'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +2",
+   "5: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-asla.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-base.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +1",
+   "5: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-ccreg.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-chr.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-chr1.sflisp": {
+  "diagnostics": [
+   "2:6-8 error: Character constant without closing quote — write 'A'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-col0.sflisp": {
+  "diagnostics": [
+   "2:0-3 error: Illegal mnemonic: 'LDA' in column 1 is read as a label — indent instructions",
+   "3:0-3 warning: 'NOP' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-col0b.sflisp": {
+  "diagnostics": [
+   "1:0-3 error: Illegal mnemonic: 'ORG' in column 1 is read as a label — indent instructions"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +1",
+   "3: 1 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-colon.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-end.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-end2.sflisp": {
+  "diagnostics": [
+   "3:5-8 error: Undefined symbol 'foo'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-esc.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +3",
+   "3: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-expr.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +2",
+   "5: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-fcs.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +3",
+   "3: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-fdb.sflisp": {
+  "diagnostics": [
+   "2:1-4 error: Illegal mnemonic 'FDB'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-include.sflisp": {
+  "diagnostics": [
+   "2:1-8 error: Illegal mnemonic 'INCLUDE'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-inh.sflisp": {
+  "diagnostics": [
+   "4:5-8 warning: RTS has no operand — qaflisp silently treats 'A,X' as a comment; remove it, or put a comment after ';'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +1",
+   "5: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-lbl.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-lblcol.sflisp": {
+  "diagnostics": [
+   "3:2-5 error: Illegal mnemonic 'Lb2' — if 'Lb2' is a label, it must start in column 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-lblt.sflisp": {
+  "diagnostics": [
+   "2:4-9 error: Illegal mnemonic 'hallo' — if 'hallo' is a label, it must start in column 1"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +1",
+   "4: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-lc.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-lower.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-move.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-notrail.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-pcidx.sflisp": {
+  "diagnostics": [
+   "2:5-9 error: Bad operand '2,PC' — indexed addressing uses X, Y or SP: n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,SP"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-pshcc.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-pulcc.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-rol.sflisp": {
+  "diagnostics": [
+   "2:1-4 error: Missing operand — ROL needs one of: Adr  n,SP  n,X  A,X  n,Y  A,Y",
+   "3:1-4 error: Missing operand — ASL needs one of: Adr  n,SP  n,X  A,X  n,Y  A,Y"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-semi.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 0 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-semi2.sflisp": {
+  "diagnostics": [
+   "2:7-8 error: Unexpected character ';' in the expression",
+   "2:8-17 error: Undefined symbol 'kommentar'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-set.sflisp": {
+  "diagnostics": [
+   "2:2-5 error: Illegal mnemonic 'SET'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-spcom.sflisp": {
+  "diagnostics": [
+   "2:6-7 error: Unterminated expression: the list ends with ',' — the blank ends the operand; remove it: FCB 1,2"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-spop.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-star.sflisp": {
+  "diagnostics": [
+   "1:0-1 error: Illegal label — a label must start with a letter or '_'"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-tfr.sflisp": {
+  "diagnostics": [
+   "2:5-6 error: Illegal register combination 'A' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa-tfrc.sflisp": {
+  "diagnostics": [
+   "2:5-8 error: Illegal register combination 'A,C' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y",
+   "2:7-8 error: Undefined symbol 'C'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-e0.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-e1.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-e2.sflisp": {
+  "diagnostics": [
+   "3:5-9 error: Undefined symbol 'Rest'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-e3.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-e4.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-f0.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-f1.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-f2.sflisp": {
+  "diagnostics": [
+   "4:5-9 error: Undefined symbol 'Rest'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/qa4-g.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-afterend.sflisp": {
+  "diagnostics": [
+   "2:5-9 error: Undefined symbol 'Late'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-case.sflisp": {
+  "diagnostics": [
+   "3:5-9 error: Undefined symbol 'loop' — did you mean 'Loop'? Symbols are case-sensitive."
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-case2.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +1",
+   "4: 34 +2",
+   "5: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-colon.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-colon2.sflisp": {
+  "diagnostics": [
+   "3:7-8 error: Unexpected character ':' in the expression"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-dollar.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-dot.sflisp": {
+  "diagnostics": [
+   "3:5-6 error: Illegal use of reserved word 'x' — register names cannot be used in expressions"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-dup.sflisp": {
+  "diagnostics": [
+   "2:0-2 error: Multiple definition of 'X1' (also in line 3)",
+   "3:0-2 error: Multiple definition of 'X1' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-dupdata.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'D' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'D' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-dupequ.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'K' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'K' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-dupequlbl.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'K' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'K' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-duplblequ.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'K' (also in line 3)",
+   "3:0-1 error: Multiple definition of 'K' (also in line 2)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-equexpr.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +2",
+   "5: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-equfwd.sflisp": {
+  "diagnostics": [
+   "1:5-10 error: Forward reference: 'Start' is defined further down (line 2) — ORG can only use symbols defined above it"
+  ],
+  "layout": [],
+  "stoppedAt": 1
+ },
+ "probes/sym-expr.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +2",
+   "5: 38 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-fcbsym.sflisp": {
+  "diagnostics": [
+   "2:5-7 error: Undefined symbol 'A1'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-fwd.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-idx.sflisp": {
+  "diagnostics": [
+   "2:5-8 error: Undefined symbol 'Off'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-lblonly.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-long.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-lowerreg.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-mnemsym.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-regname.sflisp": {
+  "diagnostics": [
+   "2:0-1 warning: 'X' is a register name and cannot be used as a symbol",
+   "3:6-7 error: Illegal use of reserved word 'X' — register names cannot be used in expressions"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-strsym.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +3",
+   "3: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-tfr.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-three.sflisp": {
+  "diagnostics": [
+   "2:0-1 error: Multiple definition of 'L' (also in line 3, 4)",
+   "3:0-1 error: Multiple definition of 'L' (also in line 2, 4)",
+   "4:0-1 error: Multiple definition of 'L' (also in line 2, 3)"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/sym-undef2.sflisp": {
+  "diagnostics": [
+   "2:5-8 error: Undefined symbol 'Foo'",
+   "2:9-12 error: Undefined symbol 'Bar'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-undefimm.sflisp": {
+  "diagnostics": [
+   "2:6-9 error: Undefined symbol 'Foo'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/sym-under.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +2",
+   "4: 35 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/where-a.sflisp": {
+  "diagnostics": [
+   "23:20-21 error: Operand expected: there is no location counter '*' — put a label on the line and use it",
+   "27:20-25 error: RMB depends on label 'Later', which is defined further down (line 28) — qaflisp cannot know the size in its first pass (\"Phase error between passes\" or \"Undetermined size\")"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 32 +0",
+   "6: 32 +2",
+   "7: 34 +2",
+   "8: 36 +2",
+   "9: 38 +2",
+   "10: 40 +2",
+   "11: 42 +2",
+   "12: 44 +2",
+   "13: 46 +2",
+   "14: 48 +2",
+   "15: 50 +2",
+   "16: 52 +2",
+   "17: 54 +2",
+   "18: 56 +2",
+   "19: 58 +2",
+   "20: 60 +2",
+   "21: 62 +2",
+   "22: 64 +2",
+   "23: 66 +0",
+   "24: 66 +6",
+   "25: 72 +1",
+   "26: 73 +8"
+  ],
+  "stoppedAt": 27
+ },
+ "probes/where-f.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0",
+   "4: 33 +1",
+   "5: 34 +1",
+   "6: 35 +1",
+   "7: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/where-g.sflisp": {
+  "diagnostics": [
+   "4:20-25 error: Illegal register combination 'A+0,X' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +0",
+   "5: 35 +0",
+   "6: 35 +1",
+   "7: 36 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/where-h.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +4",
+   "3: 36 +1",
+   "4: 37 +0",
+   "5: 37 +0"
+  ],
+  "stoppedAt": null
+ },
+ "probes/where-i.sflisp": {
+  "diagnostics": [
+   "1:20-21 error: Forward reference: 'K' is defined further down (line 3) — ORG can only use symbols defined above it"
+  ],
+  "layout": [],
+  "stoppedAt": 1
+ },
+ "probes/where-j.sflisp": {
+  "diagnostics": [
+   "2:20-22 error: RMB depends on label 'L1', which is defined further down (line 3) — qaflisp cannot know the size in its first pass (\"Phase error between passes\" or \"Undetermined size\")"
+  ],
+  "layout": [
+   "1: 32 +0"
+  ],
+  "stoppedAt": 2
+ },
+ "probes/where-k.sflisp": {
+  "diagnostics": [
+   "5:20-22 error: Forward reference: 'K2' is defined further down (line 6) — ORG can only use symbols defined above it"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +1",
+   "4: 35 +0"
+  ],
+  "stoppedAt": 5
+ },
+ "probes/where-m.sflisp": {
+  "diagnostics": [
+   "4:20-21 error: RMB uses 'K', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +1",
+   "3: 33 +0"
+  ],
+  "stoppedAt": 4
+ },
+ "probes/wsltest-multi.sflisp": {
+  "diagnostics": [
+   "2:6-8 error: Character constant without closing quote — write 'A'",
+   "3:0-3 error: Illegal mnemonic: 'LDA' in column 1 is read as a label — indent instructions",
+   "4:1-4 error: Illegal mnemonic 'FOO'",
+   "5:5-14 error: Undefined symbol 'nirgendwo'",
+   "6:0-2 error: Multiple definition of 'X1' (also in line 7)",
+   "7:0-2 error: Multiple definition of 'X1' (also in line 6)",
+   "8:5-8 error: Address 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +2"
+  ],
+  "stoppedAt": 6
+ },
+ "invalid-numbers.sflisp": {
+  "diagnostics": [
+   "3:20-22 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "4:20-30 error: Illegal binary digit in '%000200100' — binary numbers use only 0 and 1",
+   "5:20-23 error: Illegal hexadecimal digit in '$FG' — hexadecimal numbers use only 0–9 and A–F",
+   "5:24-26 error: Illegal decimal digit in '1F' — decimal numbers use only 0–9; for hex write $1F",
+   "6:20-24 error: Illegal decimal digit in '0x1F' — decimal numbers use only 0–9; for hex write $1F",
+   "7:21-22 error: Illegal binary digit: '%' without digits — write e.g. %0101",
+   "8:20-23 error: Illegal hexadecimal digit in '$1g' — hexadecimal numbers use only 0–9 and A–F",
+   "10:32-33 error: Undefined symbol 'K'"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0"
+  ],
+  "stoppedAt": 3
+ },
+ "running-light.sflisp": {
+  "diagnostics": [],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +4",
+   "11: 4 +4",
+   "12: 8 +1",
+   "13: 9 +13",
+   "14: 22 +1",
+   "15: 23 +0",
+   "16: 32 +0",
+   "17: 32 +2",
+   "18: 34 +2",
+   "19: 36 +2",
+   "20: 38 +1",
+   "21: 39 +2",
+   "22: 41 +2",
+   "23: 43 +2",
+   "24: 45 +2",
+   "25: 47 +2",
+   "26: 49 +2",
+   "27: 51 +0",
+   "28: 51 +0",
+   "29: 51 +1",
+   "30: 52 +2",
+   "31: 54 +2",
+   "32: 56 +1",
+   "33: 57 +2",
+   "34: 59 +1",
+   "35: 60 +1",
+   "36: 61 +0",
+   "37: 255 +0",
+   "38: 255 +1",
+   "39: 256 +0"
+  ],
+  "stoppedAt": null
+ },
+ "sample.sflisp": {
+  "diagnostics": [
+   "50:0-3 error: Illegal mnemonic: 'LDA' in column 1 is read as a label — indent instructions"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 32 +0",
+   "3: 32 +0",
+   "4: 32 +0",
+   "5: 32 +0",
+   "6: 32 +0",
+   "7: 32 +4",
+   "8: 36 +1",
+   "9: 37 +0",
+   "10: 37 +2",
+   "11: 39 +2",
+   "12: 41 +1",
+   "13: 42 +2",
+   "14: 44 +2",
+   "15: 46 +2",
+   "16: 48 +1",
+   "17: 49 +1",
+   "18: 50 +1",
+   "19: 51 +1",
+   "20: 52 +2",
+   "21: 54 +2",
+   "22: 56 +1",
+   "23: 57 +0",
+   "24: 57 +1",
+   "25: 58 +1",
+   "26: 59 +1",
+   "27: 60 +1",
+   "28: 61 +1",
+   "29: 62 +1",
+   "30: 63 +1",
+   "31: 64 +2",
+   "32: 66 +2",
+   "33: 68 +2",
+   "34: 70 +2",
+   "35: 72 +2",
+   "36: 74 +0",
+   "37: 74 +1",
+   "38: 75 +1",
+   "39: 76 +1",
+   "40: 77 +2",
+   "41: 79 +0",
+   "42: 79 +2",
+   "43: 81 +11",
+   "44: 92 +0",
+   "45: 92 +0",
+   "46: 92 +0",
+   "47: 92 +0",
+   "48: 92 +0",
+   "49: 92 +0",
+   "50: 92 +0",
+   "51: 92 +0",
+   "52: 92 +0",
+   "53: 92 +0",
+   "54: 92 +0",
+   "55: 255 +0",
+   "56: 255 +1",
+   "57: 256 +0"
+  ],
+  "stoppedAt": null
+ },
+ "screenshot-errors.sflisp": {
+  "diagnostics": [
+   "7:20-25 error: Illegal addressing mode — STA has no immediate addressing (#Data); allowed: Adr  n,SP  n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,Y  A,Y  ,Y+  ,Y-  ,+Y  ,-Y",
+   "9:20-24 error: Undefined symbol 'loop' — did you mean 'Loop'? Symbols are case-sensitive.",
+   "10:20-23 error: Illegal register combination 'A,X' — TFR allows A,CC  CC,A  X,Y  Y,X  X,SP  SP,X  Y,SP  SP,Y",
+   "11:20-24 warning: ASLA has no operand — qaflisp silently treats 'LEDS' as a comment; to work on memory write ASL LEDS",
+   "12:1-5 error: Illegal mnemonic 'Wait' — if 'Wait' is a label, it must start in column 1"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 32 +0",
+   "6: 32 +2",
+   "7: 34 +0",
+   "8: 34 +1",
+   "9: 35 +2",
+   "10: 37 +0",
+   "11: 37 +1",
+   "12: 38 +0",
+   "13: 38 +2",
+   "14: 40 +0",
+   "15: 255 +0",
+   "16: 255 +1",
+   "17: 256 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/1-branch-forward.sflisp": {
+  "diagnostics": [
+   "16:20-24 error: Branch target 132 ($84) is 128 bytes ahead — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 0 +2",
+   "16: 2 +2",
+   "17: 4 +2",
+   "18: 6 +123",
+   "19: 129 +1",
+   "20: 130 +1",
+   "21: 131 +1",
+   "22: 132 +1",
+   "23: 133 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/2-branch-backward.sflisp": {
+  "diagnostics": [
+   "15:20-24 error: Branch target 0 ($0) is 130 bytes back — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
+   "16:20-24 error: Branch target 0 ($0) is 132 bytes back — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JSR"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +1",
+   "13: 1 +125",
+   "14: 126 +2",
+   "15: 128 +2",
+   "16: 130 +2",
+   "17: 132 +2",
+   "18: 134 +2",
+   "19: 136 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/3-values-with-labels.sflisp": {
+  "diagnostics": [
+   "20:20-29 error: Address 351 ($15F) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $5F",
+   "21:21-23 error: Value 275 ($113) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $13",
+   "24:31-40 error: Value 332 ($14C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $4C",
+   "28:20-25 warning: ASLA has no operand — qaflisp silently treats 'Table' as a comment; to work on memory write ASL Table",
+   "29:20-22 warning: NOP has no operand — qaflisp silently treats '#5' as a comment; remove it, or put a comment after ';'"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 0 +0",
+   "16: 32 +0",
+   "17: 32 +2",
+   "18: 34 +2",
+   "19: 36 +2",
+   "20: 38 +2",
+   "21: 40 +2",
+   "22: 42 +2",
+   "23: 44 +2",
+   "24: 46 +3",
+   "25: 49 +2",
+   "26: 51 +4",
+   "27: 55 +1",
+   "28: 56 +1",
+   "29: 57 +1",
+   "30: 58 +1",
+   "31: 59 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/4-end-of-memory.sflisp": {
+  "diagnostics": [
+   "20:12-15 warning: From here on, code or data lies beyond $FF ($100…) — the memory has only 256 bytes; qaflisp silently wraps around to $00 and overwrites what is there",
+   "23:20-27 error: Address 257 ($101) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $01"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +1",
+   "14: 1 +0",
+   "15: 248 +0",
+   "16: 248 +2",
+   "17: 250 +2",
+   "18: 252 +2",
+   "19: 254 +1",
+   "20: 255 +2",
+   "21: 257 +1",
+   "22: 258 +2",
+   "23: 260 +2",
+   "24: 262 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/5-org-rmb-first-pass.sflisp": {
+  "diagnostics": [
+   "25:20-23 error: RMB depends on label 'End', which is defined further down (line 31) — qaflisp cannot know the size in its first pass (\"Phase error between passes\" or \"Undetermined size\")",
+   "26:20-26 error: RMB uses 'Offset', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the RMB",
+   "27:20-24 error: RMB uses 'Late', but 'Late' uses 'Size', which is defined further down (line 34) — qaflisp does not know the value in its first pass (\"Phase error between passes\"); define 'Size' first",
+   "29:20-23 error: Forward reference: 'Far' is defined further down (line 35) — ORG can only use symbols defined above it",
+   "30:20-26 error: ORG uses 'Offset', which depends on the label 'Start' — qaflisp uses labels in EQU as 0 in its first pass (\"Phase error between passes\" or \"Undetermined size\"); write the label directly in the ORG"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 0 +0",
+   "16: 0 +0",
+   "17: 0 +0",
+   "18: 0 +0",
+   "19: 0 +0",
+   "20: 32 +0",
+   "21: 32 +1",
+   "22: 33 +8",
+   "23: 41 +3",
+   "24: 44 +2"
+  ],
+  "stoppedAt": 25
+ },
+ "examples/6-expressions.sflisp": {
+  "diagnostics": [
+   "22:24-25 error: Missing Parenthesis: '(' is not closed",
+   "23:24-25 error: Unexpected Parenthesis: ')' without '('",
+   "24:23-24 error: Operand expected: '*' needs a value before it",
+   "25:22-23 error: Unterminated expression: a value is missing at the end",
+   "26:22-23 error: Missing operator before '('",
+   "27:21-22 error: Unexpected character '<' — there are no comparisons; for a shift write <<",
+   "28:20-21 error: Illegal use of reserved word 'X' — register names cannot be used in expressions",
+   "29:22-23 error: Integer divide by zero",
+   "31:21-22 error: Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '(1' is not closed; for a list of bytes write FCB 1,2",
+   "32:20-22 error: Undefined symbol 'PC'",
+   "33:20-21 error: Operand expected: there is no location counter '*' — put a label on the line and use it",
+   "34:23-24 warning: Missing value before ')' — qaflisp silently uses 0 here",
+   "35:21-22 warning: Missing operator before '~' — qaflisp silently drops the value before it (1~2 is ~2)"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 0 +0",
+   "16: 0 +0",
+   "17: 0 +0",
+   "18: 0 +0",
+   "19: 0 +0",
+   "20: 32 +0",
+   "21: 32 +2",
+   "22: 34 +0",
+   "23: 34 +0",
+   "24: 34 +0",
+   "25: 34 +0",
+   "26: 34 +0",
+   "27: 34 +1",
+   "28: 35 +0",
+   "29: 35 +1",
+   "30: 36 +1",
+   "31: 37 +0",
+   "32: 37 +1",
+   "33: 38 +0",
+   "34: 38 +1",
+   "35: 39 +1",
+   "36: 40 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/7-numbers-and-lists.sflisp": {
+  "diagnostics": [
+   "12:20-22 error: Illegal decimal digit in '0a' — decimal numbers use only 0–9; for hex write $0A",
+   "13:20-24 error: Illegal decimal digit in '0x1F' — decimal numbers use only 0–9; for hex write $1F",
+   "14:20-30 error: Illegal binary digit in '%000200100' — binary numbers use only 0 and 1",
+   "15:20-23 error: Illegal hexadecimal digit in '$FG' — hexadecimal numbers use only 0–9 and A–F",
+   "16:20-21 error: Illegal hexadecimal digit: '$' without digits — write e.g. $1F",
+   "18:20-23 error: Value 256 ($100) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $00",
+   "19:20-24 error: Value -257 does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $FF",
+   "21:20-27 error: Value 300 ($12C) does not fit in a byte (−256…255) — qaflisp reports \"Value is truncated\" and writes only $2C",
+   "22:24-27 warning: Blank in the FCB list — the rest of the line is a comment, so 3,4 is not assembled; remove the blank: FCB 1,2,3,4",
+   "23:23-24 error: Unterminated expression: the list ends with ',' — the blank ends the operand; remove it: FCB 1,2,3,4",
+   "24:21-22 error: Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)",
+   "25:20-21 error: Illegal character '#' — directives take plain values without '#': write EQU 5",
+   "26:20-21 error: Illegal character '#' — directives take plain values without '#': write ORG $40",
+   "27:22-23 error: Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. LDA #5",
+   "29:20-22 error: Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)",
+   "30:20-21 error: Undetermined size for reservation of storage — RMB 0: the number of bytes must be at least 1",
+   "31:20-22 error: Undetermined size for reservation of storage — RMB -1: the number of bytes must be at least 1",
+   "33:0-3 warning: 'NOP' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction",
+   "34:20-24 warning: ORG 256 ($100) is outside the memory ($00–$FF) — qaflisp silently uses $00"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 32 +0",
+   "11: 32 +4",
+   "12: 36 +0",
+   "13: 36 +0",
+   "14: 36 +0",
+   "15: 36 +0",
+   "16: 36 +0",
+   "17: 36 +2",
+   "18: 38 +1",
+   "19: 39 +1",
+   "20: 40 +1",
+   "21: 41 +1",
+   "22: 42 +2",
+   "23: 44 +2",
+   "24: 46 +1",
+   "25: 47 +0"
+  ],
+  "stoppedAt": 26
+ }
+}

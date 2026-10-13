@@ -1,0 +1,5 @@
+	ORG	$20
+	RMB	K
+K	EQU	M
+M	EQU	2
+L1	NOP
