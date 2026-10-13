@@ -171,6 +171,54 @@ test('expression syntax: parentheses, operators, reserved words, division by zer
   ]);
 });
 
+// ORG and RMB in qaflisp's first pass (measured): [live check reports an error, source]
+const PASS1 = {
+  rmbLaterLabel: [true, "\tORG\t$20\nStart\tNOP\n\tRMB\tLater-Start\n\tNOP\nLater\tNOP\n"],
+  orgLaterLabel: [true, "\tORG\t$20\nStart\tNOP\n\tORG\tLater\n\tNOP\nLater\tNOP\n"],
+  rmbLaterConst: [false, "\tORG\t$20\n\tRMB\tK\nL1\tNOP\nK\tEQU\t4\n"],
+  orgLaterConst: [true, "\tORG\tK\nL1\tNOP\nK\tEQU\t$30\n"],
+  rmbSelf: [true, "\tORG\t$20\nL0\tRMB\tL1-L0\nL1\tNOP\n"],
+  orgViaEquLaterLabel: [true, "K\tEQU\tLater\n\tORG\tK\nLater\tNOP\n"],
+  rmbViaEquLaterLabel: [true, "\tORG\t$20\nK\tEQU\tLater-Start\nStart\tRMB\tK\n\tNOP\nLater\tNOP\n"],
+  rmbLabelsAbove: [false, "\tORG\t$20\nStart\tNOP\n\tRMB\tStart+2-Start\nLater\tNOP\n"],
+  orgLabelAbove: [false, "\tORG\t$20\nStart\tNOP\n\tORG\tStart+4\nL2\tNOP\n"],
+  rmbOwnLabel: [false, "\tORG\t$20\nStart\tRMB\tStart-$1E\n\tNOP\n"],
+  rmbLaterEquOfLaterLabels: [true, "\tORG\t$20\n\tRMB\tK\nK\tEQU\tL2-L1\nL1\tNOP\nL2\tNOP\n"],
+  chainForward: [true, "K\tEQU\tM\nM\tEQU\t2\n\tORG\t$20\n\tRMB\tK\nL1\tNOP\n"],
+  equLabelLaterThanEqu: [true, "K\tEQU\tStart\n\tORG\t$20\nStart\tNOP\n\tRMB\tK-$1F\nL1\tNOP\n"],
+  chainInOrder: [false, "M\tEQU\t2\nK\tEQU\tM\n\tORG\t$20\n\tRMB\tK\nL1\tNOP\n"],
+  equAfterLabel: [true, "\tORG\t$20\nStart\tNOP\nK\tEQU\tStart+1\n\tRMB\tK-$20\nL1\tNOP\n"],
+  rmbLaterChain: [true, "\tORG\t$20\n\tRMB\tK\nK\tEQU\tM\nM\tEQU\t2\nL1\tNOP\n"],
+  orgViaEquLabelAbove: [true, "\tORG\t$20\nStart\tNOP\nK\tEQU\tStart+4\n\tORG\tK\nL1\tNOP\n"],
+  rmbViaEquSelfDiff: [true, "\tORG\t$20\nStart\tNOP\nK\tEQU\tStart-Start+2\n\tRMB\tK\nL1\tNOP\n"],
+  rmbTwoEqus: [true, "\tORG\t$20\nStart\tNOP\nK\tEQU\tStart\nJ\tEQU\tK-$1F\n\tRMB\tJ\nL1\tNOP\n"],
+  fcbViaEqu: [false, "\tORG\t$20\nStart\tNOP\nK\tEQU\tStart+4\n\tFCB\tK\n\tLDA\t#K\nL1\tNOP\n"],
+  orgChainForward: [true, "K\tEQU\tM\nM\tEQU\t$30\n\tORG\tK\nL1\tNOP\n"],
+  rmbNetZero: [true, "\tORG\t$20\nStart\tNOP\nEnd1\tNOP\nK\tEQU\tEnd1-Start+Start-Start\n\tRMB\tK\nL1\tNOP\n"],
+  rmbLabelMul: [true, "\tORG\t$20\nStart\tNOP\nK\tEQU\t(Start-$20)*2\n\tRMB\tK\nL1\tNOP\n"],
+  rmbDirectLabelDiff: [false, "\tORG\t$20\nStart\tNOP\nEnd1\tNOP\n\tRMB\tEnd1-Start\nL1\tNOP\n"],
+};
+// Accepted differences: qaflisp gives no message here, but the code only works by chance
+// (circular ORG, resolved to 0) or is contrived (Start-Start+2).
+const PASS1_DIFFERENT = new Set(['orgViaEquLaterLabel', 'rmbViaEquSelfDiff']);
+
+test('ORG and RMB: values qaflisp does not know in its first pass', () => {
+  for (const [name, [flag, src]] of Object.entries(PASS1)) {
+    const errs = analyze(src).diagnostics.filter((d) => d.severity === 'error');
+    assert.strictEqual(errs.length > 0, flag, `${name}: ${errs.map((d) => d.message).join('; ') || 'no error'}`);
+  }
+  const msgs = (src) => analyze(src).diagnostics.map((d) => `${d.line + 1}:${d.message.split(' — ')[0]}`);
+  assert.deepStrictEqual(msgs(PASS1.orgLaterConst[1]), ["1:Forward reference: 'K' is defined further down (line 3)"]);
+  assert.deepStrictEqual(msgs(PASS1.rmbLaterLabel[1]), ["3:RMB depends on label 'Later', which is defined further down (line 5)"]);
+  assert.deepStrictEqual(msgs(PASS1.equAfterLabel[1]), ["4:RMB uses 'K', which depends on the label 'Start'"]);
+  assert.deepStrictEqual(msgs(PASS1.chainForward[1]), ["4:RMB uses 'K', but 'K' uses 'M', which is defined further down (line 2)"]);
+  assert.deepStrictEqual(msgs('\tORG\t$20\n\tBRA\t*+2\n'), ["2:Operand expected: there is no location counter '*'"]);
+  const e = explainPhaseError(analyze(PASS1.rmbLaterLabel[1]), 4);
+  assert.strictEqual(e.relatedLine, 2);
+  assert.match(e.message, /the RMB in line 3 uses a value that qaflisp does not know in pass 1/);
+  assert.match(explainPhaseError(analyze(PASS1.orgViaEquLabelAbove[1]), 4).message, /the ORG in line 4 .* sets a different address/);
+});
+
 test("'%' after an operand is modulo, not a binary number", () => {
   const a = analyze('K\tEQU\t3\n\tFCB\t7%3,7%K,(7)%2,%11%%10\n');
   assert.deepStrictEqual(a.diagnostics, []);
@@ -236,8 +284,10 @@ const PROBES = {
     'LDA\t#(5)', 'LDA\t#(1+2', 'LDA\t#1+', 'LDA\t(5),X', 'LDA\t(2+3),X', 'LDA\t1+,X', 'LDA\t(1,X)', 'LDA\t2*(1+1),Y', 'LDA\t#-(1)',
     'LDA\t#~', 'LDA\t,X+1', 'JMP\t(Start)', 'JMP\tStart+', 'BRA\t(Start)', 'ORG\t(1+2', 'RMB\t2*', 'ORG\t$20',
   ].map((l) => `\t${l}\n`).join('') + 'Q\tEQU\t(1\n',
+  // ("Phase error" of an RMB is reported by qaflisp at the later label, so it is tested above only.)
+  forward: '\tORG\t$20\nL0\tRMB\tL1-L0\nL1\tNOP\n\tRMB\tK\nK\tEQU\t2\n\tORG\tK2\nK2\tEQU\t$40\n\tORG\tL1+4\n\tRMB\tL1+2-L0\n\tBRA\t*+2\n',
 };
-const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label|Illegal [Aa]ddressing [Mm]ode|Illegal register combination|Syntax Error|Illegal character|Bad operand syntax|Unterminated expression|Illegal (decimal|binary|hexadecimal) digit|is truncated|Undetermined size|Parenthesis|Operand expected|Missing operator|reserved word|divide by zero|Bad delimiter|unreacheable/;
+const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label|Illegal [Aa]ddressing [Mm]ode|Illegal register combination|Syntax Error|Illegal character|Bad operand syntax|Unterminated expression|Illegal (decimal|binary|hexadecimal) digit|is truncated|Undetermined size|Parenthesis|Operand expected|Missing operator|reserved word|divide by zero|Bad delimiter|unreacheable|Forward reference|Bad operand syntax/;
 
 if (realExe) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flisp-symbols-'));
@@ -250,9 +300,18 @@ if (realExe) {
       const ours = [...new Set(errors(analyze(source)).map((d) => d.line))];
       for (const line of theirs) assert.ok(ours.includes(line), `qaflisp reports line ${line + 1}, we do not (${r.output})`);
       if (theirs.length === 0) assert.deepStrictEqual(ours, [], 'qaflisp finds no symbol errors, we do');
-      if (['immediate', 'fcbList', 'numbers', 'values', 'expressions'].includes(name)) assert.deepStrictEqual(ours.sort((x, y) => x - y), theirs.sort((x, y) => x - y), 'exactly the lines qaflisp reports');
+      if (['immediate', 'fcbList', 'numbers', 'values', 'expressions', 'forward'].includes(name)) assert.deepStrictEqual(ours.sort((x, y) => x - y), theirs.sort((x, y) => x - y), 'exactly the lines qaflisp reports');
     });
   }
+  test('ORG and RMB in pass 1: an error exactly where qaflisp reports one (some report it at a later line)', async () => {
+    for (const [name, [flag, source]] of Object.entries(PASS1)) {
+      const file = path.join(tmp, `pass1-${name}.sflisp`);
+      fs.writeFileSync(file, source);
+      const r = await runQaflisp(realExe, file, {});
+      const theirs = r.messages.some((m) => m.severity === 'error');
+      assert.strictEqual(theirs, PASS1_DIFFERENT.has(name) ? !flag : flag, `${name}: qaflisp ${theirs ? 'reports an error' : 'accepts it'} (${r.output})`);
+    }
+  });
   tests.push(['(cleanup)', () => fs.rmSync(tmp, { recursive: true, force: true })]);
 }
 

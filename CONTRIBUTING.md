@@ -106,6 +106,37 @@ Accepted without a message, probably by accident:
 
 The live check parses expressions the same way (`src/expression.js`): it reports the lines above as errors (with its own, more explicit messages) and the two accepted oddities as warnings; 47 measured expressions give the same bytes as qaflisp, and a probe with about 100 expressions gives exactly qaflisp's error lines.
 
+### Where expressions can be used
+
+| Place | Example | qaflisp |
+|---|---|---|
+| immediate data | `LDA #N*3+1`, `LDA #Table>>1`, `LDA #'A'+1`, `ANDCC #~1`, `ORCC #1<<4` | ✓ |
+| absolute address | `LDA Table+2`, `STA BASE+N`, `JMP Start+1`, `JSR Loop&$FE` | ✓ |
+| offset of indexed addressing | `LDA N-1,X`, `LDA Table-Start,Y`, `LDA 2*N,SP` | ✓ |
+| branch target | `BRA Loop+2`, `BNE Start+(Loop-Start)/2` | ✓ the expression is the target address; qaflisp computes the displacement |
+| `FCB` | `FCB N,N*2,BASE\|1,Table,Loop-Start,'Z'-'A'` | ✓ labels and label differences, also further down |
+| `EQU` | `MASK EQU 1<<N-1`, `TOP EQU Table+N*2` | ✓ also with labels further down |
+| `ORG` | `ORG BASE*2`, `ORG Table+$20` | ✓ with symbols defined **above** — see the pass-1 rules below |
+| `RMB` | `RMB N*2`, `RMB End1-Start`, `RMB K` with `K EQU 2` further down | ✓ — see the pass-1 rules below |
+| `END` | `END Start+0` | ✓ |
+| `FCS` | `FCS "AB"+1` | ✗ everything after the string is ignored |
+| `TFR`, `EXG` | `TFR A+0,X` | ✗ *Bad register pair* |
+| location counter | `BRA *+2` | ✗ *Bad operand syntax* — there is no `*` |
+
+**`ORG` and `RMB` are evaluated in pass 1**, where qaflisp does not know every value yet. Measured with 24 cases:
+
+| Operand uses | `ORG` | `RMB` |
+|---|---|---|
+| a label above (`ORG Start+4`, `RMB End1-Start`, the own label) | ✓ | ✓ |
+| a label further down (`RMB Later-Start`, `L0 RMB L1-L0`) | *Forward reference* | *Phase error between passes* at a later label, or *Undetermined size for reservation of storage* |
+| an `EQU` constant further down with a plain value (`RMB K` … `K EQU 2`) | *Forward reference* | ✓ |
+| an `EQU` constant that contains a label, even one above (`K EQU Start+4`, `K EQU End1-Start`, `K EQU (Start-$20)*2`) | *Phase error* | *Phase error* or *Undetermined size* |
+| an `EQU` constant that uses a symbol defined after it (`K EQU M` … `M EQU 2`, warning *symbol 'M' is forward referenced*) | *Phase error* | *Phase error* or *Undetermined size* |
+
+The results fit the assumption that qaflisp takes labels in `EQU` expressions as 0 in pass 1 (`(Start-$20)*2` becomes negative: *Undetermined size*). Two cases pass without a message only by chance: `K EQU Start-Start+2` (the labels cancel out) and `K EQU Later` above `ORG K` with `Later` right after it (circular; qaflisp resolves it to address 0). Using constants in `FCB`, immediate data and addresses is fine in all these cases, because those are only evaluated in pass 2.
+
+The live check reports all cases of the table on the `ORG`/`RMB` line (the two chance cases too). After assembling, qaflisp's *Phase error* at the later label is explained with a link to that line.
+
 ### Values larger than a byte
 
 qaflisp accepts a byte value from **−256 to 255**; anything outside gives *Value (0x…) is truncated* (an error, but the truncated low byte is still written to `.s19`/`.fmem`). This applies wherever a byte is generated: `FCB 256`, `FCB $1FF`, `FCB 200+100`, `FCB BIG` with `BIG EQU 70000`, `LDA #256`, `LDA $100`, offsets such as `LDA 300,X` and `LDA -257,X`, `FCB -257`. `RMB -1` gives *Undetermined size for reservation of storage*.
@@ -121,9 +152,9 @@ The live check reports the same *truncated* errors where the value is known with
 qaflisp works in two passes: pass 1 assigns an address to every label, pass 2 generates the code. If a label ends up at a different address in pass 2, qaflisp reports *Phase error between passes* at that label. Two causes are known:
 
 1. **Follow-up error of a multiple definition** (the usual case): qaflisp does not assemble a line whose label is defined more than once — its machine code is missing. All addresses after it shift, and the next label reports the phase error. Fixing the multiple definition removes it. Errors such as *Undefined symbol*, *Illegal mnemonic* or *Value … is truncated* do **not** cause phase errors, because those lines occupy the same space in both passes.
-2. **Chained forward reference in `EQU`**, used as a size: `K EQU M` before `M EQU 2` (warning *forward referenced*), then `RMB K` — in pass 1 `K` is still 0. A simple forward reference (`RMB N` before `N EQU 3`) works.
+2. **A value that is not known in pass 1, used in `ORG` or `RMB`**: a label further down, an `EQU` that contains a label, or an `EQU` that uses a symbol defined after it (`K EQU M` before `M EQU 2`, warning *forward referenced*) — see "Where expressions can be used". A simple forward reference (`RMB N` before `N EQU 3`) works.
 
-The extension adds this explanation to the message and links to the nearest multiple definition above it.
+The extension adds this explanation to the message and links to the nearest multiple definition above it, or to the `ORG`/`RMB` line.
 
 ### Output files and messages
 

@@ -145,6 +145,7 @@ function parse(text, valueOf = () => undefined) {
       if (t.text === '~') return ~v;
       return v === 0 ? 1 : 0;
     }
+    if (t.type === 'op' && t.text === '*' && pos === 1) fail(t, "Operand expected: there is no location counter '*' — put a label on the line and use it");
     if (t.type === 'op') fail(t, `Operand expected: '${t.text}' needs a value before it`);
     return unexpected(t, depth);
   }

@@ -214,7 +214,53 @@ function expressionParts(mn, operand) {
   return [];
 }
 
-function valueProblems(p, line, valueOf) {
+// ORG and RMB are evaluated in qaflisp's first pass, where not every value is known yet
+// (measured, see CONTRIBUTING.md "Where expressions can be used"):
+//   a label further down                      ORG: "Forward reference"; RMB: "Phase error between
+//                                             passes" at a later label, or "Undetermined size"
+//   a constant (EQU) further down             ORG: "Forward reference"; RMB: fine
+//   a constant that depends on a label, or    "Phase error" / "Undetermined size": qaflisp uses
+//   on a symbol defined after it              labels in EQU as 0 in the first pass
+// Labels above, used directly (ORG Start+4, RMB End1-Start), are fine.
+function passOneProblem(part, line, firstDef) {
+  if (part.kind !== 'ORG' && part.kind !== 'RMB') return undefined;
+  const mn = part.kind;
+  // Why a constant is not known in pass 1: { label } or { later, user }, through other constants.
+  const constantIssue = (d, seen) => {
+    if (d.operand === undefined || seen.has(d.name)) return undefined;
+    seen.add(d.name);
+    for (const t of tokenize(d.operand)) {
+      const s = t.type === 'symbol' && firstDef.get(t.text);
+      if (!s) continue;
+      if (s.kind !== 'constant') return { label: s };
+      if (s.line > d.line) return { later: s, user: d };
+      const deeper = constantIssue(s, seen);
+      if (deeper) return deeper;
+    }
+    return undefined;
+  };
+  for (const t of tokenize(part.text)) {
+    const d = t.type === 'symbol' && firstDef.get(t.text);
+    if (!d) continue;
+    const at = (message) => ({ start: t.start, end: t.end, message });
+    if (d.line > line && (mn === 'ORG' || d.kind !== 'constant')) {
+      return mn === 'ORG'
+        ? at(`Forward reference: '${t.text}' is defined further down (line ${d.line + 1}) — ORG can only use symbols defined above it`)
+        : at(`RMB depends on label '${t.text}', which is defined further down (line ${d.line + 1}) — qaflisp cannot know the size in its first pass ("Phase error between passes" or "Undetermined size")`);
+    }
+    if (d.kind !== 'constant') continue;
+    const issue = constantIssue(d, new Set());
+    if (issue && issue.label) {
+      return at(`${mn} uses '${t.text}', which depends on the label '${issue.label.name}' — qaflisp uses labels in EQU as 0 in its first pass ("Phase error between passes" or "Undetermined size"); write the label directly in the ${mn}`);
+    }
+    if (issue) {
+      return at(`${mn} uses '${t.text}', but '${issue.user.name}' uses '${issue.later.name}', which is defined further down (line ${issue.later.line + 1}) — qaflisp does not know the value in its first pass ("Phase error between passes"); define '${issue.later.name}' first`);
+    }
+  }
+  return undefined;
+}
+
+function valueProblems(p, line, valueOf, firstDef) {
   const mn = p.mnemonic.text.toUpperCase();
   const at = (start, end, severity, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, message });
   // A syntax problem is the only message of the line; values out of range are all reported.
@@ -230,6 +276,8 @@ function valueProblems(p, line, valueOf) {
       const start = Math.min(problem.start, Math.max(0, part.text.length - 1));
       return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, problem.message)];
     }
+    const forward = passOneProblem(part, line, firstDef);
+    if (forward) return [{ ...at(part.start + forward.start, part.start + forward.end, 'error', forward.message), cause: 'pass1', mnemonic: mn }];
     if (v === undefined) continue;
     const whole = (severity, message) => out.push(at(part.start, part.start + part.text.length, severity, message));
     if (part.kind === 'ORG' && (v < 0 || v > 255)) whole('warning', `ORG ${show(v)} is outside the memory ($00–$FF) — qaflisp silently uses ${lowByte(v)}`);
@@ -269,7 +317,9 @@ function analyze(source) {
     if (mnemonic && mnemonic.toUpperCase() === 'END') break; // qaflisp stops here
   }
   const valueOf = constantValues(definitions);
-  for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf));
+  const firstDef = new Map();
+  for (const d of definitions) if (!firstDef.has(d.name)) firstDef.set(d.name, d);
+  for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf, firstDef));
 
   const byName = new Map();
   for (const d of definitions) {
@@ -337,6 +387,20 @@ function explainPhaseError(analysis, line) {
         'qaflisp does not assemble such a line, so the following addresses shift. Fix the multiple definition.',
       relatedLine: cause.line,
       relatedName: cause.name,
+      relatedText: `'${cause.name}' defined more than once`,
+    };
+  }
+  // Second known cause: an ORG or RMB with a value qaflisp does not know in pass 1.
+  const pass1 = analysis.diagnostics.filter((d) => d.line < line && d.cause === 'pass1').pop();
+  if (pass1) {
+    const mn = pass1.mnemonic;
+    const effect = mn === 'ORG' ? 'sets a different address' : 'reserves a different number of bytes';
+    return {
+      message: `${what} Cause: the ${mn} in line ${pass1.line + 1} uses a value that qaflisp does not know in pass 1, ` +
+        `so it ${effect} in pass 1 and pass 2. Use numbers, EQU constants with numbers, or labels above the ${mn} directly.`,
+      relatedLine: pass1.line,
+      relatedName: mn,
+      relatedText: `${mn} with a value qaflisp does not know in pass 1`,
     };
   }
   return {

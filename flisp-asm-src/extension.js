@@ -148,7 +148,7 @@ function publishDiagnostics(doc, messages) {
         const text = target.lineAt(e.relatedLine).text;
         related = [new vscode.DiagnosticRelatedInformation(
           new vscode.Location(target.uri, new vscode.Range(e.relatedLine, 0, e.relatedLine, text.length)),
-          `'${e.relatedName}' defined more than once`
+          e.relatedText
         )];
       }
     }
