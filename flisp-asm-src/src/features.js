@@ -253,7 +253,9 @@ function register(context, qaflispDiagnostics) {
         edit.insert(sel.active, ' '.repeat(format.nextStop(col, columns, tabSize) - col));
       }
     }),
-    vscode.commands.registerTextEditorCommand('flisp.previousColumn', (editor, edit) => {
+    vscode.commands.registerCommand('flisp.previousColumn', async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) return;
       const columns = columnsFor(editor.document);
       const tabSize = Number(editor.options.tabSize) || 4;
       const deletions = [];
@@ -268,11 +270,18 @@ function register(context, qaflispDiagnostics) {
         const between = text.slice(ch, pos.character);
         // Only blanks before the cursor: remove them; otherwise just move the cursor.
         if (/^[ \t]+$/.test(between)) deletions.push(new vscode.Range(pos.line, ch, pos.line, pos.character));
-        return new vscode.Selection(pos.line, ch, pos.line, ch);
+        return new vscode.Position(pos.line, ch);
       });
-      // Deletions go through the command's own edit builder, so they are done when the command returns.
-      if (deletions.length) deletions.forEach((r) => edit.delete(r));
-      else editor.selections = moves;
+      if (deletions.length && !(await editor.edit((edit) => deletions.forEach((r) => edit.delete(r))))) return;
+      // Every cursor goes to its stop, also those without blanks before them; positions shift
+      // by the blanks deleted further left on the same line.
+      const shift = (p) => deletions
+        .filter((r) => r.start.line === p.line && r.end.character <= p.character)
+        .reduce((n, r) => n + r.end.character - r.start.character, 0);
+      editor.selections = moves.map((p) => {
+        const ch = p.character - shift(p);
+        return new vscode.Selection(p.line, ch, p.line, ch);
+      });
     })
   );
 

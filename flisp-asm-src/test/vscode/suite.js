@@ -65,6 +65,15 @@ test('live check: documents of other schemes (a git: copy in a diff view) get no
   }
 });
 
+test('Shift+Tab with two cursors: blanks are deleted and the other cursor moves too', async () => {
+  const doc = await openFile('columns.sflisp', `Start${' '.repeat(15)}\nLoop        LDA #1\n`);
+  const editor = vscode.window.activeTextEditor;
+  editor.selections = [new vscode.Selection(0, 20, 0, 20), new vscode.Selection(1, 18, 1, 18)];
+  await vscode.commands.executeCommand('flisp.previousColumn');
+  assert.deepStrictEqual([doc.lineAt(0).text, doc.lineAt(1).text], [`Start${' '.repeat(7)}`, 'Loop        LDA #1']);
+  assert.deepStrictEqual(editor.selections.map((s) => [s.active.line, s.active.character]), [[0, 12], [1, 12]]);
+});
+
 test('hover: address of a label, description of an instruction', async () => {
   const doc = await openFile('hover.sflisp', SOURCE);
   assert.match(await hoverText(doc, 4, 6), /Start[\s\S]*\$20/);

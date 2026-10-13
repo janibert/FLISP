@@ -11,6 +11,7 @@
 - qaflisp messages are no longer placed on the wrong lines when the file is edited while qaflisp runs (e.g. with *Assemble on Save* and auto save); such a result is only written to the output channel.
 - *Assemble* (F7) on an unsaved file with *Assemble on Save* no longer starts qaflisp twice; qaflisp runs for one file one at a time, so its output files cannot be written by two processes at once.
 - The read-only copy of a file in a diff view (Source Control) no longer gets its own live diagnostics, so errors are not listed twice in *Problems*.
+- Shift+Tab with several cursors: every cursor goes back to its previous column, also when blanks are deleted before another cursor.
 
 ## 0.10.1
 
