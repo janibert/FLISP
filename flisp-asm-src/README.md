@@ -33,6 +33,8 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 
 `.fmem` files are also checked while typing: unknown commands (with a hint for typos such as `#setMemroy`), addresses and values that are not 1–2 hex digits (`#setMemory 2G=05`), a missing `=` or value, a command without `#`, and an address that is set twice. DigiFlisp itself reports none of these: it skips unknown lines silently and reads invalid hex digits as 0 (`#setMemory 2G=88` writes to `$20`). `#setRegister` gets a warning, because it had no effect in DigiFlisp 2.08.
 
+![A .fmem file with a misspelled command and an invalid hex address underlined](https://raw.githubusercontent.com/janibert/FLISP/main/flisp-asm-src/images/fmem-check.png)
+
 `.fmem` files have columns too: the command in column 0, its argument in column 14, a comment in column 24 (setting `flisp.fmemColumns`). Tab / Shift+Tab and *Format Document* work as in `.sflisp` files; header lines and lines with an unknown command are left unchanged. In the command column, suggestions offer only the four commands (`#setMemory`, `#setRegister`, `# ClearAllMemory`, `# ClearAllRegisters`); Tab after `#setMemory` or `#setRegister` moves on to the argument column.
 
 ### Line structure and comments
@@ -64,6 +66,8 @@ The extension knows every label and `EQU` constant in the file:
 | Check while typing | undefined symbols, labels defined twice, unknown mnemonics, labels that do not start in column 1, addressing modes an instruction does not have (`STA #5`), wrong register pairs (`TFR A,X`) and missing or malformed operands are underlined immediately, without assembling — with the allowed forms in the message |
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
+
+![Typical mistakes underlined while typing: immediate operand for STA, misspelled label, invalid register pair, indented label](https://raw.githubusercontent.com/janibert/FLISP/main/flisp-asm-src/images/live-check.png)
 
 ## Suggestions
 
@@ -104,6 +108,8 @@ Hover over a mnemonic to see what it does — tailored to the line you are on:
 - a table of all variants with opcode, bytes and cycles; the one used on the line is highlighted.
 
 Directives (`ORG`, `EQU`, `FCB`, …) and the lab instructions get a short explanation. Opcodes and lengths are checked against qaflisp; cycles and flags come from the FLISP handbook.
+
+![Hover over LDA ,X+: operation, opcode, bytes, cycles, flags and all variants](https://raw.githubusercontent.com/janibert/FLISP/main/flisp-asm-src/images/hover-instruction.png)
 
 ## Assembling
 
