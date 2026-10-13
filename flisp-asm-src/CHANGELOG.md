@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.9.0
 
 - Column layout for `.fmem`: command in column 0, argument in column 14, comment in column 24 (setting `flisp.fmemColumns`); Tab / Shift+Tab and *Format Document* as in `.sflisp`.
 - Suggestions in `.fmem`: only the four commands, only in the command column; general word suggestions are off.
+- README: screenshots of the live check, the instruction hover and the `.fmem` check.
 
 ## 0.8.0
 
