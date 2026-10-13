@@ -9,6 +9,9 @@
 //    - every line qaflisp reports as an error is also reported by the live check, except a
 //      "Phase error" (qaflisp reports it at a later label, the live check at its cause) and the
 //      lab instructions MOVE / CMJEQ (deliberately not reported);
+//    - and the other way round, no live error where qaflisp reports none, except first-pass
+//      errors (shown at the ORG/RMB line), a multiple definition (marked on every defining
+//      line) and lines after qaflisp's "Phase error" (it reports nothing after it);
 //    - one file with every mnemonic and every operand form has the same layout as in qaflisp.
 
 const assert = require('assert');
@@ -113,7 +116,7 @@ if (realExe) {
     return { r, listing: readListing(file.replace(/\.sflisp$/, '.lst')) };
   };
 
-  test('real qaflisp: layout equals the listing, and every qaflisp error is reported live', async () => {
+  test('real qaflisp: layout equals the listing, live errors are where qaflisp reports errors', async () => {
     const wrong = [];
     for (const [name, file] of Object.entries(sources)) {
       const source = read(file);
@@ -125,6 +128,18 @@ if (realExe) {
         const line = msg.line - 1;
         if (/^Phase error/.test(msg.message) || /^\S*\s+(MOVE|CMJEQ)\b/i.test(lines[line] || '')) continue;
         if (!ours.has(line)) wrong.push(`${name}:${line + 1} qaflisp "${msg.message}", live check: nothing — ${(lines[line] || '').trim()}`);
+      }
+      // The other way round: no live error where qaflisp has none (a false error misleads students).
+      const theirErrors = r.messages.filter((x) => x.severity === 'error');
+      const theirs = new Set(theirErrors.map((x) => x.line - 1));
+      const phase = theirErrors.find((x) => /^Phase error/.test(x.message)); // qaflisp reports nothing after it
+      const live = analyze(source).diagnostics.filter((x) => x.severity === 'error');
+      for (const d of live) {
+        if (phase && d.line >= phase.line - 1) continue;
+        if (d.kind === 'pass1') continue; // reported at its cause (ORG/RMB), qaflisp at a later line or not at all
+        // reported on every definition, qaflisp on one of them
+        if (d.kind === 'multipleDefinition' && live.some((o) => o.kind === d.kind && o.symbol === d.symbol && theirs.has(o.line))) continue;
+        if (!theirs.has(d.line)) wrong.push(`${name}:${d.line + 1} live error "${d.message}", qaflisp: no error — ${(lines[d.line] || '').trim()}`);
       }
     }
     assert.deepStrictEqual(wrong, []);

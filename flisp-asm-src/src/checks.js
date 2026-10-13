@@ -334,7 +334,7 @@ function symbolProblems(byName, references) {
     if (defs.length > 1) {
       for (const d of defs) {
         const others = defs.filter((o) => o !== d).map((o) => o.line + 1).join(', ');
-        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'error', kind: 'multipleDefinition',
+        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'error', kind: 'multipleDefinition', symbol: name,
           message: `Multiple definition of '${name}' (also in line ${others})` });
       }
     }
