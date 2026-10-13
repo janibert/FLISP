@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0
 
 - Context-sensitive suggestions: mnemonics and directives in the mnemonic column; code labels for branches and jumps; constants first after `#`; only the allowed index forms after a comma; register pairs for `TFR`/`EXG`; undefined symbols in the label column. General word suggestions are off for FLISP. In the label and mnemonic columns, Tab accepts a suggestion and moves to the next column in one step.
 - Column layout for `.sflisp`: Tab / Shift+Tab jump to the next / previous column (label, mnemonic, operand, comment; default 0, 12, 20, 36, setting `flisp.columns`), *Format Document* aligns all lines without changing their meaning, blanks are used instead of tab characters, and indentation guides are off for FLISP.
