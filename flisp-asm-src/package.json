@@ -121,11 +121,6 @@
         "editor.insertSpaces": true,
         "editor.detectIndentation": false,
         "editor.tabSize": 4,
-        "editor.rulers": [
-          12,
-          20,
-          36
-        ],
         "editor.guides.indentation": false
       }
     },
@@ -237,7 +232,7 @@
             20,
             36
           ],
-          "markdownDescription": "Start columns of mnemonic, operand and comment in `.sflisp` files (the label starts in column 0). Used by Tab / Shift+Tab and by *Format Document*. If you change them, also adjust `editor.rulers` for `[flisp]`."
+          "markdownDescription": "Start columns of mnemonic, operand and comment in `.sflisp` files (the label starts in column 0). Used by Tab / Shift+Tab and by *Format Document*."
         }
       }
     }
