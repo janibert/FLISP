@@ -1,0 +1,15 @@
+; Typical mistakes - underlined while typing, before assembling
+
+LEDS        EQU     $FC             ; output port: bargraph
+
+            ORG     $20
+Start       LDA     #$01            ; first pattern
+Loop        STA     #LEDS           ; send pattern to the LEDs
+            LSLA                    next pattern
+            BNE     loop            ; until all bits are through
+            TFR     A,X
+ Wait       NOP
+            BRA     Start
+
+            ORG     $FF
+            FCB     Start

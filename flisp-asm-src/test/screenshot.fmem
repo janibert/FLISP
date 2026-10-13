@@ -1,0 +1,15 @@
+QAflisp - FLISP Absolute crossassembler, Version 1.3
+(c) GMV 1989-2026
+File: running-light.fmem
+
+# ClearAllMemory
+# ClearAllRegisters
+#setMemory    00=01
+#setMemory    01=02
+#setMemory    02=04
+#setMemory    03=08
+#setMemroy    04=10
+#setMemory    05=20
+#setMemory    06=40
+#setMemory    I7=80
+#setMemory    08=00

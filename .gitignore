@@ -8,3 +8,4 @@ FlisProcessorHandbok-A4.pdf
 *.s19
 *.fmem
 !flisp-asm-src/test/qaflisp-output.fmem
+!flisp-asm-src/test/screenshot.fmem
