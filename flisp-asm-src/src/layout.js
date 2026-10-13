@@ -50,9 +50,9 @@ function syntaxOf(text) {
   if (text === '' || hashPositions(text).length) return 'fail';
   if (tokenize(text).some((t) => t.type === 'number' && numberValue(t.text) === undefined)) return 'fail';
   const { problem } = parse(text);
-  if (!problem || problem.severity !== 'error' || problem.message === 'Integer divide by zero') return 'ok';
+  if (!problem || problem.severity !== 'error' || problem.kind === 'divideByZero') return 'ok';
   const c = text[problem.start];
-  if ('=.:<>'.includes(c) && problem.message.startsWith('Unexpected character') && problem.start > 0 && syntaxOf(text.slice(0, problem.start)) === 'ok') {
+  if ('=.:<>'.includes(c) && problem.kind === 'unexpectedChar' && problem.start > 0 && syntaxOf(text.slice(0, problem.start)) === 'ok') {
     return c === '<' || c === '>' ? 'partial<>' : 'partial';
   }
   return 'fail';

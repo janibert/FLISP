@@ -65,6 +65,14 @@ test('snapshot: live-check messages and addresses are unchanged', () => {
   assert.deepStrictEqual(wrong, [], 'If the change is intended: node test/probes-test.js --update');
 });
 
+test('every live-check message has a kind (code branches on the kind, never on the text)', () => {
+  const missing = [];
+  for (const [name, file] of Object.entries(sources)) {
+    for (const d of analyze(read(file)).diagnostics) if (!/^[a-z][A-Za-z0-9]*$/.test(d.kind || '')) missing.push(`${name}:${d.line + 1} ${d.message}`);
+  }
+  assert.deepStrictEqual(missing, []);
+});
+
 // --- Comparison with the real qaflisp ----------------------------------------------
 
 const realExe = findQaflisp({

@@ -78,15 +78,19 @@ function apply(op, a, b) {
 }
 
 class ExpressionError extends Error {
-  constructor(start, end, message) {
+  constructor(start, end, kind, message) {
     super(message);
-    this.problem = { start, end, severity: 'error', message };
+    this.problem = { start, end, severity: 'error', kind, message };
   }
 }
 
 // Parses an expression (text without '#' or index part) like qaflisp. Returns
 //   { value, problem }  value: undefined if not known without assembling (labels) or invalid;
-//                       problem: undefined or { start, end, severity, message } (offsets in text).
+//                       problem: undefined or { start, end, severity, kind, message } (offsets in text).
+// kind is stable, the message is for humans: 'unexpectedChar', 'listInParens', 'commaWithoutValue',
+// 'unclosedParen', 'unopenedParen', 'missingValue', 'missingValueBeforeParen' (warning), 'charConstant',
+// 'reservedWord', 'locationCounter', 'operandExpected', 'missingOperator', 'droppedValue' (warning),
+// 'divideByZero'.
 // `valueOf(name)` gives the value of a symbol or undefined.
 function parse(text, valueOf = () => undefined) {
   const tokens = tokenize(text);
@@ -94,16 +98,19 @@ function parse(text, valueOf = () => undefined) {
   let warning;
   const peek = () => tokens[pos];
   const isOp = (t, set) => t && t.type === 'op' && set.has(t.text);
-  const fail = (t, message) => {
-    throw t ? new ExpressionError(t.start, t.end, message) : new ExpressionError(text.length, text.length, message);
+  const fail = (t, kind, message) => {
+    throw t ? new ExpressionError(t.start, t.end, kind, message) : new ExpressionError(text.length, text.length, kind, message);
   };
   const describe = (t) => (t.type === 'char' ? t.text : `'${t.text}'`);
 
   function unexpected(t, depth) {
     if (t.type === 'other' || t.type === 'string') {
-      if (t.text === '<' || t.text === '>') fail(t, `Unexpected character '${t.text}' — there are no comparisons; for a shift write ${t.text}${t.text}`);
-      if (t.text === ',') fail(t, depth ? "Missing Parenthesis: ',' inside parentheses — a value cannot contain a list" : "Unterminated expression: ',' where a value is expected");
-      fail(t, `Unexpected character ${describe(t)} in the expression`);
+      if (t.text === '<' || t.text === '>') fail(t, 'unexpectedChar', `Unexpected character '${t.text}' — there are no comparisons; for a shift write ${t.text}${t.text}`);
+      if (t.text === ',') {
+        if (depth) fail(t, 'listInParens', "Missing Parenthesis: ',' inside parentheses — a value cannot contain a list");
+        fail(t, 'commaWithoutValue', "Unterminated expression: ',' where a value is expected");
+      }
+      fail(t, 'unexpectedChar', `Unexpected character ${describe(t)} in the expression`);
     }
     return undefined;
   }
@@ -111,21 +118,24 @@ function parse(text, valueOf = () => undefined) {
   // An operand: number, character, symbol, (expression) or unary operator with its operand.
   function operand(depth) {
     const t = peek();
-    if (!t) fail(undefined, depth ? "Missing Parenthesis: '(' is not closed" : 'Unterminated expression: a value is missing at the end');
+    if (!t) {
+      if (depth) fail(undefined, 'unclosedParen', "Missing Parenthesis: '(' is not closed");
+      fail(undefined, 'missingValue', 'Unterminated expression: a value is missing at the end');
+    }
     if (t.type === 'op' && t.text === ')') {
-      if (!depth) fail(t, "Unexpected Parenthesis: ')' without '('");
+      if (!depth) fail(t, 'unopenedParen', "Unexpected Parenthesis: ')' without '('");
       // qaflisp reads a missing operand before ')' as 0: "(2+)" is 2, "()" is 0
-      if (!warning) warning = { start: t.start, end: t.end, severity: 'warning', message: "Missing value before ')' — qaflisp silently uses 0 here" };
+      if (!warning) warning = { start: t.start, end: t.end, severity: 'warning', kind: 'missingValueBeforeParen', message: "Missing value before ')' — qaflisp silently uses 0 here" };
       return 0;
     }
     pos++;
     if (t.type === 'number') return numberValue(t.text);
     if (t.type === 'char') {
-      if (t.text.length !== 3 || t.text[2] !== "'") fail(t, "Character constant without closing quote — write 'A'");
+      if (t.text.length !== 3 || t.text[2] !== "'") fail(t, 'charConstant', "Character constant without closing quote — write 'A'");
       return t.text.charCodeAt(1);
     }
     if (t.type === 'symbol') {
-      if (RESERVED.has(t.text.toUpperCase())) fail(t, `Illegal use of reserved word '${t.text}' — register names cannot be used in expressions`);
+      if (RESERVED.has(t.text.toUpperCase())) fail(t, 'reservedWord', `Illegal use of reserved word '${t.text}' — register names cannot be used in expressions`);
       return valueOf(t.text);
     }
     if (t.type === 'op' && t.text === '(') {
@@ -133,7 +143,8 @@ function parse(text, valueOf = () => undefined) {
       const close = peek();
       if (!close || close.text !== ')') {
         if (close) unexpected(close, depth + 1);
-        fail(close, close ? `Missing operator before ${describe(close)}` : "Missing Parenthesis: '(' is not closed");
+        if (close) fail(close, 'missingOperator', `Missing operator before ${describe(close)}`);
+        fail(close, 'unclosedParen', "Missing Parenthesis: '(' is not closed");
       }
       pos++;
       return v;
@@ -145,8 +156,8 @@ function parse(text, valueOf = () => undefined) {
       if (t.text === '~') return ~v;
       return v === 0 ? 1 : 0;
     }
-    if (t.type === 'op' && t.text === '*' && pos === 1) fail(t, "Operand expected: there is no location counter '*' — put a label on the line and use it");
-    if (t.type === 'op') fail(t, `Operand expected: '${t.text}' needs a value before it`);
+    if (t.type === 'op' && t.text === '*' && pos === 1) fail(t, 'locationCounter', "Operand expected: there is no location counter '*' — put a label on the line and use it");
+    if (t.type === 'op') fail(t, 'operandExpected', `Operand expected: '${t.text}' needs a value before it`);
     return unexpected(t, depth);
   }
 
@@ -155,7 +166,7 @@ function parse(text, valueOf = () => undefined) {
     while (isOp(peek(), MULTIPLICATIVE)) {
       const op = tokens[pos++];
       const w = operand(depth);
-      if (op.text === '/' && w === 0) throw new ExpressionError(op.start, op.end, 'Integer divide by zero');
+      if (op.text === '/' && w === 0) throw new ExpressionError(op.start, op.end, 'divideByZero', 'Integer divide by zero');
       v = v === undefined || w === undefined ? undefined : apply(op.text, v, w);
     }
     return v;
@@ -171,7 +182,7 @@ function parse(text, valueOf = () => undefined) {
         v = v === undefined || w === undefined ? undefined : apply(t.text, v, w);
       } else if (isOp(t, new Set(['~', '!']))) {
         // qaflisp silently drops everything before a '~' or '!' that follows a value: 1~2 is ~2
-        if (!warning) warning = { start: t.start, end: t.end, severity: 'warning', message: `Missing operator before '${t.text}' — qaflisp silently drops the value before it (1${t.text}2 is ${t.text}2)` };
+        if (!warning) warning = { start: t.start, end: t.end, severity: 'warning', kind: 'droppedValue', message: `Missing operator before '${t.text}' — qaflisp silently drops the value before it (1${t.text}2 is ${t.text}2)` };
         multiplicative(depth);
         v = undefined;
       } else {
@@ -184,9 +195,9 @@ function parse(text, valueOf = () => undefined) {
     const value = additive(0);
     const rest = peek();
     if (rest) {
-      if (rest.text === ')') fail(rest, "Unexpected Parenthesis: ')' without '('");
+      if (rest.text === ')') fail(rest, 'unopenedParen', "Unexpected Parenthesis: ')' without '('");
       unexpected(rest, 0);
-      fail(rest, rest.text === '(' ? "Missing operator before '('" : `Missing operator before ${describe(rest)}`);
+      fail(rest, 'missingOperator', rest.text === '(' ? "Missing operator before '('" : `Missing operator before ${describe(rest)}`);
     }
     return { value: warning ? undefined : value, problem: warning };
   } catch (e) {

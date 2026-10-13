@@ -122,7 +122,7 @@ function numberProblems(operand, at) {
   const found = [];
   for (const t of tokenize(operand.text)) {
     const message = t.type === 'number' && numberProblem(t.text);
-    if (message) found.push(at({ start: operand.start + t.start, end: operand.start + t.end }, 'error', message));
+    if (message) found.push(at({ start: operand.start + t.start, end: operand.start + t.end }, 'error', 'number', message));
   }
   return found;
 }
@@ -142,35 +142,37 @@ function fcbListProblem(p, at) {
     // After "1,2, " the next word is most likely the missing value.
     const next = comment && /^[^ \t;]+/.exec(comment.text);
     const hint = next ? ` — the blank ends the operand; remove it: ${mn} ${operand}${next[0]}` : ' — remove the last \',\' or add a value';
-    return at({ start: p.operand.end - 1, end: p.operand.end }, 'error', `Unterminated expression: the list ends with ','${hint}`);
+    return at({ start: p.operand.end - 1, end: p.operand.end }, 'error', 'fcbTrailingComma', `Unterminated expression: the list ends with ','${hint}`);
   }
   const list = comment && LIST_GOES_ON.exec(comment.text);
   if (!list) return undefined;
   const lost = list[0].replace(/^,[ \t]*/, '');
-  return at({ start: comment.start, end: comment.start + list[0].length }, 'warning',
+  return at({ start: comment.start, end: comment.start + list[0].length }, 'warning', 'fcbBlank',
     `Blank in the ${mn} list — the rest of the line is a comment, so ${lost} is not assembled; remove the blank: ${mn} ${operand},${lost}`);
 }
 
+const OPERAND_KIND = { missing: 'missingOperand', bad: 'badOperand', mode: 'addressingMode', pair: 'registerPair' };
+
 // Problems of the line structure that qaflisp reports as "Illegal mnemonic" / "Illegal label".
 function lineProblems(p, line) {
-  const at = (s, severity, message) => ({ line, start: s.start, end: s.end, severity, message });
+  const at = (s, severity, kind, message) => ({ line, start: s.start, end: s.end, severity, kind, message });
   if (p.invalidLabel && p.invalidLabel.reason === 'mnemonic') {
-    return [at(p.invalidLabel, 'error',
+    return [at(p.invalidLabel, 'error', 'mnemonicInColumn1',
       `Illegal mnemonic: '${p.invalidLabel.name}' in column 1 is read as a label — indent instructions`)];
   }
   if (p.mnemonicAsLabel) {
-    return [at(p.label, 'warning',
+    return [at(p.label, 'warning', 'mnemonicAsLabel',
       `'${p.label.name}' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction`)];
   }
   if (p.invalidLabel) {
-    return [at(p.invalidLabel, 'error', 'Illegal label — a label must start with a letter or \'_\'')];
+    return [at(p.invalidLabel, 'error', 'illegalLabel', 'Illegal label — a label must start with a letter or \'_\'')];
   }
   if (p.mnemonic && !isMnemonic(p.mnemonic.text)) {
     const word = p.mnemonic.text;
     // An indented label: an identifier followed by a real mnemonic, or standing alone.
     const looksLikeLabel = /^[A-Za-z_][A-Za-z0-9_]*:?$/.test(word) && (!p.next || isMnemonic(p.next));
     const hint = looksLikeLabel ? ` — if '${word.replace(/:$/, '')}' is a label, it must start in column 1` : '';
-    return [at(p.mnemonic, 'error', `Illegal mnemonic '${word}'${hint}`)];
+    return [at(p.mnemonic, 'error', 'illegalMnemonic', `Illegal mnemonic '${word}'${hint}`)];
   }
   if (p.mnemonic && p.operand && isMnemonic(p.mnemonic.text)) {
     const numbers = numberProblems(p.operand, at);
@@ -181,7 +183,7 @@ function lineProblems(p, line) {
     const hash = checkImmediateMarker(p.mnemonic.text, p.operand.text);
     if (hash) {
       const s = p.operand.start + hash.offset;
-      return [at({ start: s, end: s + 1 }, 'error', hash.message)];
+      return [at({ start: s, end: s + 1 }, 'error', 'immediateMarker', hash.message)];
     }
     const fcb = fcbListProblem(p, at);
     if (fcb) return [fcb];
@@ -190,7 +192,7 @@ function lineProblems(p, line) {
     // Addressing mode / operand of an instruction (qaflisp: "Illegal Addressing Mode",
     // "Illegal register combination", "Syntax Error").
     const problem = checkOperand(p.mnemonic.text, p.operand ? p.operand.text : undefined);
-    if (problem) return [at(p.operand || p.mnemonic, 'error', problem.message)];
+    if (problem) return [at(p.operand || p.mnemonic, 'error', OPERAND_KIND[problem.kind], problem.message)];
   }
   return [];
 }
@@ -253,14 +255,14 @@ function passOneProblem(part, line, firstDef) {
 
 function valueProblems(p, line, valueOf, firstDef, layout) {
   const mn = p.mnemonic.text.toUpperCase();
-  const at = (start, end, severity, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, message });
+  const at = (start, end, severity, kind, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, kind, message });
   if (mn === 'FCS') {
     // qaflisp: "Bad operand syntax"; it writes 2 bytes for "" and adds a newline byte to an open string
     const o = p.operand.text;
-    if (o === '""') return [at(0, 2, 'error', 'Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)')];
+    if (o === '""') return [at(0, 2, 'error', 'emptyString', 'Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)')];
     let i = 1;
     while (i < o.length && o[i] !== '"') i += o[i] === '\\' ? 2 : 1;
-    if (o.startsWith('"') && i >= o.length) return [at(0, o.length, 'error', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
+    if (o.startsWith('"') && i >= o.length) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
     return [];
   }
   // A syntax problem is the only message of the line; values out of range are all reported.
@@ -268,30 +270,31 @@ function valueProblems(p, line, valueOf, firstDef, layout) {
   for (const part of expressionParts(mn, p.operand.text)) {
     if (mn === 'FCB' && part.text === '') {
       const comma = part.start > 0 ? part.start - 1 : part.start; // ",1" or "1,,2"
-      return [at(comma, comma + 1, 'error', 'Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)')];
+      return [at(comma, comma + 1, 'error', 'fcbMissingValue', 'Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)')];
     }
     const { value: v, problem } = parse(part.text, valueOf);
     if (problem) {
       const end = Math.max(problem.end, problem.start + 1); // a missing value at the end: mark one character
       const start = Math.min(problem.start, Math.max(0, part.text.length - 1));
-      let { message } = problem;
+      let { kind, message } = problem;
       // FCB (1,2): the comma splits the list even inside parentheses - say so instead of only "not closed"
       const rest = p.operand.text.slice(part.start + part.text.length);
-      if (mn === 'FCB' && message.startsWith("Missing Parenthesis: '(' is not closed") && rest.startsWith(',')) {
+      if (mn === 'FCB' && kind === 'unclosedParen' && rest.startsWith(',')) {
+        kind = 'fcbCommaInParens';
         const whole = /^\((.*)\)$/.exec(p.operand.text);
         message = `Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '${part.text.trim()}' is not closed` +
           (whole ? `; for a list of bytes write FCB ${whole[1]}` : '');
       }
-      return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, message)];
+      return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, kind, message)];
     }
     const forward = passOneProblem(part, line, firstDef);
-    if (forward) return [{ ...at(part.start + forward.start, part.start + forward.end, 'error', forward.message), cause: 'pass1', mnemonic: mn }];
+    if (forward) return [{ ...at(part.start + forward.start, part.start + forward.end, 'error', 'pass1', forward.message), mnemonic: mn }];
     if (v === undefined) continue;
-    const whole = (severity, message) => out.push(at(part.start, part.start + part.text.length, severity, message));
-    if (part.kind === 'ORG' && (v < 0 || v > 255)) whole('warning', `ORG ${show(v)} is outside the memory ($00–$FF) — qaflisp silently uses ${lowByte(v)}`);
-    if (part.kind === 'RMB' && v <= 0) whole('error', `Undetermined size for reservation of storage — RMB ${v}: the number of bytes must be at least 1`);
+    const whole = (severity, kind, message) => out.push(at(part.start, part.start + part.text.length, severity, kind, message));
+    if (part.kind === 'ORG' && (v < 0 || v > 255)) whole('warning', 'orgOutsideMemory', `ORG ${show(v)} is outside the memory ($00–$FF) — qaflisp silently uses ${lowByte(v)}`);
+    if (part.kind === 'RMB' && v <= 0) whole('error', 'rmbSize', `Undetermined size for reservation of storage — RMB ${v}: the number of bytes must be at least 1`);
     if (['Value', 'Address', 'Offset'].includes(part.kind) && (v < -256 || v > 255)) {
-      whole('error', `${part.kind} ${show(v)} does not fit in a byte (−256…255) — qaflisp reports "Value is truncated" and writes only ${lowByte(v)}`);
+      whole('error', 'byteRange', `${part.kind} ${show(v)} does not fit in a byte (−256…255) — qaflisp reports "Value is truncated" and writes only ${lowByte(v)}`);
     }
     // Branch: displacement from the next instruction, -128..127 (qaflisp: "Displacement (0x...) is out of range")
     const here = part.kind === 'Target' && layout && layout.lines.get(line);
@@ -300,7 +303,7 @@ function valueProblems(p, line, valueOf, firstDef, layout) {
       if (displacement < -128 || displacement > 127) {
         const far = displacement < 0 ? `${-displacement} bytes back` : `${displacement} bytes ahead`;
         const instead = mn === 'BSR' ? 'JSR' : 'JMP (with the opposite branch around it for a conditional branch)';
-        whole('error', `Branch target ${show(v)} is ${far} — a branch reaches only −128…+127 bytes from the next instruction ` +
+        whole('error', 'branchRange', `Branch target ${show(v)} is ${far} — a branch reaches only −128…+127 bytes from the next instruction ` +
           `(qaflisp: "Displacement is out of range"); use ${instead}`);
       }
     }
@@ -380,14 +383,14 @@ function analyze(source) {
   for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf, firstDef, layout));
   for (const { p, line } of records) {
     const w = ignoredOperand(p, firstDef);
-    if (w) lineDiagnostics.push({ line, start: w.start, end: w.end, severity: 'warning', message: w.message });
+    if (w) lineDiagnostics.push({ line, start: w.start, end: w.end, severity: 'warning', kind: 'ignoredOperand', message: w.message });
   }
   if (layout.beyond !== undefined) {
     const { p, line } = records.find((r) => r.line === layout.beyond);
     const where = p.mnemonic || p.label;
     const start = layout.lines.get(line).address;
     const address = start < 0 ? start : Math.max(start, 0x100); // the first byte beyond $FF
-    lineDiagnostics.push({ line, start: where.start, end: where.end, severity: 'warning',
+    lineDiagnostics.push({ line, start: where.start, end: where.end, severity: 'warning', kind: 'beyondMemory',
       message: `From here on, code or data lies beyond $FF (${address < 0 ? address : hex(address)}…) — the memory has only 256 bytes; ` +
         `qaflisp silently wraps around to $00 and overwrites what is there` });
   }
@@ -402,14 +405,14 @@ function analyze(source) {
   for (const [name, defs] of byName) {
     if (isRegister(name)) {
       for (const d of defs) {
-        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'warning',
+        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'warning', kind: 'registerName',
           message: `'${name}' is a register name and cannot be used as a symbol` });
       }
     }
     if (defs.length > 1) {
       for (const d of defs) {
         const others = defs.filter((o) => o !== d).map((o) => o.line + 1).join(', ');
-        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'error',
+        diagnostics.push({ line: d.line, start: d.start, end: d.end, severity: 'error', kind: 'multipleDefinition',
           message: `Multiple definition of '${name}' (also in line ${others})` });
       }
     }
@@ -424,7 +427,7 @@ function analyze(source) {
     if (byName.has(r.name)) continue;
     const similar = lowerNames.get(r.name.toLowerCase());
     const hint = similar ? ` — did you mean '${similar[0]}'? Symbols are case-sensitive.` : '';
-    diagnostics.push({ line: r.line, start: r.start, end: r.end, severity: 'error',
+    diagnostics.push({ line: r.line, start: r.start, end: r.end, severity: 'error', kind: 'undefinedSymbol',
       message: `Undefined symbol '${r.name}'${hint}` });
   }
 
@@ -469,7 +472,7 @@ function explainPhaseError(analysis, line) {
     };
   }
   // Second known cause: an ORG or RMB with a value qaflisp does not know in pass 1.
-  const pass1 = analysis.diagnostics.filter((d) => d.line < line && d.cause === 'pass1').pop();
+  const pass1 = analysis.diagnostics.filter((d) => d.line < line && d.kind === 'pass1').pop();
   if (pass1) {
     const mn = pass1.mnemonic;
     const effect = mn === 'ORG' ? 'sets a different address' : 'reserves a different number of bytes';
