@@ -1,16 +1,20 @@
 const vscode = require('vscode');
 const path = require('path');
 const { findQaflisp, findDigiflispDirs, bundledQaflisp, runQaflisp } = require('./src/qaflisp');
+const features = require('./src/features');
+const { analyze, explainPhaseError } = require('./src/symbols');
 
 let output;
 let diagnostics;
 let extensionRoot;
+let languageFeatures;
 
 function activate(context) {
   extensionRoot = context.extensionPath;
   output = vscode.window.createOutputChannel('FLISP');
   diagnostics = vscode.languages.createDiagnosticCollection('qaflisp');
   context.subscriptions.push(output, diagnostics);
+  languageFeatures = features.register(context, diagnostics);
 
   context.subscriptions.push(
     vscode.commands.registerCommand('flisp.assemble', (uri) => assembleCommand(uri)),
@@ -19,8 +23,27 @@ function activate(context) {
       if (!vscode.workspace.getConfiguration('flisp', doc.uri).get('assembleOnSave')) return;
       assemble(doc, { fromSave: true });
     }),
-    vscode.workspace.onDidCloseTextDocument((doc) => diagnostics.delete(doc.uri))
+    vscode.workspace.onDidCloseTextDocument((doc) => diagnostics.delete(doc.uri)),
+    vscode.workspace.onDidChangeTextDocument(dropOutdatedDiagnostics)
   );
+}
+
+// qaflisp messages describe the file as it was when assembled. Drop them on edited lines
+// (the live symbol check takes over there); if lines were added or removed, drop all,
+// because their line numbers no longer fit.
+function dropOutdatedDiagnostics(e) {
+  if (e.document.languageId !== 'flisp' || e.contentChanges.length === 0) return;
+  const old = diagnostics.get(e.document.uri);
+  if (!old || old.length === 0) return;
+  const linesMoved = e.contentChanges.some(
+    (c) => c.text.split('\n').length - 1 !== c.range.end.line - c.range.start.line
+  );
+  if (linesMoved) {
+    diagnostics.delete(e.document.uri);
+    return;
+  }
+  const edited = (line) => e.contentChanges.some((c) => line >= c.range.start.line && line <= c.range.end.line);
+  diagnostics.set(e.document.uri, old.filter((d) => !edited(d.range.start.line)));
 }
 
 async function assembleCommand(uri) {
@@ -84,6 +107,7 @@ async function assemble(doc, { fromSave }) {
   output.appendLine('');
 
   publishDiagnostics(doc, result.messages);
+  languageFeatures.refresh(doc); // the live check steps back on lines with a qaflisp message
 
   const errors = result.messages.filter((m) => m.severity === 'error').length;
   const warnings = result.messages.length - errors;
@@ -114,12 +138,27 @@ function publishDiagnostics(doc, messages) {
     const key = vscode.Uri.file(file).toString();
     if (!byFile.has(key)) byFile.set(key, []);
     const target = key === doc.uri.toString() ? doc : undefined;
+    let message = m.message;
+    let related;
+    if (target && /^Phase error between passes/.test(m.message)) {
+      // qaflisp gives neither cause nor line of the cause; explain it for students.
+      const e = explainPhaseError(analyze(target.getText()), m.line - 1);
+      message = `${m.message} — ${e.message}`;
+      if (e.relatedLine !== undefined) {
+        const text = target.lineAt(e.relatedLine).text;
+        related = [new vscode.DiagnosticRelatedInformation(
+          new vscode.Location(target.uri, new vscode.Range(e.relatedLine, 0, e.relatedLine, text.length)),
+          `'${e.relatedName}' defined more than once`
+        )];
+      }
+    }
     const diag = new vscode.Diagnostic(
       rangeFor(target, m),
-      m.message,
+      message,
       m.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error
     );
     diag.source = 'qaflisp';
+    if (related) diag.relatedInformation = related;
     byFile.get(key).push(diag);
   }
   for (const [key, list] of byFile) diagnostics.set(vscode.Uri.parse(key), list);

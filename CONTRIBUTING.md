@@ -36,6 +36,34 @@ Every line is `[Label] Mnemonic [Operand] [Comment]`.
 - There is no PC-indexed addressing (`2,PC` gives *Syntax Error*); indexed addressing uses X, Y or SP only.
 - `MOVE` and `CMJEQ` are lab-specific custom instructions; neither the handbook nor qaflisp knows them. The extension highlights them with their own scope so they stand out as non-standard.
 
+### Symbols (labels and `EQU` constants)
+
+The live symbol check (`src/symbols.js`) follows these rules; `test/symbols-test.js` compares it with the real qaflisp.
+
+- **Symbols are case-sensitive**: `Loop` and `loop` are two different symbols and may both be defined; `BRA loop` does not find `Loop` (*Undefined symbol 'loop'*). Mnemonics and register names are case-insensitive.
+- A name consists of letters, digits and `_`; a digit at the start gives *Illegal label*. The `:` after a label is not part of the name (`L1:` is used as `L1`; `BRA L1:` gives *Bad operand syntax*).
+- Register names (`A`, `X`, `Y`, `SP`, `PC`, `CC`, any case) are reserved: `X EQU 3` is accepted, but using `X` as a value gives *Illegal use of reserved word*.
+- Forward references are allowed (`LDA #K` before `K EQU 3`), except in `ORG` (*Forward reference*). An `EQU` that uses a later `EQU` gives the warning *symbol 'M' is forward referenced from line 2*.
+- Symbols can be used in expressions and indexed operands: `LDA Tab+1`, `LDX #Tab`, `LDA Off,X`, `FCB Start`.
+- Labels after `END` are not defined — `END` stops the assembly.
+- Multiple definitions are reported inconsistently: two labels → *Multiple definition* on both lines; label and `EQU` → *Multiple definition* on one line; two `EQU`s → *symbol 'K' previously defined at line 2* on the second. The live check marks every defining line and names the other lines.
+- Per line, qaflisp reports only one undefined symbol (`LDA Foo+Bar` → only *Undefined symbol 'Bar'*); the live check marks each.
+
+### Misplaced labels and unknown mnemonics
+
+- An indented label is read as a mnemonic: ` Start LDA #1` and `  Start` give *Illegal mnemonic*, and every use of `Start` then gives *Undefined symbol*. The same for a typo such as `LDAA`.
+- A mnemonic in column 1 (`LDA #1` without indentation) is read as a label: *Illegal mnemonic*. A digit or `*` in column 1 gives *Illegal label*.
+- Mnemonics are accepted in any case (`lda`).
+
+### Phase error between passes
+
+qaflisp works in two passes: pass 1 assigns an address to every label, pass 2 generates the code. If a label ends up at a different address in pass 2, qaflisp reports *Phase error between passes* at that label. Two causes are known:
+
+1. **Follow-up error of a multiple definition** (the usual case): qaflisp does not assemble a line whose label is defined more than once — its machine code is missing. All addresses after it shift, and the next label reports the phase error. Fixing the multiple definition removes it. Errors such as *Undefined symbol*, *Illegal mnemonic* or *Value … is truncated* do **not** cause phase errors, because those lines occupy the same space in both passes.
+2. **Chained forward reference in `EQU`**, used as a size: `K EQU M` before `M EQU 2` (warning *forward referenced*), then `RMB K` — in pass 1 `K` is still 0. A simple forward reference (`RMB N` before `N EQU 3`) works.
+
+The extension adds this explanation to the message and links to the nearest multiple definition above it.
+
 ### Output files and messages
 
 - qaflisp writes `.s19`, `.lst` and `.fmem` into the **current working directory**, not next to the source. The extension therefore runs it in the source file's folder.

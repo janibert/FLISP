@@ -38,6 +38,8 @@ To develop without packaging: open the repository folder in VS Code and press `F
 
 `test/qaflisp-test.js` tests the qaflisp integration (`src/qaflisp.js`) without VS Code: parsing of qaflisp's messages, the command-line flags and the search order. If a real `qaflisp.exe` is found above the project folder or on the `PATH`, it also assembles a correct and a broken file with it; otherwise those two cases are skipped.
 
+`test/symbols-test.js` tests the symbol analysis (`src/symbols.js`) behind Go to Definition, references, outline, rename and the live check. If a real qaflisp is found, it also assembles probe files and checks that every line qaflisp reports as *Undefined symbol* or *Multiple definition* is reported by the live check as well, and that a file qaflisp accepts gives no live errors.
+
 `test/tokenize-test.js` loads the grammar with the same engine VS Code uses (`vscode-textmate` plus `vscode-oniguruma`), tokenizes the sample files and, for each expectation, checks one specific token on one specific line. The cases are in the `expectations` list at the top of the script; adding one is a single line:
 
 ```js
@@ -72,24 +74,30 @@ language-configuration.json      comment character, bracket pairs
 syntaxes/flisp.tmLanguage.json   grammar for .sflisp
 syntaxes/fmem.tmLanguage.json    grammar for .fmem
 extension.js                     command, diagnostics, settings (VS Code side)
+src/features.js                  definition, references, outline, hover, rename, live check (VS Code side)
+src/symbols.js                   symbol analysis of a .sflisp file (no VS Code API)
+src/mnemonics.js                 lists of mnemonics, directives and registers
 src/qaflisp.js                   finding and running qaflisp, parsing its output
 bin/qaflisp.exe                  bundled qaflisp 1.3 (GMV, see THIRD-PARTY-NOTICES.md)
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)
 THIRD-PARTY-NOTICES.md           DigiFlisp license for qaflisp.exe and the icon
 CHANGELOG.md                     release notes (shown on the Marketplace)
 test/qaflisp-test.js             tests for src/qaflisp.js
+test/symbols-test.js             tests for src/symbols.js
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
+test/running-light.sflisp        example program (used for the screenshot)
 test/qaflisp-output.fmem         qaflisp output for the test
 .vscodeignore                    what stays out of the package
 ```
 
 ## Customizing
 
-The grammar is in `syntaxes/flisp.tmLanguage.json`. A new custom instruction goes in two places:
+The grammar is in `syntaxes/flisp.tmLanguage.json`. A new custom instruction goes in three places:
 
 1. in `statement-operand`, group 3 (`MOVE|CMJEQ`) — or in `statement-inherent` if it takes no operand,
-2. in the list of the first `label` rule, so that it is flagged as an error in column 1.
+2. in the list of the first `label` rule, so that it is flagged as an error in column 1,
+3. in `src/mnemonics.js` (`LAB`, or `INHERENT` if it takes no operand), so that the symbol analysis knows it.
 
 Colours come from the active VS Code theme, not from the extension. The scopes are chosen so that the default themes (2026 Dark/Light, Dark/Light Modern) give each element its own colour. In particular, directives (`support.type.directive`) and instructions (`keyword.other.instruction`) must never share a scope family — students should see at a glance what is an instruction for the assembler and what is an instruction for the processor. The test suite checks this.
 

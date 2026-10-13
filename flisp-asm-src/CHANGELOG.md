@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Labels and symbols: Go to Definition (`F12`), Find All References (`Shift+F12`), highlighting of all occurrences, Outline / breadcrumbs / `Ctrl+Shift+O`, hover with the defining line, rename (`F2`).
+- Live check while typing: undefined symbols (with a hint when only the case differs) and multiple definitions are underlined without assembling. On lines with a qaflisp message the live check steps back; editing a line removes the outdated qaflisp message there.
+- The live check also finds unknown mnemonics, a mnemonic in column 1 and labels that are accidentally indented ("if 'Start' is a label, it must start in column 1").
+- qaflisp's *Phase error between passes* is explained, with a link to the multiple definition that usually causes it.
+
+## 0.5.1 (not published)
+
 - Assembler directives (`ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END`) are clearly distinguished from instructions: own colour (scope `support.type.directive` instead of `keyword.other.directive`) and bold by default.
 - The immediate marker `#` is bold by default, so `LDA #5` and `LDA 5` are easy to tell apart.
 

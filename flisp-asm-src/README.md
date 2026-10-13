@@ -46,6 +46,21 @@ The grammar does the same. This has a practical consequence: `LDA #K + 1` loads 
 
 `MOVE` and `CMJEQ` are not standard instructions; neither the handbook nor qaflisp knows them. They get the scope `entity.name.type.instruction.custom.flisp`, which the extension renders *italic and underlined* by default so they stand out in every theme.
 
+## Labels and symbols
+
+The extension knows every label and `EQU` constant in the file:
+
+| Feature | How |
+|---|---|
+| Go to the definition | `F12` or `Ctrl`+click on a symbol, e.g. on `Loop` in `BRA Loop` |
+| Find all uses | `Shift+F12`; clicking a symbol also highlights all its occurrences |
+| Overview of all labels | *Outline* view, breadcrumbs, or `Ctrl+Shift+O` — code labels, data (`FCB`, `FCS`, `RMB`) and constants (`EQU`) have their own icons |
+| Show the definition | hover over a symbol: its defining line and the number of uses |
+| Rename | `F2` on a symbol renames its definition and every use |
+| Check while typing | undefined symbols, labels defined twice, unknown mnemonics and labels that do not start in column 1 are underlined immediately, without assembling |
+
+The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
+
 ## Assembling
 
 The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor. qaflisp comes with [DigiFlisp](https://www.gbgmv.se/studies.html). The extension finds the qaflisp of an installed DigiFlisp automatically. On Windows it also works without DigiFlisp: a copy of `qaflisp.exe` is bundled with the extension.
@@ -105,7 +120,7 @@ So a newer qaflisp in your workspace, on the `PATH` or next to DigiFlisp always 
 
 ## Limitations
 
-No autocompletion and no debugger. Errors are only checked when you assemble, not while you type. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
+No autocompletion and no debugger. While you type, symbols and the line structure are checked (undefined or duplicate symbols, unknown mnemonics, labels not in column 1); all other errors, such as wrong operands or values out of range, are found when you assemble. Labels and symbols work within one file. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
 
 ## License
 
