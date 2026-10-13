@@ -40,7 +40,7 @@ Every line is `[Label] Mnemonic [Operand] [Comment]`.
 
 ### Symbols (labels and `EQU` constants)
 
-The live symbol check (`src/symbols.js`) follows these rules; `test/symbols-test.js` compares it with the real qaflisp.
+The live check (`src/symbols.js` parses the lines, `src/checks.js` checks them) follows these rules; `test/checks-test.js` compares it with the real qaflisp.
 
 - **Symbols are case-sensitive**: `Loop` and `loop` are two different symbols and may both be defined; `BRA loop` does not find `Loop` (*Undefined symbol 'loop'*). Mnemonics and register names are case-insensitive.
 - A name consists of letters, digits and `_`; a digit at the start gives *Illegal label*. In the label column qaflisp also accepts `$` and `.` after the first character (`A$b`, `x.y`), but such a label cannot be used in an operand (`BRA x.y`: *Bad operand syntax*); `q#r` gives *Illegal mnemonic*. The `:` after a label is not part of the name (`L1:` is used as `L1`; `BRA L1:` gives *Bad operand syntax*).
@@ -149,7 +149,7 @@ The live check reports the same *truncated* errors where the value is known with
 
 ### Addresses
 
-Measured with listings (`qaflisp -L`); the live check computes the same layout (`src/layout.js`), and `test/symbols-test.js` compares it line by line with the listing (also 1360 single-instruction probes and about 170 probe files during development: no difference).
+Measured with listings (`qaflisp -L`); the live check computes the same layout (`src/layout.js`), and `test/layout-test.js` compares it line by line with the listing (also 1360 single-instruction probes and about 170 probe files during development: no difference).
 
 - The location counter starts at `$00`; `ORG` sets it. It is **not wrapped** at `$FF`: a label after `ORG $F0` and `RMB $20` has the address `$110`. Only the bytes are written to the address modulo 256 (`$10`), without a message — the memory has 256 bytes.
 - Every instruction variant has a fixed length (`src/instructions.js`, checked against qaflisp); there are no short and long forms.
