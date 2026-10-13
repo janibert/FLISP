@@ -7,6 +7,7 @@
 - Live check: directives without their operand (`ORG`, `RMB`, `FCB`, `FCS`, `K EQU`) and `EQU` without a label are reported, as qaflisp does. Such an `ORG` or `RMB` no longer stops the address computation (qaflisp ignores the line), so branch ranges and addresses below it are still checked.
 - Live check: `FCS` follows qaflisp more closely: an operand that is no string (`FCS Text`, `FCS 'A'`) is reported; `FCS ""` is no empty string for qaflisp, it reads on to the next `"` or the end of the line (comment included), and the addresses below now account for that; words after the closing quote are ignored instead of reported as undefined symbols.
 - Live check: an undefined start symbol after `END` (`END Strat`) is a warning, not an error — qaflisp only warns and assembles the file.
+- Assembling a file in a folder with letters like `Ö` or `å` (`C:\Users\Björn\…`) showed qaflisp's errors in the notification but not in the editor; they were attached to a garbled path in *Problems*. The output channel now shows such paths correctly too.
 
 ## 0.10.1
 

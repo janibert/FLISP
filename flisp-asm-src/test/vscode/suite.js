@@ -16,6 +16,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function openFile(name, text) {
   const file = path.join(workspace(), name);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, text);
   const doc = await vscode.workspace.openTextDocument(file);
   await vscode.window.showTextDocument(doc);
@@ -90,6 +91,14 @@ if (qaflisp) {
     await vscode.commands.executeCommand('flisp.assemble', doc.uri); // saves the edit first
     assert.deepStrictEqual(vscode.languages.getDiagnostics(doc.uri), []);
     assert.ok(fs.existsSync(path.join(workspace(), 'assemble.s19')), 'qaflisp writes its output next to the source');
+  });
+
+  test('assemble: messages reach the document in a folder with non-ASCII letters', async () => {
+    const doc = await openFile('Övning å/umlaut.sflisp', `${SOURCE}\tBRA\tStrat\n\tEND\n`);
+    await vscode.commands.executeCommand('flisp.assemble', doc.uri);
+    await diagnosticsWhen(doc, (l) => l.some((d) => d.startsWith('qaflisp 6:')), 'qaflisp error expected in line 6');
+    const phantom = vscode.languages.getDiagnostics().filter(([uri, list]) => list.length && !fs.existsSync(uri.fsPath));
+    assert.deepStrictEqual(phantom.map(([uri]) => uri.fsPath), [], 'no diagnostics for files that do not exist');
   });
 }
 

@@ -131,7 +131,10 @@ function findQaflisp(opts, exists = (p) => fs.existsSync(p) && fs.statSync(p).is
 function runQaflisp(exe, sourceFile, options) {
   return new Promise((resolve, reject) => {
     const args = buildArgs(options, sourceFile);
-    execFile(exe, args, { cwd: path.dirname(sourceFile), windowsHide: true }, (err, stdout, stderr) => {
+    // The Windows build writes in the ANSI code page (paths like "Övning"); latin1 matches it
+    // for Western letters, utf8 would turn them into U+FFFD.
+    const encoding = process.platform === 'win32' ? 'latin1' : 'utf8';
+    execFile(exe, args, { cwd: path.dirname(sourceFile), windowsHide: true, encoding }, (err, stdout, stderr) => {
       // On Windows qaflisp's exit code is the number of errors, so a non-zero code is normal.
       // The Linux build exits with 0 even on errors - count errors from the messages, not the code.
       if (err && typeof err.code !== 'number') return reject(err);

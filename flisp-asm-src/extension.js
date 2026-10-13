@@ -131,43 +131,39 @@ async function assemble(doc, { fromSave }) {
 }
 
 function publishDiagnostics(doc, messages) {
-  diagnostics.delete(doc.uri);
-  const byFile = new Map();
+  // qaflisp has no include directive, so every message belongs to the assembled file. Its
+  // echo of the path is not used: the path may come back in another encoding ("Övning").
+  const list = [];
   for (const m of messages) {
-    // qaflisp echoes the path it was given; included files may show up with their own path.
-    const file = path.isAbsolute(m.file) ? m.file : path.resolve(path.dirname(doc.uri.fsPath), m.file);
-    const key = vscode.Uri.file(file).toString();
-    if (!byFile.has(key)) byFile.set(key, []);
-    const target = key === doc.uri.toString() ? doc : undefined;
     let message = m.message;
     let related;
-    if (target && /^Phase error between passes/.test(m.message)) {
+    if (/^Phase error between passes/.test(m.message)) {
       // qaflisp gives neither cause nor line of the cause; explain it for students.
-      const e = explainPhaseError(analyze(target.getText()), m.line - 1);
+      const e = explainPhaseError(analyze(doc.getText()), m.line - 1);
       message = `${m.message} — ${e.message}`;
       if (e.relatedLine !== undefined) {
-        const text = target.lineAt(e.relatedLine).text;
+        const text = doc.lineAt(e.relatedLine).text;
         related = [new vscode.DiagnosticRelatedInformation(
-          new vscode.Location(target.uri, new vscode.Range(e.relatedLine, 0, e.relatedLine, text.length)),
+          new vscode.Location(doc.uri, new vscode.Range(e.relatedLine, 0, e.relatedLine, text.length)),
           e.relatedText
         )];
       }
     }
     const diag = new vscode.Diagnostic(
-      rangeFor(target, m),
+      rangeFor(doc, m),
       message,
       m.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error
     );
     diag.source = 'qaflisp';
     if (related) diag.relatedInformation = related;
-    byFile.get(key).push(diag);
+    list.push(diag);
   }
-  for (const [key, list] of byFile) diagnostics.set(vscode.Uri.parse(key), list);
+  diagnostics.set(doc.uri, list);
 }
 
 function rangeFor(doc, m) {
   const line = Math.max(0, m.line - 1);
-  if (!doc || line >= doc.lineCount) return new vscode.Range(line, 0, line, 1000);
+  if (line >= doc.lineCount) return new vscode.Range(line, 0, line, 1000);
   const text = doc.lineAt(line).text;
   if (m.column !== undefined && m.column < text.length) {
     // Underline from the reported position to the end of that word.
