@@ -10,6 +10,8 @@ let diagnostics;
 let extensionRoot;
 let languageFeatures;
 const latestRun = new Map(); // document uri -> number of its latest qaflisp run
+const running = new Map(); // document uri -> its qaflisp process (a promise)
+const savingToAssemble = new Set(); // documents the assemble command saves before it runs qaflisp
 
 function activate(context) {
   extensionRoot = context.extensionPath;
@@ -23,6 +25,7 @@ function activate(context) {
     vscode.workspace.onDidSaveTextDocument((doc) => {
       if (doc.languageId !== 'flisp') return;
       if (!vscode.workspace.getConfiguration('flisp', doc.uri).get('assembleOnSave')) return;
+      if (savingToAssemble.has(doc.uri.toString())) return; // the command assembles it anyway
       assemble(doc, { fromSave: true });
     }),
     vscode.workspace.onDidCloseTextDocument((doc) => diagnostics.delete(doc.uri)),
@@ -63,7 +66,15 @@ async function assembleCommand(uri) {
     vscode.window.showWarningMessage('FLISP: Only files on disk can be assembled.');
     return;
   }
-  if (doc.isDirty && !(await doc.save())) return;
+  if (doc.isDirty) {
+    const key = doc.uri.toString();
+    savingToAssemble.add(key);
+    try {
+      if (!(await doc.save())) return;
+    } finally {
+      savingToAssemble.delete(key);
+    }
+  }
   await assemble(doc, { fromSave: false });
 }
 
@@ -101,7 +112,7 @@ async function assemble(doc, { fromSave }) {
 
   let result;
   try {
-    result = await runQaflisp(exe, sourceFile, options);
+    result = await oneAtATime(key, () => runQaflisp(exe, sourceFile, options));
   } catch (err) {
     output.appendLine(`Could not run ${exe}: ${err.message}`);
     output.show(true);
@@ -139,6 +150,17 @@ async function assemble(doc, { fromSave }) {
     const suffix = warnings ? `, ${warnings} warning(s)` : '';
     vscode.window.setStatusBarMessage(`$(check) FLISP: assembled ${path.basename(sourceFile)}${suffix}`, 5000);
   }
+}
+
+// One qaflisp process per document at a time: they would write the same .s19/.lst/.fmem files.
+function oneAtATime(key, start) {
+  const next = (running.get(key) || Promise.resolve()).catch(() => {}).then(start);
+  running.set(key, next);
+  const done = () => {
+    if (running.get(key) === next) running.delete(key);
+  };
+  next.then(done, done);
+  return next;
 }
 
 function publishDiagnostics(doc, messages) {

@@ -9,6 +9,7 @@
 - Live check: an undefined start symbol after `END` (`END Strat`) is a warning, not an error — qaflisp only warns and assembles the file.
 - Assembling a file in a folder with letters like `Ö` or `å` (`C:\Users\Björn\…`) showed qaflisp's errors in the notification but not in the editor; they were attached to a garbled path in *Problems*. The output channel now shows such paths correctly too.
 - qaflisp messages are no longer placed on the wrong lines when the file is edited while qaflisp runs (e.g. with *Assemble on Save* and auto save); such a result is only written to the output channel.
+- *Assemble* (F7) on an unsaved file with *Assemble on Save* no longer starts qaflisp twice; qaflisp runs for one file one at a time, so its output files cannot be written by two processes at once.
 
 ## 0.10.1
 
