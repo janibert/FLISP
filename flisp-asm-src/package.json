@@ -128,7 +128,8 @@
         "editor.insertSpaces": true,
         "editor.detectIndentation": false,
         "editor.tabSize": 4,
-        "editor.guides.indentation": false
+        "editor.guides.indentation": false,
+        "editor.wordBasedSuggestions": "off"
       }
     },
     "commands": [
@@ -208,7 +209,7 @@
       {
         "command": "flisp.acceptSuggestionAndNextColumn",
         "key": "tab",
-        "when": "editorTextFocus && editorLangId == flisp && suggestWidgetVisible && !inSnippetMode && !editorHasSelection"
+        "when": "editorTextFocus && (editorLangId == flisp || editorLangId == fmem) && suggestWidgetVisible && !inSnippetMode && !editorHasSelection"
       }
     ],
     "configuration": {

@@ -6,7 +6,7 @@
 const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
 const instructionHover = require('./instructionHover');
-const { analyzeFmem, normalizeFmemColumns, formatFmemLine } = require('./fmem');
+const { analyzeFmem, normalizeFmemColumns, formatFmemLine, fmemCompletionsAt, fmemCommandTakesArgument } = require('./fmem');
 const format = require('./format');
 const { completionsAt, fieldAt } = require('./completion');
 
@@ -188,13 +188,38 @@ function register(context, qaflispDiagnostics) {
       },
     }, '#', ','),
 
+    // .fmem: only the four commands, and only in the command column.
+    vscode.languages.registerCompletionItemProvider(FMEM, {
+      provideCompletionItems(doc, pos) {
+        const { start, items } = fmemCompletionsAt(doc.lineAt(pos.line).text, pos.character);
+        const range = new vscode.Range(pos.line, start, pos.line, pos.character);
+        return items.map((x, i) => {
+          const item = new vscode.CompletionItem(x.insert, vscode.CompletionItemKind.Keyword);
+          item.insertText = x.insert;
+          item.filterText = x.filter;
+          item.range = range;
+          item.detail = x.detail;
+          item.sortText = String(i);
+          return item;
+        });
+      },
+    }, '#'),
+
     // Tab while the suggestion list is open: accept, and in the label or mnemonic column
     // go on to the next column, so one Tab is enough (in the operand an expression may continue).
     vscode.commands.registerCommand('flisp.acceptSuggestionAndNextColumn', async () => {
       await vscode.commands.executeCommand('acceptSelectedSuggestion');
       const editor = vscode.window.activeTextEditor;
-      if (!editor || editor.document.languageId !== 'flisp') return;
+      if (!editor) return;
       const pos = editor.selection.active;
+      if (editor.document.languageId === 'fmem') {
+        // #setMemory / #setRegister: on to the argument column
+        if (fmemCommandTakesArgument(editor.document.lineAt(pos.line).text.slice(0, pos.character))) {
+          await vscode.commands.executeCommand('flisp.nextColumn');
+        }
+        return;
+      }
+      if (editor.document.languageId !== 'flisp') return;
       const { field } = fieldAt(editor.document.lineAt(pos.line).text, pos.character);
       if (field === 'label' || field === 'mnemonic') await vscode.commands.executeCommand('flisp.nextColumn');
     }),

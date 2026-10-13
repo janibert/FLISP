@@ -5,7 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { analyzeFmem, formatFmemLine, formatFmemText } = require('../src/fmem');
+const { analyzeFmem, formatFmemLine, formatFmemText, fmemCompletionsAt, fmemCommandTakesArgument } = require('../src/fmem');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 
 const tests = [];
@@ -104,6 +104,21 @@ test('formatting .fmem keeps all writes and messages and is stable', () => {
   assert.deepStrictEqual(writes(out), writes(src));
   assert.deepStrictEqual(analyzeFmem(out).map((d) => `${d.line}:${d.message}`), analyzeFmem(src).map((d) => `${d.line}:${d.message}`));
   assert.strictEqual(formatFmemText(out, [14, 24]), out, 'formatting twice changes nothing');
+});
+
+// --- Completion ----------------------------------------------------------------------
+
+test('completion: the four commands, only in the command column', () => {
+  const names = (t) => fmemCompletionsAt(t, t.length).items.map((x) => x.insert);
+  const all = ['#setMemory', '#setRegister', '# ClearAllMemory', '# ClearAllRegisters'];
+  assert.deepStrictEqual(names(''), all);
+  assert.deepStrictEqual(names('#se'), all);
+  assert.deepStrictEqual(names(' # Cl'), all);
+  assert.strictEqual(fmemCompletionsAt(' #se', 4).start, 1, 'the typed # is replaced, not doubled');
+  assert.deepStrictEqual(names('#setMemory    20'), []);
+  assert.deepStrictEqual(names('QAflisp header'), []);
+  assert.ok(fmemCommandTakesArgument('#setMemory') && fmemCommandTakesArgument('#setregister'));
+  assert.ok(!fmemCommandTakesArgument('# ClearAllMemory'));
 });
 
 // --- Fresh qaflisp output ------------------------------------------------------

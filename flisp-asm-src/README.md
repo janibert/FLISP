@@ -33,7 +33,7 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 
 `.fmem` files are also checked while typing: unknown commands (with a hint for typos such as `#setMemroy`), addresses and values that are not 1–2 hex digits (`#setMemory 2G=05`), a missing `=` or value, a command without `#`, and an address that is set twice. DigiFlisp itself reports none of these: it skips unknown lines silently and reads invalid hex digits as 0 (`#setMemory 2G=88` writes to `$20`). `#setRegister` gets a warning, because it had no effect in DigiFlisp 2.08.
 
-`.fmem` files have columns too: the command in column 0, its argument in column 14, a comment in column 24 (setting `flisp.fmemColumns`). Tab / Shift+Tab and *Format Document* work as in `.sflisp` files; header lines and lines with an unknown command are left unchanged.
+`.fmem` files have columns too: the command in column 0, its argument in column 14, a comment in column 24 (setting `flisp.fmemColumns`). Tab / Shift+Tab and *Format Document* work as in `.sflisp` files; header lines and lines with an unknown command are left unchanged. In the command column, suggestions offer only the four commands (`#setMemory`, `#setRegister`, `# ClearAllMemory`, `# ClearAllRegisters`); Tab after `#setMemory` or `#setRegister` moves on to the argument column.
 
 ### Line structure and comments
 

@@ -177,4 +177,33 @@ function formatFmemText(source, columns = DEFAULT_FMEM_COLUMNS) {
   return source.split(/\r?\n/).map((l) => formatFmemLine(l, columns)).join(eol);
 }
 
-module.exports = { analyzeFmem, COMMANDS, DEFAULT_FMEM_COLUMNS, normalizeFmemColumns, formatFmemLine, formatFmemText };
+// --- Completion ------------------------------------------------------------------
+// Only in the command column: the four commands DigiFlisp knows. The ClearAll commands are
+// inserted as qaflisp writes them ("# ClearAllMemory"), the spelling tested with DigiFlisp.
+
+const COMPLETIONS = [
+  { insert: '#setMemory', filter: '#setMemory', detail: 'write a byte: #setMemory AA=DD (hex)', takesArgument: true },
+  { insert: '#setRegister', filter: '#setRegister', detail: 'set a register — had no effect in DigiFlisp 2.08', takesArgument: true },
+  { insert: '# ClearAllMemory', filter: '#ClearAllMemory', detail: 'clear the whole memory', takesArgument: false },
+  { insert: '# ClearAllRegisters', filter: '#ClearAllRegisters', detail: 'clear all registers', takesArgument: false },
+];
+
+// Suggestions at `character`, or [] outside the command column. `start` is where the
+// replaced text begins (at the '#' if one was typed).
+function fmemCompletionsAt(text, character) {
+  const before = text.slice(0, character);
+  const m = /^([ \t]*)(#?[ \t]*[A-Za-z]*)$/.exec(before);
+  if (!m) return { start: character, items: [] };
+  return { start: m[1].length, items: COMPLETIONS };
+}
+
+// After accepting a command: does it take an argument (then Tab moves on to the argument column)?
+function fmemCommandTakesArgument(text) {
+  const m = /^[ \t]*#[ \t]*([A-Za-z]+)[ \t]*$/.exec(text);
+  return Boolean(m && ['setmemory', 'setregister'].includes(m[1].toLowerCase()));
+}
+
+module.exports = {
+  analyzeFmem, COMMANDS, DEFAULT_FMEM_COLUMNS, normalizeFmemColumns, formatFmemLine, formatFmemText,
+  fmemCompletionsAt, fmemCommandTakesArgument,
+};
