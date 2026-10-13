@@ -1,7 +1,7 @@
 // Addressing mode of an operand and the check whether an instruction supports it
 // (no VS Code API; used by the hover and by the live check).
 
-const { INSTRUCTIONS, MODES } = require('./instructions');
+const { INSTRUCTIONS, MODES, DIRECTIVES } = require('./instructions');
 
 const BRANCHES = new Set(Object.entries(INSTRUCTIONS)
   .filter(([, d]) => d.variants.some((v) => v.mode === 'rel')).map(([mn]) => mn));
@@ -59,4 +59,42 @@ function checkOperand(mnemonic, operand) {
   return { kind: 'mode', message: `Illegal addressing mode — ${mn} has no ${mode.name.toLowerCase()} addressing (${mode.syntax}); allowed: ${allowed}` };
 }
 
-module.exports = { modeOf, checkOperand, BRANCHES };
+// Positions of '#' in an operand, outside strings and character constants.
+function hashPositions(operand) {
+  const found = [];
+  for (let i = 0; i < operand.length; i++) {
+    if (operand[i] === '"') {
+      i++;
+      while (i < operand.length && operand[i] !== '"') i += operand[i] === '\\' ? 2 : 1;
+    } else if (operand[i] === "'") {
+      i += 2;
+    } else if (operand[i] === '#') {
+      found.push(i);
+    }
+  }
+  return found;
+}
+
+// '#' (immediate data) may only stand at the start of an instruction's operand; directives
+// take plain values. qaflisp 1.3 accepts it after END, and FCS ignores everything after the
+// string. Returns undefined or { offset, message } with the offset of the offending '#'.
+function checkImmediateMarker(mnemonic, operand) {
+  if (!operand) return undefined;
+  const mn = mnemonic.toUpperCase();
+  const positions = hashPositions(operand);
+  if (mn === 'FCS') {
+    return operand.startsWith('#') ? { offset: 0, message: 'Bad operand syntax — FCS takes a string without \'#\', e.g. FCS "TEXT"' } : undefined;
+  }
+  if (mn in DIRECTIVES) {
+    if (mn === 'END' || !positions.length) return undefined;
+    let plain = '';
+    for (let i = 0; i < operand.length; i++) if (!positions.includes(i)) plain += operand[i];
+    return { offset: positions[0], message: `Illegal character '#' — directives take plain values without '#': write ${mn} ${plain}` };
+  }
+  if (!INSTRUCTIONS[mn]) return undefined;
+  const offset = positions.find((p) => p > 0);
+  if (offset === undefined) return undefined;
+  return { offset, message: `Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. ${mn} #5` };
+}
+
+module.exports = { modeOf, checkOperand, checkImmediateMarker, BRANCHES };

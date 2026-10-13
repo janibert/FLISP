@@ -88,6 +88,7 @@ src/instructions.js              instruction set: variants, opcodes, bytes, cycl
 src/mnemonics.js                 mnemonic lists derived from src/instructions.js, register names
 src/instructionHover.js          hover text for mnemonics and directives (no VS Code API)
 src/addressing.js                addressing mode of an operand, operand check (no VS Code API)
+src/expression.js                reading and evaluating operand expressions like qaflisp (no VS Code API)
 src/fmem.js                      syntax check for .fmem files (no VS Code API)
 src/format.js                    column layout: tab stops and formatter (no VS Code API)
 src/completion.js                context-sensitive suggestions (no VS Code API)
@@ -104,6 +105,7 @@ test/format-test.js              tests for src/format.js, incl. same machine cod
 test/completion-test.js          tests for src/completion.js
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
+test/invalid-numbers.sflisp      numbers that do not fit their base, for the scope test
 test/running-light.sflisp        example program (used for the screenshot)
 test/qaflisp-output.fmem         qaflisp output for the test
 .vscodeignore                    what stays out of the package

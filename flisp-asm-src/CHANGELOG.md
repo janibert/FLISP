@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Live check: `#` in a directive (`EQU #$FB`, `ORG #$00`, `FCB 2,#3`) or inside an instruction's operand (`LDA 2+#1`) is underlined while typing, with the corrected line in the message.
+- Live check: a blank inside an `FCB` list ends the operand. `FCB 1,2, 3,4` is an error (as in qaflisp); `FCB 1,2 3,4` or `FCB 1,2 ,3` gets a warning, because qaflisp silently treats the rest as a comment and assembles only `1,2`.
+- Numbers whose digits do not fit their base (`0a`, `%000200100`, `$FG`, `0x1F`, a lone `$` or `%`) are shown as invalid and underlined while typing, as qaflisp reports them; for decimal numbers with hex letters the message suggests the hex form (`$0A`).
+- Live check: values that do not fit in a byte (outside −256…255) are errors, as in qaflisp ("Value is truncated") — in `FCB` lists, immediate data, addresses and offsets, also when computed from expressions and `EQU` constants (`FCB 200+100`, `LDA #K*4`); expressions are evaluated with qaflisp's operator precedence. `ORG` outside `$00`–`$FF` gets a warning (qaflisp silently uses the low byte), `RMB` with a negative count an error.
+- Live check: errors in expressions are underlined while typing, as qaflisp reports them — missing or extra parentheses (`2*(3`, `2*3)`), a missing value or operator (`2+`, `2**3`, `2(3)`), characters that are not operators (`1<2`, `1=2`), register names in expressions (`FCB X+1`; `PC` is not reserved and is reported as an undefined symbol, as in qaflisp), division by zero (also via `EQU` constants). Two things qaflisp silently accepts get a warning: a missing value before `)` (qaflisp uses 0: `(2+)` is 2) and `~` or `!` after a value (qaflisp drops the value before it: `1~2` is `~2`).
+- `%` after an operand is the modulo operator (`7%3`), not a binary number — in the highlighting and in the live check. Operators `% & | ^ << >> && || ~ !` are highlighted like `+ - * /`.
+- Suggestions: none inside a number (`%001d…`, `$F`) and none after a `#` that qaflisp rejects (`EQU #`, `LDA 2+#`). After a comma in an `FCB` list, symbols are suggested again (previously nothing).
+- Marketplace page: `#5` in code examples (e.g. `LDA #5`) is no longer turned into a link to a GitHub issue.
+- README: the limitations no longer claim that there is no autocompletion.
+
 ## 0.9.0
 
 - Column layout for `.fmem`: command in column 0, argument in column 14, comment in column 24 (setting `flisp.fmemColumns`); Tab / Shift+Tab and *Format Document* as in `.sflisp`.

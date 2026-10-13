@@ -6,7 +6,9 @@
 //   - nothing after END is assembled
 
 const { isMnemonic, isInherent, takesOperand, isRegister } = require('./mnemonics');
-const { checkOperand } = require('./addressing');
+const { checkOperand, checkImmediateMarker, modeOf } = require('./addressing');
+const { INSTRUCTIONS } = require('./instructions');
+const { tokenize, parse, constantValues, RESERVED } = require('./expression');
 
 const IDENT = /[A-Za-z_][A-Za-z0-9_]*/y;
 
@@ -70,36 +72,70 @@ function parseLine(text) {
   }
   i = Math.min(i, text.length);
   result.operand = { text: text.slice(oStart, i), start: oStart, end: i };
+  while (i < text.length && /[ \t]/.test(text[i])) i++;
+  if (i < text.length) result.comment = { text: text.slice(i), start: i };
   return result;
 }
 
 // Symbol names used in an operand (strings, character constants, numbers and registers skipped).
 function operandSymbols(operand) {
+  return tokenize(operand.text)
+    .filter((t) => t.type === 'symbol' && !RESERVED.has(t.text.toUpperCase())) // PC is an ordinary symbol here
+    .map((t) => ({ name: t.text, start: operand.start + t.start, end: operand.start + t.end }));
+}
+
+// Numbers whose digits do not fit their base (qaflisp: "Illegal decimal/binary/hexadecimal
+// digit"). A number runs to the end of the word, as in qaflisp: "0a", "%0102", "$FG", "$".
+const BASES = {
+  $: { name: 'hexadecimal', digits: /^[0-9A-Fa-f]+$/, uses: '0–9 and A–F', example: '$1F' },
+  '%': { name: 'binary', digits: /^[01]+$/, uses: '0 and 1', example: '%0101' },
+};
+
+function numberProblem(word) {
+  const base = BASES[word[0]];
+  if (base) {
+    const digits = word.slice(1);
+    if (!digits) return `Illegal ${base.name} digit: '${word}' without digits — write e.g. ${base.example}`;
+    if (base.digits.test(digits)) return undefined;
+    return `Illegal ${base.name} digit in '${word}' — ${base.name} numbers use only ${base.uses}`;
+  }
+  if (/^[0-9]+$/.test(word)) return undefined;
+  const hex = /^0x([0-9A-Fa-f]+)$/i.exec(word) || (/^[0-9A-Fa-f]+$/.test(word) && [word, word]);
+  const hint = hex ? `; for hex write $${hex[1].toUpperCase()}` : '';
+  return `Illegal decimal digit in '${word}' — decimal numbers use only 0–9${hint}`;
+}
+
+function numberProblems(operand, at) {
   const found = [];
-  const t = operand.text;
-  let i = 0;
-  while (i < t.length) {
-    const c = t[i];
-    if (c === '"') {
-      i++;
-      while (i < t.length && t[i] !== '"') i += t[i] === '\\' ? 2 : 1;
-      i++;
-    } else if (c === "'") {
-      i += 3;
-    } else if (/[A-Za-z_]/.test(c)) {
-      IDENT.lastIndex = i;
-      const name = IDENT.exec(t)[0];
-      if (!isRegister(name)) found.push({ name, start: operand.start + i, end: operand.start + i + name.length });
-      i += name.length;
-    } else if (/[0-9$%]/.test(c)) {
-      // a number such as 42, $FF or %0101 — its letters are not symbols
-      i++;
-      while (i < t.length && /[A-Za-z0-9_]/.test(t[i])) i++;
-    } else {
-      i++;
-    }
+  for (const t of tokenize(operand.text)) {
+    const message = t.type === 'number' && numberProblem(t.text);
+    if (message) found.push(at({ start: operand.start + t.start, end: operand.start + t.end }, 'error', message));
   }
   return found;
+}
+
+// A blank inside an FCB list: the operand ends there, the rest of the line is a comment.
+// Ending with ',' is an error in qaflisp ("Unterminated expression"); a comment that goes on
+// with bytes (",3" or "3,4") is assembled silently without them, so it gets a warning.
+const BYTE = String.raw`(?:\$[0-9A-Fa-f]+|%[01]+|[0-9]+|'.')`;
+const LIST_GOES_ON = new RegExp(String.raw`^(?:,[ \t]*${BYTE}|${BYTE},${BYTE})(?:,${BYTE})*(?=[ \t;]|$)`);
+
+function fcbListProblem(p, at) {
+  if (!p.mnemonic || p.mnemonic.text.toUpperCase() !== 'FCB' || !p.operand) return undefined;
+  const mn = p.mnemonic.text;
+  const operand = p.operand.text;
+  const comment = p.comment && !p.comment.text.startsWith(';') ? p.comment : undefined;
+  if (operand.endsWith(',')) {
+    // After "1,2, " the next word is most likely the missing value.
+    const next = comment && /^[^ \t;]+/.exec(comment.text);
+    const hint = next ? ` — the blank ends the operand; remove it: ${mn} ${operand}${next[0]}` : ' — remove the last \',\' or add a value';
+    return at({ start: p.operand.end - 1, end: p.operand.end }, 'error', `Unterminated expression: the list ends with ','${hint}`);
+  }
+  const list = comment && LIST_GOES_ON.exec(comment.text);
+  if (!list) return undefined;
+  const lost = list[0].replace(/^,[ \t]*/, '');
+  return at({ start: comment.start, end: comment.start + list[0].length }, 'warning',
+    `Blank in the ${mn} list — the rest of the line is a comment, so ${lost} is not assembled; remove the blank: ${mn} ${operand},${lost}`);
 }
 
 // Problems of the line structure that qaflisp reports as "Illegal mnemonic" / "Illegal label".
@@ -119,6 +155,20 @@ function lineProblems(p, line) {
     const hint = looksLikeLabel ? ` — if '${word.replace(/:$/, '')}' is a label, it must start in column 1` : '';
     return [at(p.mnemonic, 'error', `Illegal mnemonic '${word}'${hint}`)];
   }
+  if (p.mnemonic && p.operand && isMnemonic(p.mnemonic.text)) {
+    const numbers = numberProblems(p.operand, at);
+    if (numbers.length) return numbers;
+  }
+  if (p.mnemonic && p.operand) {
+    // '#' in a directive or inside an expression (qaflisp: "Illegal character", "Syntax Error").
+    const hash = checkImmediateMarker(p.mnemonic.text, p.operand.text);
+    if (hash) {
+      const s = p.operand.start + hash.offset;
+      return [at({ start: s, end: s + 1 }, 'error', hash.message)];
+    }
+    const fcb = fcbListProblem(p, at);
+    if (fcb) return [fcb];
+  }
   if (p.mnemonic) {
     // Addressing mode / operand of an instruction (qaflisp: "Illegal Addressing Mode",
     // "Illegal register combination", "Syntax Error").
@@ -128,17 +178,83 @@ function lineProblems(p, line) {
   return [];
 }
 
+// Expressions in an operand: syntax (qaflisp: "Missing Parenthesis", "Operand expected",
+// "Unterminated expression", "Missing operator", "Illegal use of reserved word", "Integer divide
+// by zero", ...) and values that do not fit in a byte, as far as they are known without
+// assembling (numbers, expressions, EQU constants; labels are skipped). qaflisp accepts
+// -256..255 and reports "Value (0x...) is truncated" otherwise, but writes the low byte anyway;
+// ORG beyond $FF and a negative ORG are used silently with their low byte.
+const hex = (v) => `$${(v >>> 0).toString(16).toUpperCase()}`;
+const show = (v) => (v < 0 ? String(v) : `${v} (${hex(v)})`);
+const lowByte = (v) => `$${(v & 0xFF).toString(16).toUpperCase().padStart(2, '0')}`;
+
+// Items of an FCB list with their offsets. Every comma splits, as in qaflisp ("(1,2)" is an error).
+function listItems(text) {
+  const items = [];
+  let start = 0;
+  for (const t of tokenize(text)) {
+    if (t.type === 'other' && t.text === ',') {
+      items.push({ text: text.slice(start, t.start), start, kind: 'Value' });
+      start = t.end;
+    }
+  }
+  items.push({ text: text.slice(start), start, kind: 'Value' });
+  return items;
+}
+
+// The parts of an operand that are expressions, with their offsets and what their value is.
+function expressionParts(mn, operand) {
+  if (mn === 'FCB') return listItems(operand);
+  if (mn === 'ORG' || mn === 'EQU' || mn === 'RMB') return [{ text: operand, start: 0, kind: mn }];
+  if (!INSTRUCTIONS[mn]) return []; // FCS, END
+  const { mode } = modeOf(mn, operand);
+  if (mode === 'imm') return [{ text: operand.slice(1), start: 1, kind: 'Value' }];
+  if (mode === 'abs' || mode === 'rel') return [{ text: operand, start: 0, kind: mode === 'abs' ? 'Address' : 'Target' }];
+  if (mode === 'nx' || mode === 'ny' || mode === 'nsp') return [{ text: operand.slice(0, operand.lastIndexOf(',')), start: 0, kind: 'Offset' }];
+  return [];
+}
+
+function valueProblems(p, line, valueOf) {
+  const mn = p.mnemonic.text.toUpperCase();
+  const at = (start, end, severity, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, message });
+  // A syntax problem is the only message of the line; values out of range are all reported.
+  const out = [];
+  for (const part of expressionParts(mn, p.operand.text)) {
+    if (mn === 'FCB' && part.text === '') {
+      const comma = part.start > 0 ? part.start - 1 : part.start; // ",1" or "1,,2"
+      return [at(comma, comma + 1, 'error', 'Unterminated expression: a value is missing in the FCB list (two commas, or a comma at the start)')];
+    }
+    const { value: v, problem } = parse(part.text, valueOf);
+    if (problem) {
+      const end = Math.max(problem.end, problem.start + 1); // a missing value at the end: mark one character
+      const start = Math.min(problem.start, Math.max(0, part.text.length - 1));
+      return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, problem.message)];
+    }
+    if (v === undefined) continue;
+    const whole = (severity, message) => out.push(at(part.start, part.start + part.text.length, severity, message));
+    if (part.kind === 'ORG' && (v < 0 || v > 255)) whole('warning', `ORG ${show(v)} is outside the memory ($00–$FF) — qaflisp silently uses ${lowByte(v)}`);
+    if (part.kind === 'RMB' && v < 0) whole('error', `Undetermined size for reservation of storage — RMB ${v}: the number of bytes cannot be negative`);
+    if (['Value', 'Address', 'Offset'].includes(part.kind) && (v < -256 || v > 255)) {
+      whole('error', `${part.kind} ${show(v)} does not fit in a byte (−256…255) — qaflisp reports "Value is truncated" and writes only ${lowByte(v)}`);
+    }
+  }
+  return out;
+}
+
 function analyze(source) {
   const lines = source.split(/\r?\n/);
   const definitions = [];
   const references = [];
   const lineDiagnostics = [];
+  const valueLines = []; // lines without other problems, checked for values once all EQUs are known
 
   for (let line = 0; line < lines.length; line++) {
     const text = lines[line];
     const p = parseLine(text);
     const mnemonic = p.mnemonic ? p.mnemonic.text : undefined;
-    lineDiagnostics.push(...lineProblems(p, line));
+    const problems = lineProblems(p, line);
+    lineDiagnostics.push(...problems);
+    if (!problems.length && p.operand && isMnemonic(mnemonic)) valueLines.push({ p, line });
     if (p.label) {
       definitions.push({
         name: p.label.name, line, start: p.label.start, end: p.label.end,
@@ -152,6 +268,8 @@ function analyze(source) {
     }
     if (mnemonic && mnemonic.toUpperCase() === 'END') break; // qaflisp stops here
   }
+  const valueOf = constantValues(definitions);
+  for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf));
 
   const byName = new Map();
   for (const d of definitions) {

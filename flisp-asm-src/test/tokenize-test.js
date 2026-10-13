@@ -123,6 +123,25 @@ const expectations = [
   ['sample.sflisp', 'END', 'Start', '!comment'],
   ['sample.sflisp', 'END', 'Startadresse', 'comment.line'],
 
+  // Zahlen, deren Ziffern nicht zur Basis passen: die ganze Zahl ist ungueltig
+  ['invalid-numbers.sflisp', 'ORG     0a', '0a', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '%000200100', '%000200100', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '$FG,1F', '$FG', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '$FG,1F', '1F', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '0x1F', '0x1F', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', 'LDA     #%', '%', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '$1g+1', '$1g', 'invalid.illegal.number'],
+  ['invalid-numbers.sflisp', '$1g+1', '1', 'constant.numeric.decimal'],
+  ['invalid-numbers.sflisp', '$0a,077', '$0a', 'constant.numeric.hex'],
+  ['invalid-numbers.sflisp', '$0a,077', '077', 'constant.numeric.decimal'],
+  ['invalid-numbers.sflisp', '$0a,077', '%01', 'constant.numeric.binary'],
+  // nach einem Operanden ist % Modulo
+  ['invalid-numbers.sflisp', '7%3,', '%', 'keyword.operator.arithmetic'],
+  ['invalid-numbers.sflisp', '7%3,', '3', 'constant.numeric.decimal'],
+  ['invalid-numbers.sflisp', '7%3,', '%11', 'constant.numeric.binary'],
+  ['invalid-numbers.sflisp', '7%3,', '%10', 'constant.numeric.binary'],
+  ['invalid-numbers.sflisp', '7%3,', 'K', 'variable.parameter.symbol'],
+
   // .fmem, so wie qaflisp es erzeugt
   ['qaflisp-output.fmem', 'QAflisp', 'QAflisp - FLISP Absolute crossassembler, Version 1.3', 'comment.line'],
   ['qaflisp-output.fmem', 'ClearAllMemory', '# ClearAllMemory', 'keyword.control.reset'],
@@ -134,6 +153,7 @@ const expectations = [
 
 const files = {
   'sample.sflisp': 'source.flisp',
+  'invalid-numbers.sflisp': 'source.flisp',
   'qaflisp-output.fmem': 'source.fmem',
 };
 

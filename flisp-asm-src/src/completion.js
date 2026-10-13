@@ -9,6 +9,7 @@
 const { parseLine } = require('./symbols');
 const { INSTRUCTIONS, MODES, DIRECTIVES, LAB } = require('./instructions');
 const { isMnemonic, isRegister } = require('./mnemonics');
+const { checkImmediateMarker } = require('./addressing');
 
 const IDENT_BEFORE = /[A-Za-z_][A-Za-z0-9_]*$/;
 
@@ -93,7 +94,9 @@ function completionsAt(text, character, analysis) {
     if (before) return [];
     return INSTRUCTIONS[mn].variants.map((v) => ({ label: v.operand, kind: 'register', detail: `${mn} ${v.operand}`, sort: v.operand }));
   }
-  if (/,[+-]?$/.test(before)) return indexItems(mn, before);
+  if (checkImmediateMarker(mn, before)) return []; // '#' not allowed here (EQU #, LDA 2+#)
+  if (/(?:^|[^A-Za-z0-9_])[0-9$%][A-Za-z0-9_]*$/.test(before)) return []; // inside a number (%001d, $F, 12)
+  if (INSTRUCTIONS[mn] && /,[+-]?$/.test(before)) return indexItems(mn, before); // FCB 1,… is a list
   if (['FCS'].includes(mn)) return [];
 
   const branchLike = INSTRUCTIONS[mn] && INSTRUCTIONS[mn].group === 'flow';

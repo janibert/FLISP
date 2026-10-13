@@ -68,6 +68,25 @@ test('no suggestions in comments, after the operand, or in FCS strings', () => {
   assert.deepStrictEqual(at('            FCS     '), []);
 });
 
+test("no suggestions after a '#' that qaflisp rejects", () => {
+  for (const l of ['P           EQU     #', '            ORG     #', '            FCB     2,#', '            LDA     2+#']) {
+    assert.deepStrictEqual(at(l), [], l);
+  }
+  assert.ok(at('            LDA     #').length > 0, 'LDA # still suggests constants');
+  assert.ok(at('            END     #').length > 0, 'END # is accepted by qaflisp');
+});
+
+test('no suggestions inside a number', () => {
+  for (const l of ['            FCB     %00010000,%001d', '            LDA     #$F', '            LDA     #$', '            FCB     1,12', '            LDA     3']) {
+    assert.deepStrictEqual(at(l), [], l);
+  }
+  // In the middle of a line: only the text before the cursor counts.
+  const line = '            FCB     %00010000,%001d00000,%01000000';
+  assert.deepStrictEqual(at(line, line.indexOf('d') + 1), []);
+  assert.ok(at('            FCB     1,D').length > 0, 'a symbol after a number still gets suggestions');
+  assert.ok(at('            LDA     L1+').length > 0, 'after an operator, too');
+});
+
 (async () => {
   let fails = 0;
   for (const [name, fn] of tests) {

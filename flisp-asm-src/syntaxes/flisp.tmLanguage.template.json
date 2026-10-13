@@ -111,18 +111,23 @@
     },
 
     "number": {
+      "comment": "Eine Zahl reicht bis zum Ende des Wortes. Passt eine Ziffer nicht zur Basis (0a, %0102, $FG) oder fehlen die Ziffern ($, %), ist die ganze Zahl ungueltig - wie bei qaflisp (Illegal decimal/binary/hexadecimal digit).",
       "patterns": [
         {
           "name": "constant.numeric.hex.flisp",
-          "match": "\\$[0-9A-Fa-f]+"
+          "match": "\\$[0-9A-Fa-f]+(?![A-Za-z0-9_])"
         },
         {
           "name": "constant.numeric.binary.flisp",
-          "match": "%[01]+"
+          "match": "(?<![A-Za-z0-9_)'])%[01]+(?![A-Za-z0-9_])"
         },
         {
           "name": "constant.numeric.decimal.flisp",
-          "match": "(?<![A-Za-z0-9_$%])-?[0-9]+(?![A-Za-z0-9_])"
+          "match": "(?<![A-Za-z0-9_$])-?[0-9]+(?![A-Za-z0-9_])"
+        },
+        {
+          "name": "invalid.illegal.number.flisp",
+          "match": "\\$[A-Za-z0-9_]*|(?<![A-Za-z0-9_)'])%[A-Za-z0-9_]*|(?<![A-Za-z0-9_])[0-9][A-Za-z0-9_]*"
         }
       ]
     },
@@ -146,7 +151,7 @@
     "symbol": {
       "comment": "Verwendung eines Symbols im Operanden (Label oder EQU-Konstante). Ob es definiert ist, kann die Grammatik nicht pruefen - sie sieht nur die aktuelle Zeile. Register werden vorher erkannt.",
       "name": "variable.parameter.symbol.flisp",
-      "match": "(?<![A-Za-z0-9_$%])[A-Za-z_][A-Za-z0-9_]*"
+      "match": "(?<![A-Za-z0-9_$])[A-Za-z_][A-Za-z0-9_]*"
     },
 
     "separator": {
@@ -155,8 +160,9 @@
     },
 
     "operator": {
+      "comment": "Operatoren von qaflisp: * / % binden staerker als + - & | ^ << >>; einstellig - ~ !. Nach einem Operanden ist % Modulo, sonst Binaerpraefix.",
       "name": "keyword.operator.arithmetic.flisp",
-      "match": "[+\\-*/]"
+      "match": "<<|>>|[+\\-*/%&|^~!]"
     }
   }
 }

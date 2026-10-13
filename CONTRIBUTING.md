@@ -32,6 +32,7 @@ Every line is `[Label] Mnemonic [Operand] [Comment]`.
 
 - Directives: `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END`. `FDB`, `SET` and `INCLUDE` give *Illegal mnemonic*.
 - Mnemonics are case-insensitive. Accepted aliases: `PSHCC`/`PULCC` (= `PSHC`/`PULC`), `ASL`/`ASLA` (= `LSL`/`LSLA`). `ROL`, `ASL` etc. without an operand are errors — the forms operating on register A end in `A` (`ROLA`, `ASLA`).
+- Numbers: `$1F` hex, `%0101` binary, `42` decimal (`077` is decimal 77, not octal). A number runs to the end of the word; a digit that does not fit the base gives *Illegal decimal digit* (`0a`, `1F`, `0x1F`, `1_0`), *Illegal binary digit* (`%0102`, `%0b`) or *Illegal hexadecimal digit* (`$FG`); `$` or `%` without digits gives the same messages. Hex digits are case-insensitive (`$0a`).
 - Character constants need the closing quote: `'A'`, not `'A`. `FCS` strings support `\"`.
 - `TFR`/`EXG` register pairs: `A,CC` `CC,A` `X,Y` `Y,X` `X,SP` `SP,X` `Y,SP` `SP,Y`. `A,C` (as written in the opcode map) gives *Bad register pair*.
 - There is no PC-indexed addressing (`2,PC` gives *Syntax Error*); indexed addressing uses X, Y or SP only.
@@ -64,8 +65,56 @@ The live symbol check (`src/symbols.js`) follows these rules; `test/symbols-test
 | register pair not allowed: `TFR A,X`, `EXG A,X` | *Illegal register combination* |
 | missing operand: `LDA`, `LSL` | *Syntax Error* |
 | malformed operand: `#5,X`, `,Z+`, `3,PC`, `A,SP`, `,X` (use `0,X`) | *Syntax Error* |
+| `#` in a directive: `EQU #$FB`, `ORG #$00`, `FCB 2,#3`, `FCB -#1`, `RMB #2` | *Illegal character, Position[n]* (n = 0-based column of the `#`) |
+| `#` before the string of `FCS`: `FCS #"AB"` | *Bad operand syntax* |
+| `#` inside an instruction's operand: `LDA ##1`, `LDA #1+#2` / `LDA 2+#1` | *Illegal character* / *Syntax Error* |
+
+`#` is accepted after `END` (`END #Start`), in strings and as a character constant (`'#'`). `FCS` ignores everything after the string (`FCS "ab",#0` gives no message).
+
+A blank inside an `FCB` list ends the operand. If the list ends with `,` before the blank (`FCB 1,2, 3,4`, also `FCB 1,2,` at the end of the line), qaflisp reports *Unterminated expression, Position[n]*. Otherwise the rest is a comment and qaflisp assembles only the bytes before the blank, without any message: `FCB 1,2 3,4` and `FCB 1,2 ,3` both give just `01 02`. The live check warns when such a comment goes on with bytes (`,3` or `3,4` in number formats or character constants); comments such as `4 bytes` or `Start,3` stay unflagged.
 
 `EXG` accepts both register orders. The live check reports the same lines with the allowed forms (`src/addressing.js`).
+
+### Expressions
+
+- Operators: `*` `/` `%` (modulo) bind stronger than `+` `-` `&` `|` `^` `<<` `>>` `&&` `||`. There are only these **two levels**, both evaluated left to right — unlike C: `2<<1+1` is 5, `6&3+1` is 3, `1|2&0` is 0, `3&&1*4` is 1, but `10-4/2` is 8 and `5&6/2` is 1. `&&` and `||` are logical (result 0 or 1: `5&&3` is 1).
+- Unary `-`, `~` (bitwise not) and `!` (logical not: `!5` is 0, `!0` is 1) bind strongest; parentheses group. There is no unary `+` and no location counter `*`.
+- `%` after an operand is modulo, otherwise the binary prefix: `7%3` is 1, `%11%%10` is 3 mod 2 = 1, `7%10` is 7.
+- Arithmetic is 32-bit two's complement, like C: `-1/2` is 0, `-7%3` is −1, `-1>>1` is −1 (arithmetic shift). Values are truncated only when the byte is generated: `$FF+1-1` is `$FF`. `x/0` gives *Integer divide by zero* (also via constants: `K/Z` with `Z EQU 0`); `x%0` is 0 without a message.
+- Negative values are stored in two's complement: `-1` gives `$FF`, `-128` gives `$80`.
+- Register names `A`, `X`, `Y`, `SP`, `CC` (any case) are reserved: `FCB X+1` gives *Illegal use of reserved word*. `PC` is not reserved — `FCB PC` gives *Undefined symbol 'PC'*. Mnemonics are ordinary names (`FCB LDA`: *Undefined symbol 'LDA'*).
+- Commas always separate `FCB` values, also inside parentheses: `FCB (1,2)` gives *Missing Parenthesis*.
+
+Syntax errors and their messages (position = 0-based column):
+
+| Example | qaflisp message |
+|---|---|
+| `2*(3`, `1+(2`, `(2,)`, `(2**3)`, `(&2)`, `(+5)` | *Missing Parenthesis* |
+| `2(3)`, `K(2)`, `3()`, `(1)(2)` — a value followed by `(` | *Missing Parenthesis* (the position points to the `(`) |
+| `2*3)`, `(2))`, `)1(` | *Unexpected Parenthesis* |
+| `2+`, `K+`, `~`, `!`, `1<<`, `,1`, `1,,2`, `[1]`, `{1}` | *Unterminated expression* |
+| `2**3`, `2+*3`, `&2`, `<<1`, `+5` | *Operand expected* |
+| `'A''B'`, `K'A'`, `(1)'A'`, `(1)2` | *Missing operator* |
+| `1=2`, `1.5`, `1:` | *Bad delimiter* |
+| `1?2`, `1@`, `2'A'` | *Illegal decimal digit* |
+| `1<2`, `1>2` | *Reached unreacheable point in Parser..P0* |
+| in an instruction operand, e.g. `LDA 1+,X`, `JMP Start+` | *Syntax Error* |
+
+Accepted without a message, probably by accident:
+- A missing operand right before `)` counts as 0: `()` is 0, `(2+)` is 2, `2*()` is 0, `(~)` is `$FF`, `(-)` is 0.
+- `~` or `!` after a value drops everything before it: `1~2` is `~2` (`$FD`), `4!0` is `!0` (1), `2+1!0` is 1.
+
+The live check parses expressions the same way (`src/expression.js`): it reports the lines above as errors (with its own, more explicit messages) and the two accepted oddities as warnings; 47 measured expressions give the same bytes as qaflisp, and a probe with about 100 expressions gives exactly qaflisp's error lines.
+
+### Values larger than a byte
+
+qaflisp accepts a byte value from **−256 to 255**; anything outside gives *Value (0x…) is truncated* (an error, but the truncated low byte is still written to `.s19`/`.fmem`). This applies wherever a byte is generated: `FCB 256`, `FCB $1FF`, `FCB 200+100`, `FCB BIG` with `BIG EQU 70000`, `LDA #256`, `LDA $100`, offsets such as `LDA 300,X` and `LDA -257,X`, `FCB -257`. `RMB -1` gives *Undetermined size for reservation of storage*.
+
+Not reported:
+- Values from −129 down to −256 are taken as their low byte: `FCB -129` gives `$7F`, `FCB -256` gives `$00`, `LDA 200,X` gives offset `$C8` (= −56) — the signed range −128…127 is not checked.
+- Addresses beyond `$FF`: `ORG $1234`, `ORG 300` and `ORG -1` silently use the low byte (`$34`, `$2C`, `$FF`); `RMB $1000` and code or data running past `$FF` wrap around to `$00` without a message.
+
+The live check reports the same *truncated* errors where the value is known without assembling (numbers, expressions, `EQU` constants — not label addresses) and warns about `ORG` outside `$00`–`$FF`. Branch displacements (*Displacement (0x…) is out of range*) need label addresses and are left to qaflisp.
 
 ### Phase error between passes
 

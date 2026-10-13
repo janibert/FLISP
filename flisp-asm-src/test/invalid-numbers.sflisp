@@ -1,0 +1,10 @@
+; Numbers whose digits do not fit their base - qaflisp: "Illegal ... digit"
+
+            ORG     0a              ; decimal with a hex letter
+            FCB     %000200100      ; binary with a 2
+            FCB     $FG,1F          ; hex with G, decimal with F
+            FCB     0x1F            ; C notation
+            LDA     #%              ; no digits
+            LDA     $1g+1           ; in an expression
+            FCB     $0a,077,%01     ; valid: hex, decimal 77, binary
+            FCB     7%3,%11%%10,K%2 ; valid: modulo after an operand
