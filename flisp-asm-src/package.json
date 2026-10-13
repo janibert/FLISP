@@ -2,7 +2,7 @@
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
   "description": "Syntax highlighting and assembling for FLISP assembly, as used with DigiFlisp.",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "publisher": "janibert",
   "author": "Jan Ebert",
   "license": "MIT",

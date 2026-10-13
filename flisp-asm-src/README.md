@@ -27,7 +27,7 @@ Install [DigiFlisp](https://www.gbgmv.se/studies.html) first, the extension find
 
 ## More
 
-- **[User guide](https://github.com/janibert/FLISP/blob/main/docs/user-guide.md)** — every check with examples, all features, settings, where qaflisp is looked for.
+- **[User guide](https://github.com/janibert/FLISP/blob/main/docs/user-guide.md)** — every check with examples, all features, settings, where `qaflisp` is looked for.
 - **[Examples to try](https://github.com/janibert/FLISP/tree/main/flisp-asm-src/test/examples)** — small files, one topic each; every line says what the extension reports.
 - **Settings** — Extensions view → *FLISP Assembly* → *Features*.
 - Questions and bugs: [GitHub issues](https://github.com/janibert/FLISP/issues).

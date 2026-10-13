@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.10.1
+
+- Documentation only: shorter extension description; fixed the repository layout table on GitHub.
 
 ## 0.10.0
 
