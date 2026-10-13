@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 0.6.0
 
 - Labels and symbols: Go to Definition (`F12`), Find All References (`Shift+F12`), highlighting of all occurrences, Outline / breadcrumbs / `Ctrl+Shift+O`, hover with the defining line, rename (`F2`).

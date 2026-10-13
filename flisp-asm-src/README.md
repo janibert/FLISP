@@ -44,7 +44,7 @@ The grammar does the same. This has a practical consequence: `LDA #K + 1` loads 
 
 ### Lab instructions
 
-`MOVE` and `CMJEQ` are not standard instructions; neither the handbook nor qaflisp knows them. They get the scope `entity.name.type.instruction.custom.flisp`, which the extension renders *italic and underlined* by default so they stand out in every theme.
+`MOVE` and `CMJEQ` are not standard instructions; neither the handbook nor qaflisp knows them. They get the scope `entity.name.type.instruction.custom.flisp`, which the extension renders *italic and underlined* by default so they stand out.
 
 ## Labels and symbols
 
@@ -63,7 +63,14 @@ The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` 
 
 ## Assembling
 
-The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor. qaflisp comes with [DigiFlisp](https://www.gbgmv.se/studies.html). The extension finds the qaflisp of an installed DigiFlisp automatically. On Windows it also works without DigiFlisp: a copy of `qaflisp.exe` is bundled with the extension.
+The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor.
+
+- **Run it:** the ▶ button in the editor title bar, `F7`, *FLISP: Assemble* in the command palette, or right-click a `.sflisp` file in the Explorer. Unsaved changes are saved first.
+- **Errors and warnings** are underlined in the source and listed in the *Problems* panel. The full qaflisp output is in the *FLISP* output channel.
+- **Output files** (`.s19`, `.lst`, `.fmem`) are written next to the source file. Load the `.fmem` into DigiFlisp.
+
+
+`qaflisp` comes with [DigiFlisp](https://www.gbgmv.se/studies.html). The extension finds the qaflisp of an installed DigiFlisp automatically. On Windows it also works without DigiFlisp: a copy of `qaflisp.exe` is bundled with the extension.
 
 | Platform | Status |
 |---|---|
@@ -73,9 +80,6 @@ The extension runs the `qaflisp` assembler on the current file and shows its err
 
 Feedback from Linux and macOS users is welcome — please open an issue.
 
-- **Run it:** the ▶ button in the editor title bar, `F7`, *FLISP: Assemble* in the command palette, or right-click a `.sflisp` file in the Explorer. Unsaved changes are saved first.
-- **Errors and warnings** are underlined in the source and listed in the *Problems* panel. The full qaflisp output is in the *FLISP* output channel.
-- **Output files** (`.s19`, `.lst`, `.fmem`) are written next to the source file. Load the `.fmem` into DigiFlisp.
 
 
 ### Settings
