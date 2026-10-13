@@ -62,15 +62,10 @@ const syntaxFails = (text) => syntaxOf(text) !== 'ok';
 // Bytes of an FCS operand: the characters of the string ("\x" counts once). Measured quirks:
 // FCS "" writes 2 bytes, a string without closing quote gets an extra newline byte, FCS #"AB" none.
 function fcsSize(operand) {
-  if (!operand.startsWith('"')) return 0;
-  let n = 0;
-  let i = 1;
-  while (i < operand.length && operand[i] !== '"') {
-    i += operand[i] === '\\' ? 2 : 1;
-    n++;
-  }
-  if (i >= operand.length) return n + 1;
-  return n === 0 ? 2 : n;
+  const [string] = tokenize(operand);
+  if (!string || string.type !== 'string') return 0;
+  if (!string.closed) return string.length + 1;
+  return string.length === 0 ? 2 : string.length;
 }
 
 // Size of an instruction line in bytes (0 if qaflisp rejects its syntax).

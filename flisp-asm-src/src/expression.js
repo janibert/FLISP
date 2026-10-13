@@ -4,25 +4,48 @@
 //             unary - ~ ! bind strongest; parentheses. After an operand '%' is modulo.
 //   values    32-bit integers, truncated only when the byte is generated
 
+// The only place that scans string and character constants (operand end, '#', FCS and
+// expressions all use it). A string "..." may contain blanks and \x (one character, also \");
+// without closing quote it runs to the end of the text. A character constant is always the
+// 3 characters 'x' (also ' ' and ''').
+// Returns { end, closed, length } for the string starting at text[start] (length: characters
+// between the quotes).
+function scanString(text, start) {
+  let i = start + 1;
+  let length = 0;
+  while (i < text.length && text[i] !== '"') {
+    i += text[i] === '\\' ? 2 : 1;
+    length++;
+  }
+  return { end: Math.min(i + 1, text.length), closed: i < text.length, length };
+}
+
+// End of the string or character constant that starts at text[i], or i + 1 for any other character.
+function skipQuoted(text, i) {
+  if (text[i] === '"') return scanString(text, i).end;
+  if (text[i] === "'") return Math.min(i + 3, text.length);
+  return i + 1;
+}
+
 // Splits an operand into tokens: number, symbol, char, string, op, other.
+// String tokens also have closed and length (see scanString).
 function tokenize(text) {
   const tokens = [];
   let afterOperand = false; // decides whether '%' is modulo or the binary prefix
   let i = 0;
-  const push = (type, start, end) => {
-    tokens.push({ type, text: text.slice(start, end), start, end });
+  const push = (type, start, end, extra) => {
+    tokens.push({ type, text: text.slice(start, end), start, end, ...extra });
     afterOperand = type === 'number' || type === 'symbol' || type === 'char' || (type === 'op' && text[start] === ')');
   };
   while (i < text.length) {
     const c = text[i];
     const start = i;
     if (c === '"') {
-      i++;
-      while (i < text.length && text[i] !== '"') i += text[i] === '\\' ? 2 : 1;
-      i = Math.min(i + 1, text.length);
-      push('string', start, i);
+      const { end, closed, length } = scanString(text, start);
+      i = end;
+      push('string', start, i, { closed, length });
     } else if (c === "'") {
-      i = Math.min(i + 3, text.length);
+      i = skipQuoted(text, start);
       push('char', start, i);
     } else if (/[A-Za-z_]/.test(c)) {
       while (i < text.length && /[A-Za-z0-9_]/.test(text[i])) i++;
@@ -237,4 +260,4 @@ function constantValues(definitions, labelValue = () => undefined) {
   return valueOf;
 }
 
-module.exports = { tokenize, numberValue, parse, evaluate, constantValues, RESERVED };
+module.exports = { tokenize, skipQuoted, numberValue, parse, evaluate, constantValues, RESERVED };

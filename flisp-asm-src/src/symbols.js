@@ -8,7 +8,7 @@
 const { isMnemonic, isInherent, takesOperand, isRegister } = require('./mnemonics');
 const { checkOperand, checkImmediateMarker, modeOf } = require('./addressing');
 const { INSTRUCTIONS } = require('./instructions');
-const { tokenize, parse, constantValues, RESERVED } = require('./expression');
+const { tokenize, skipQuoted, parse, constantValues, RESERVED } = require('./expression');
 const { computeLayout, expressionParts } = require('./layout');
 
 // A label in column 1: qaflisp also accepts "$" and "." after the first character (A$b, x.y).
@@ -72,18 +72,7 @@ function parseLine(text) {
 
   // The operand ends at the first blank outside a string or character constant.
   const oStart = i;
-  while (i < text.length && !/[ \t]/.test(text[i])) {
-    if (text[i] === '"') {
-      i++;
-      while (i < text.length && text[i] !== '"') i += text[i] === '\\' ? 2 : 1;
-      i++;
-    } else if (text[i] === "'") {
-      i += 3; // character constant 'x'
-    } else {
-      i++;
-    }
-  }
-  i = Math.min(i, text.length);
+  while (i < text.length && !/[ \t]/.test(text[i])) i = skipQuoted(text, i);
   result.operand = { text: text.slice(oStart, i), start: oStart, end: i };
   while (i < text.length && /[ \t]/.test(text[i])) i++;
   if (i < text.length) result.comment = { text: text.slice(i), start: i };
@@ -260,9 +249,8 @@ function valueProblems(p, line, valueOf, firstDef, layout) {
     // qaflisp: "Bad operand syntax"; it writes 2 bytes for "" and adds a newline byte to an open string
     const o = p.operand.text;
     if (o === '""') return [at(0, 2, 'error', 'emptyString', 'Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)')];
-    let i = 1;
-    while (i < o.length && o[i] !== '"') i += o[i] === '\\' ? 2 : 1;
-    if (o.startsWith('"') && i >= o.length) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
+    const [string] = tokenize(o);
+    if (string.type === 'string' && !string.closed) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
     return [];
   }
   // A syntax problem is the only message of the line; values out of range are all reported.

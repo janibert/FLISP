@@ -2,6 +2,7 @@
 // (no VS Code API; used by the hover and by the live check).
 
 const { INSTRUCTIONS, MODES, DIRECTIVES } = require('./instructions');
+const { tokenize } = require('./expression');
 
 const BRANCHES = new Set(Object.entries(INSTRUCTIONS)
   .filter(([, d]) => d.variants.some((v) => v.mode === 'rel')).map(([mn]) => mn));
@@ -61,18 +62,7 @@ function checkOperand(mnemonic, operand) {
 
 // Positions of '#' in an operand, outside strings and character constants.
 function hashPositions(operand) {
-  const found = [];
-  for (let i = 0; i < operand.length; i++) {
-    if (operand[i] === '"') {
-      i++;
-      while (i < operand.length && operand[i] !== '"') i += operand[i] === '\\' ? 2 : 1;
-    } else if (operand[i] === "'") {
-      i += 2;
-    } else if (operand[i] === '#') {
-      found.push(i);
-    }
-  }
-  return found;
+  return tokenize(operand).filter((t) => t.text === '#').map((t) => t.start);
 }
 
 // '#' (immediate data) may only stand at the start of an instruction's operand; directives
