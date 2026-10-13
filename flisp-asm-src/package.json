@@ -99,6 +99,18 @@
             "settings": {
               "fontStyle": "italic underline"
             }
+          },
+          {
+            "scope": "support.type.directive.flisp",
+            "settings": {
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "keyword.operator.immediate.flisp",
+            "settings": {
+              "fontStyle": "bold"
+            }
           }
         ]
       }

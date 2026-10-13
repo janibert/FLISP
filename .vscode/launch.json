@@ -1,6 +1,7 @@
 {
   // F5 starts a second VS Code window (Extension Development Host)
-  // with the extension from flisp-asm-src loaded.
+  // with the extension from flisp-asm-src loaded. All other installed
+  // extensions are disabled there, so they cannot interfere.
   "version": "0.2.0",
   "configurations": [
     {
@@ -8,6 +9,7 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
+        "--disable-extensions",
         "--extensionDevelopmentPath=${workspaceFolder}/flisp-asm-src",
         "${workspaceFolder}/flisp-asm-src/test"
       ]

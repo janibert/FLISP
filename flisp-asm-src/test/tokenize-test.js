@@ -29,12 +29,15 @@ const registry = new textmate.Registry({
 // Ein '!' vor dem Scope heisst: Das Token darf diesen Scope NICHT haben.
 const expectations = [
   // Direktiven
-  ['sample.sflisp', 'ORG     $20', 'ORG', 'keyword.other.directive'],
-  ['sample.sflisp', 'OUTPORT     EQU', 'EQU', 'keyword.other.directive'],
-  ['sample.sflisp', 'state_vector', 'FCB', 'keyword.other.directive'],
-  ['sample.sflisp', 'Count', 'RMB', 'keyword.other.directive'],
-  ['sample.sflisp', '"HELLO WORLD"', 'FCS', 'keyword.other.directive'],
-  ['sample.sflisp', 'END', 'END', 'keyword.other.directive'],
+  ['sample.sflisp', 'ORG     $20', 'ORG', 'support.type.directive'],
+  ['sample.sflisp', 'OUTPORT     EQU', 'EQU', 'support.type.directive'],
+  ['sample.sflisp', 'state_vector', 'FCB', 'support.type.directive'],
+  ['sample.sflisp', 'Count', 'RMB', 'support.type.directive'],
+  ['sample.sflisp', '"HELLO WORLD"', 'FCS', 'support.type.directive'],
+  ['sample.sflisp', 'END', 'END', 'support.type.directive'],
+  // Directives and instructions must not share a scope family (themes would colour them alike)
+  ['sample.sflisp', 'ORG     $20', 'ORG', '!keyword'],
+  ['sample.sflisp', 'Start       LDA', 'LDA', '!support.type'],
 
   // Instruktionen
   ['sample.sflisp', 'Start       LDA', 'LDA', 'keyword.other.instruction'],

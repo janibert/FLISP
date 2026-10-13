@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Assembler directives (`ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END`) are clearly distinguished from instructions: own colour (scope `support.type.directive` instead of `keyword.other.directive`) and bold by default.
+- The immediate marker `#` is bold by default, so `LDA #5` and `LDA 5` are easy to tell apart.
+
 ## 0.5.0
 
 - Symbols used in operands (labels, `EQU` constants) are highlighted (`variable.parameter.symbol`), e.g. `BRA Loop`, `STA LEDS`.

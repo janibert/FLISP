@@ -17,12 +17,12 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 | Comments | `; text to end of line` and everything after the operand
 | Labels | name in column 1, optionally followed by `:` |
 | Symbols | labels and `EQU` constants used in an operand, e.g. `BRA Loop`, `STA LEDS` |
-| Assembler directives | `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END` |
+| Assembler directives | `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END` — **bold** and in a different colour than instructions, so instructions for the assembler stand apart from instructions for the processor |
 | Flow-control instructions | `JMP`, `JSR`, `BSR`, `BRA`, `RTS`, `RTI`, all `B…` branches |
 | Other instructions | from the FLISP handbook, plus aliases `ASLA`/`ASL`, `PSHCC`, `PULCC` |
 | Lab instructions | `MOVE`, `CMJEQ` — own scope, *italic and underlined* |
 | Numbers | `$3F` hex, `%01000000` binary, `42` decimal, `'A'` character |
-| Immediate | `#` |
+| Immediate | `#` — **bold**, because `LDA #5` (the value 5) and `LDA 5` (memory cell 5) are easy to confuse |
 | Registers | `A`, `X`, `Y`, `SP`, `PC`, `CC` |
 | Indexed addressing | `n,SP` · `n,X` · `A,Y` · `,X+` · `,X-` · `,+Y` · `,-Y` |
 | Strings | `"TEXT"` for `FCS` |

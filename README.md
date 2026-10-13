@@ -91,15 +91,25 @@ The grammar is in `syntaxes/flisp.tmLanguage.json`. A new custom instruction goe
 1. in `statement-operand`, group 3 (`MOVE|CMJEQ`) — or in `statement-inherent` if it takes no operand,
 2. in the list of the first `label` rule, so that it is flagged as an error in column 1.
 
-Colours come from the active VS Code theme, not from the extension, so directives and instructions look different depending on the theme. Instructions use the scope `keyword.other.instruction` and are therefore coloured in practically every theme; in the default *Dark+* theme, however, they share their colour with the directives.
+Colours come from the active VS Code theme, not from the extension. The scopes are chosen so that the default themes (2026 Dark/Light, Dark/Light Modern) give each element its own colour. In particular, directives (`support.type.directive`) and instructions (`keyword.other.instruction`) must never share a scope family — students should see at a glance what is an instruction for the assembler and what is an instruction for the processor. The test suite checks this.
 
-### Lab instruction highlighting
+### Default font styles
 
-If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces the extension's default style for the lab instructions `MOVE` and `CMJEQ` (italic and underlined, set via `configurationDefaults` in `package.json`). In that case, add the rule there:
+The extension sets three font styles via `configurationDefaults` in `package.json`, so they work in every theme:
+
+- directives `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END`: **bold**
+- the immediate marker `#` (`LDA #5` loads the value 5, `LDA 5` the memory cell 5): **bold**
+- lab instructions `MOVE`, `CMJEQ`: *italic and underlined*
+
+Colours of other operators and punctuation (`,` `+` `-`) are left to the theme, as in other languages.
+
+If you set `editor.tokenColorCustomizations.textMateRules` in your own settings, that replaces these defaults. In that case, add the rules there:
 
 ```json
 "editor.tokenColorCustomizations": {
   "textMateRules": [
+    { "scope": "support.type.directive.flisp", "settings": { "fontStyle": "bold" } },
+    { "scope": "keyword.operator.immediate.flisp", "settings": { "fontStyle": "bold" } },
     { "scope": "entity.name.type.instruction.custom.flisp", "settings": { "fontStyle": "italic underline" } }
   ]
 }

@@ -53,7 +53,7 @@
       "begin": "(?i)(?<![A-Za-z0-9_])(?:(JSR|JMP|BSR|BRA|BCC|BCS|BEQ|BGE|BGT|BHS|BHI|BLO|BLE|BLS|BLT|BMI|BNE|BPL|BVC|BVS)|(ORG|EQU|FCB|FCS|RMB|END)|(MOVE|CMJEQ)|(LDA|LDX|LDY|LDSP|LEAX|LEAY|LEASP|STA|STX|STY|STSP|TFR|EXG|ADDA|ADCA|SUBA|SBCA|CLR|NEG|DEC|INC|CMPA|CMPX|CMPY|CMPSP|BITA|TST|ANDA|ORA|ANDCC|ORCC|EORA|COM|ASR|LSL|ASL|LSR|ROL|ROR))(?![A-Za-z0-9_])",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.flisp" },
-        "2": { "name": "keyword.other.directive.flisp" },
+        "2": { "name": "support.type.directive.flisp" },
         "3": { "name": "entity.name.type.instruction.custom.flisp" },
         "4": { "name": "keyword.other.instruction.flisp" }
       },
