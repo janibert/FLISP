@@ -6,7 +6,7 @@
 const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
 const instructionHover = require('./instructionHover');
-const { analyzeFmem } = require('./fmem');
+const { analyzeFmem, normalizeFmemColumns, formatFmemLine } = require('./fmem');
 const format = require('./format');
 const { completionsAt, fieldAt } = require('./completion');
 
@@ -22,6 +22,7 @@ const COMPLETION_KIND = {
 };
 
 const SELECTOR = { language: 'flisp' };
+const FMEM = { language: 'fmem' };
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
 const SYMBOL_KIND = {
   code: vscode.SymbolKind.Function,
@@ -199,10 +200,10 @@ function register(context, qaflispDiagnostics) {
     }),
 
     // Column layout: formatter and Tab / Shift+Tab to the next / previous column.
-    vscode.languages.registerDocumentFormattingEditProvider(SELECTOR, {
+    vscode.languages.registerDocumentFormattingEditProvider([SELECTOR, FMEM], {
       provideDocumentFormattingEdits: (doc) => formatEdits(doc, 0, doc.lineCount - 1),
     }),
-    vscode.languages.registerDocumentRangeFormattingEditProvider(SELECTOR, {
+    vscode.languages.registerDocumentRangeFormattingEditProvider([SELECTOR, FMEM], {
       provideDocumentRangeFormattingEdits: (doc, range) => formatEdits(doc, range.start.line, range.end.line),
     }),
     vscode.commands.registerTextEditorCommand('flisp.nextColumn', (editor, edit) => {
@@ -237,8 +238,12 @@ function register(context, qaflispDiagnostics) {
     })
   );
 
+  // Tab stops: .sflisp label/mnemonic/operand/comment, .fmem command/argument/comment.
   function columnsFor(doc) {
-    return format.normalizeColumns(vscode.workspace.getConfiguration('flisp', doc.uri).get('columns'));
+    const config = vscode.workspace.getConfiguration('flisp', doc.uri);
+    return doc.languageId === 'fmem'
+      ? normalizeFmemColumns(config.get('fmemColumns'))
+      : format.normalizeColumns(config.get('columns'));
   }
 
   function formatEdits(doc, first, last) {
@@ -246,7 +251,7 @@ function register(context, qaflispDiagnostics) {
     const edits = [];
     for (let line = first; line <= last; line++) {
       const old = doc.lineAt(line).text;
-      const neu = format.formatLine(old, columns);
+      const neu = doc.languageId === 'fmem' ? formatFmemLine(old, columns) : format.formatLine(old, columns);
       if (neu !== old) edits.push(vscode.TextEdit.replace(doc.lineAt(line).range, neu));
     }
     return edits;

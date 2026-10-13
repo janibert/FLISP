@@ -5,7 +5,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { analyzeFmem } = require('../src/fmem');
+const { analyzeFmem, formatFmemLine, formatFmemText } = require('../src/fmem');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 
 const tests = [];
@@ -78,6 +78,32 @@ test('command without # and repeated addresses are warnings', () => {
     '4:warning:Address 20 is set again (first in line 3); the later value wins',
     '5:warning:#ClearAllMemory takes no arguments',
   ]);
+});
+
+// --- Column layout -----------------------------------------------------------------
+
+test('formatFmemLine: command in column 0, argument at 14, comment at 24', () => {
+  const f = (l) => formatFmemLine(l, [14, 24]);
+  assert.strictEqual(f(' #setMemory  20=F0'), '#setMemory    20=F0');
+  assert.strictEqual(f('#setmemory 21 = 22 ; note'), '#setmemory    21=22     ; note');
+  assert.strictEqual(f('#setRegister A=05'), '#setRegister  A=05');
+  assert.strictEqual(f(' # ClearAllMemory'), '# ClearAllMemory');
+  assert.strictEqual(f('#ClearAllRegisters ; all'), '#ClearAllRegisters ; all');
+  for (const l of ['QAflisp header line', '#setMemroy 25=66', '']) assert.strictEqual(f(l), l, `unchanged: ${l}`);
+});
+
+// Memory and register writes of a file, as DigiFlisp would apply them.
+const writes = (src) => src.split(/\r?\n/)
+  .map((l) => /^[ \t]*#[ \t]*setmemory[ \t]+([0-9A-Fa-f]{1,2})[ \t]*=[ \t]*([0-9A-Fa-f]{1,2})/i.exec(l))
+  .filter(Boolean).map((m) => `${parseInt(m[1], 16)}=${parseInt(m[2], 16)}`);
+
+test('formatting .fmem keeps all writes and messages and is stable', () => {
+  const src = fs.readFileSync(path.join(__dirname, 'qaflisp-output.fmem'), 'utf8') +
+    '#setmemory 21 = 22 ; note\n#setMemroy 25=66\n#setMemory 2G=88\n';
+  const out = formatFmemText(src, [14, 24]);
+  assert.deepStrictEqual(writes(out), writes(src));
+  assert.deepStrictEqual(analyzeFmem(out).map((d) => `${d.line}:${d.message}`), analyzeFmem(src).map((d) => `${d.line}:${d.message}`));
+  assert.strictEqual(formatFmemText(out, [14, 24]), out, 'formatting twice changes nothing');
 });
 
 // --- Fresh qaflisp output ------------------------------------------------------

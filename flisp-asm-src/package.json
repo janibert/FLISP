@@ -123,6 +123,12 @@
         "editor.tabSize": 4,
         "editor.guides.indentation": false,
         "editor.wordBasedSuggestions": "off"
+      },
+      "[fmem]": {
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.tabSize": 4,
+        "editor.guides.indentation": false
       }
     },
     "commands": [
@@ -192,12 +198,12 @@
       {
         "command": "flisp.nextColumn",
         "key": "tab",
-        "when": "editorTextFocus && editorLangId == flisp && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
+        "when": "editorTextFocus && (editorLangId == flisp || editorLangId == fmem) && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
       },
       {
         "command": "flisp.previousColumn",
         "key": "shift+tab",
-        "when": "editorTextFocus && editorLangId == flisp && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
+        "when": "editorTextFocus && (editorLangId == flisp || editorLangId == fmem) && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
       },
       {
         "command": "flisp.acceptSuggestionAndNextColumn",
@@ -248,6 +254,20 @@
             36
           ],
           "markdownDescription": "Start columns of mnemonic, operand and comment in `.sflisp` files (the label starts in column 0). Used by Tab / Shift+Tab and by *Format Document*."
+        },
+        "flisp.fmemColumns": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "default": [
+            14,
+            24
+          ],
+          "markdownDescription": "Start columns of argument and comment in `.fmem` files (the command starts in column 0). Used by Tab / Shift+Tab and by *Format Document*."
         }
       }
     }

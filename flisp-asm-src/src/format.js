@@ -29,14 +29,14 @@ function visualColumn(text, character, tabSize) {
 // Next tab stop after visual column `col`; beyond the last column, every tabSize columns.
 function nextStop(col, columns, tabSize) {
   const next = [0, ...columns].find((c) => c > col);
-  return next !== undefined ? next : col + tabSize - ((col - columns[2]) % tabSize);
+  return next !== undefined ? next : col + tabSize - ((col - columns[columns.length - 1]) % tabSize);
 }
 
 // Previous tab stop before visual column `col`.
 function previousStop(col, columns, tabSize) {
-  if (col > columns[2]) {
-    const back = (col - columns[2]) % tabSize || tabSize;
-    return Math.max(columns[2], col - back);
+  if (col > columns[columns.length - 1]) {
+    const back = (col - columns[columns.length - 1]) % tabSize || tabSize;
+    return Math.max(columns[columns.length - 1], col - back);
   }
   const prev = [0, ...columns].filter((c) => c < col);
   return prev.length ? prev[prev.length - 1] : 0;

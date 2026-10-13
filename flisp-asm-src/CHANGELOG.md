@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Column layout for `.fmem`: command in column 0, argument in column 14, comment in column 24 (setting `flisp.fmemColumns`); Tab / Shift+Tab and *Format Document* as in `.sflisp`.
+
 ## 0.8.0
 
 - Context-sensitive suggestions: mnemonics and directives in the mnemonic column; code labels for branches and jumps; constants first after `#`; only the allowed index forms after a comma; register pairs for `TFR`/`EXG`; undefined symbols in the label column. General word suggestions are off for FLISP. In the label and mnemonic columns, Tab accepts a suggestion and moves to the next column in one step.

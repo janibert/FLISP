@@ -133,4 +133,48 @@ function analyzeFmem(source) {
   return diagnostics;
 }
 
-module.exports = { analyzeFmem, COMMANDS };
+// --- Column layout ---------------------------------------------------------------
+// Command in column 0, argument and comment at `columns` (default [14, 24]):
+//   #setMemory    20=05     ; comment
+//   #setRegister  A=05
+//   # ClearAllMemory        (no argument, may be longer than the argument column)
+// Only blanks change. Header lines (no '#') and lines with unknown commands stay as they are.
+
+const DEFAULT_FMEM_COLUMNS = [14, 24];
+
+function normalizeFmemColumns(columns) {
+  if (!Array.isArray(columns) || columns.length !== 2) return DEFAULT_FMEM_COLUMNS;
+  const c = columns.map((n) => Math.floor(Number(n)));
+  if (c.some((n) => !Number.isFinite(n) || n < 1) || !(c[0] < c[1])) return DEFAULT_FMEM_COLUMNS;
+  return c;
+}
+
+const pad = (out, col) => out + ' '.repeat(Math.max(1, col - out.length));
+
+function formatFmemLine(text, columns = DEFAULT_FMEM_COLUMNS) {
+  const [cArg, cComment] = normalizeFmemColumns(columns);
+  const trimmed = text.replace(/[ \t]+$/, '');
+  if (trimmed === '') return '';
+  const m = /^[ \t]*(#[ \t]*)([A-Za-z]+)(.*)$/.exec(trimmed);
+  if (!m || !BY_LOWER.has(m[2].toLowerCase())) return trimmed; // header line or unknown command
+  const command = m[1] + m[2]; // keeps its spelling, e.g. "# ClearAllMemory"
+  let rest = m[3].trim();
+  let comment = '';
+  const semi = rest.indexOf(';');
+  if (semi >= 0) {
+    comment = rest.slice(semi).trim();
+    rest = rest.slice(0, semi).trim();
+  }
+  if (BY_LOWER.get(m[2].toLowerCase()) === 'setMemory') rest = rest.replace(/[ \t]*=[ \t]*/, '=');
+  let out = command;
+  if (rest) out = pad(out, cArg) + rest;
+  if (comment) out = pad(out, rest ? cComment : cArg) + comment;
+  return out;
+}
+
+function formatFmemText(source, columns = DEFAULT_FMEM_COLUMNS) {
+  const eol = source.includes('\r\n') ? '\r\n' : '\n';
+  return source.split(/\r?\n/).map((l) => formatFmemLine(l, columns)).join(eol);
+}
+
+module.exports = { analyzeFmem, COMMANDS, DEFAULT_FMEM_COLUMNS, normalizeFmemColumns, formatFmemLine, formatFmemText };
