@@ -4,7 +4,7 @@ Contributions to the grammar, the qaflisp integration and the documentation are 
 
 - Write code, documentation, commit messages and issues in English.
 - Run `npm test` in `flisp-asm-src/` before opening a pull request, and add a test case for every grammar change.
-- The `.sflisp` grammar is generated: edit `syntaxes/flisp.tmLanguage.template.json` or the lists in `src/mnemonics.js`, then run `npm run build:grammar` (see the [README](README.md)).
+- The `.sflisp` grammar is generated: edit `syntaxes/flisp.tmLanguage.template.json` or the instruction table in `src/instructions.js`, then run `npm run build:grammar` (see the [README](README.md)).
 - If you find qaflisp behaving differently from what is described below, please open an issue or update this file together with the grammar.
 
 ## Sources of truth
@@ -76,6 +76,24 @@ The extension adds this explanation to the message and links to the nearest mult
   - summary `-- N error(s).` or `No errors.`; the file path is echoed as it was passed on the command line.
 - Exit code: on Windows the number of errors; the **Linux build exits with 0 even on errors**. Count errors from the messages, not from the exit code.
 - `.fmem` format: header lines (`QAflisp - …`, `(c) GMV …`, `File: …`), then ` # ClearAllMemory`, ` # ClearAllRegisters` and one ` #setMemory  20=F0` line per byte (leading space, two spaces after `#setMemory`).
+
+## The instruction table (`src/instructions.js`)
+
+The table behind the hover and the mnemonic lists has one entry per mnemonic qaflisp accepts (84 instructions with 265 variants, plus 6 directives and 2 lab instructions). Its data comes from two sources:
+
+| Data | Source | How it is checked |
+|---|---|---|
+| valid addressing modes, opcodes, lengths | measured with qaflisp 1.3: every mnemonic assembled with every addressing mode | `test/instructions-test.js` assembles every variant and compares opcode and length, and checks that every mode that is not listed is rejected |
+| cycles | FLISP-Handbok, opcode map (p. 11) | cross-checked with the detail pages: 207 opcodes agree; the map shows `x` for `C5` (`ADCA n,X`), the detail page gives 5 |
+| flags, operations, titles | FLISP-Handbok, detail pages (pp. 13–42), written in English | by hand |
+
+Things to know when changing it:
+
+- In the text extracted from the PDF, several detail pages (e.g. `CLR`, `ROL`, `ROR`, `ASL`, `PUL`) have their columns shifted, so variant, opcode and operation do not line up. The opcode map and qaflisp are reliable; the extracted detail pages are not.
+- The extraction also loses the operator symbols ∧ ∨ ⊕ of the logical instructions; the table writes them out again.
+- Aliases have identical opcodes: `ASL`/`ASLA` = `LSL`/`LSLA`, `PSHCC`/`PULCC` = `PSHC`/`PULC`, `BHS` = `BCC`, `BLO` = `BCS`.
+- Flags: `LD…` sets N and Z, clears V; `ST…` changes no flags; only `PULC` and `RTI` (all flags from the stack) and `TFR`/`EXG` with CC as target change flags among the stack and transfer instructions; `ANDCC`/`ORCC`/`RTI`/`PULC` also affect the interrupt mask I.
+- `EXG` accepts both register orders (`EXG X,Y` and `EXG Y,X`) with the same opcode.
 
 ## DigiFlisp and where qaflisp is installed
 

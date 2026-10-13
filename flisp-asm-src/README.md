@@ -61,6 +61,17 @@ The extension knows every label and `EQU` constant in the file:
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
 
+## Instruction reference on hover
+
+Hover over a mnemonic to see what it does — tailored to the line you are on:
+
+- what the instruction does, in the notation of the FLISP handbook (e.g. `Opr → A`),
+- **this line**: the addressing mode used here, the exact operation (e.g. `LDA ,X+` → `M(X) → A; X + 1 → X`), opcode, length in bytes and clock cycles — or a hint if the instruction has no such addressing mode (e.g. `STA #5`),
+- which flags are changed (N, Z, V, C — and I where it applies),
+- a table of all variants with opcode, bytes and cycles; the one used on the line is highlighted.
+
+Directives (`ORG`, `EQU`, `FCB`, …) and the lab instructions get a short explanation. Opcodes and lengths are checked against qaflisp; cycles and flags come from the FLISP handbook.
+
 ## Assembling
 
 The extension runs the `qaflisp` assembler on the current file and shows its errors directly in the editor.

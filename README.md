@@ -26,14 +26,14 @@ Requires Node.js 20 or later. The extension lives in `flisp-asm-src/`; run all c
 ```bash
 cd flisp-asm-src
 npm install          # fetches vsce and the test libraries
-npm run build:grammar  # generates syntaxes/flisp.tmLanguage.json from the template and src/mnemonics.js
+npm run build:grammar  # generates syntaxes/flisp.tmLanguage.json from the template and src/instructions.js
 npm test             # grammar up to date?, qaflisp integration, symbol analysis, grammar tests
 npm run package      # creates flisp-asm-<version>.vsix (regenerates the grammar first)
 ```
 
 The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/`, `scripts/`, the grammar template and `node_modules/` out of the package, and every `.exe` except `bin/qaflisp.exe`.
 
-**The `.sflisp` grammar is generated.** Edit `syntaxes/flisp.tmLanguage.template.json` (structure, scopes) or `src/mnemonics.js` (mnemonic, directive and register lists), never `syntaxes/flisp.tmLanguage.json` directly; then run `npm run build:grammar`. `npm test` fails if the generated grammar is out of date.
+**The `.sflisp` grammar is generated.** Edit `syntaxes/flisp.tmLanguage.template.json` (structure, scopes) or `src/instructions.js` (instruction set, directives, lab instructions), never `syntaxes/flisp.tmLanguage.json` directly; then run `npm run build:grammar`. `npm test` fails if the generated grammar is out of date.
 
 To develop without packaging: open the repository folder in VS Code and press `F5` (configuration *Run FLISP extension* in `.vscode/launch.json`). This launches a second VS Code window with the extension from `flisp-asm-src/` loaded and the `test/` folder open — open a `.sflisp` file there, e.g. `running-light.sflisp`, and check the highlighting directly.
 
@@ -42,6 +42,8 @@ To develop without packaging: open the repository folder in VS Code and press `F
 `test/qaflisp-test.js` tests the qaflisp integration (`src/qaflisp.js`) without VS Code: parsing of qaflisp's messages, the command-line flags and the search order. If a real `qaflisp.exe` is found above the project folder or on the `PATH`, it also assembles a correct and a broken file with it; otherwise those two cases are skipped.
 
 `test/symbols-test.js` tests the symbol analysis (`src/symbols.js`) behind Go to Definition, references, outline, rename and the live check. If a real qaflisp is found, it also assembles probe files and checks that every line qaflisp reports as *Undefined symbol* or *Multiple definition* is reported by the live check as well, and that a file qaflisp accepts gives no live errors.
+
+`test/instructions-test.js` checks the instruction table (`src/instructions.js`) and the hover text. If a real qaflisp is found, it assembles every listed variant and compares opcode and length, and it checks that qaflisp rejects every addressing mode that is not listed — so the table is complete and has nothing extra.
 
 `test/tokenize-test.js` loads the grammar with the same engine VS Code uses (`vscode-textmate` plus `vscode-oniguruma`), tokenizes the sample files and, for each expectation, checks one specific token on one specific line. The cases are in the `expectations` list at the top of the script; adding one is a single line:
 
@@ -77,11 +79,14 @@ language-configuration.json      comment character, bracket pairs
 syntaxes/flisp.tmLanguage.template.json  grammar template for .sflisp (edit this)
 syntaxes/flisp.tmLanguage.json   grammar for .sflisp (generated, do not edit)
 syntaxes/fmem.tmLanguage.json    grammar for .fmem
-scripts/build-grammar.js         inserts the lists from src/mnemonics.js into the template
+scripts/build-grammar.js         inserts the mnemonic lists into the template
 extension.js                     command, diagnostics, settings (VS Code side)
 src/features.js                  definition, references, outline, hover, rename, live check (VS Code side)
 src/symbols.js                   symbol analysis of a .sflisp file (no VS Code API)
-src/mnemonics.js                 lists of mnemonics, directives and registers (single source)
+src/instructions.js              instruction set: variants, opcodes, bytes, cycles, flags, operations;
+                                 directives and lab instructions (single source)
+src/mnemonics.js                 mnemonic lists derived from src/instructions.js, register names
+src/instructionHover.js          hover text for mnemonics and directives (no VS Code API)
 src/qaflisp.js                   finding and running qaflisp, parsing its output
 bin/qaflisp.exe                  bundled qaflisp 1.3 (GMV, see THIRD-PARTY-NOTICES.md)
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)
@@ -89,6 +94,7 @@ THIRD-PARTY-NOTICES.md           DigiFlisp license for qaflisp.exe and the icon
 CHANGELOG.md                     release notes (shown on the Marketplace)
 test/qaflisp-test.js             tests for src/qaflisp.js
 test/symbols-test.js             tests for src/symbols.js
+test/instructions-test.js        tests for the instruction table and the hover
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
 test/running-light.sflisp        example program (used for the screenshot)
@@ -98,7 +104,7 @@ test/qaflisp-output.fmem         qaflisp output for the test
 
 ## Customizing
 
-A new custom instruction goes in one place: the list `LAB` in `src/mnemonics.js` (or `INHERENT` if it takes no operand). Then run `npm run build:grammar`. The grammar, the column-1 check and the symbol analysis all use these lists.
+A new custom instruction goes in one place: the object `LAB` in `src/instructions.js`, with a short description for the hover. Then run `npm run build:grammar`. The grammar, the column-1 check, the symbol analysis and the hover all use this table.
 
 Colours come from the active VS Code theme, not from the extension. The scopes are chosen so that the default themes (2026 Dark/Light, Dark/Light Modern) give each element its own colour. In particular, directives (`support.type.directive`) and instructions (`keyword.other.instruction`) must never share a scope family — students should see at a glance what is an instruction for the assembler and what is an instruction for the processor. The test suite checks this.
 

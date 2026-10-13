@@ -4,6 +4,7 @@
 
 const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
+const instructionHover = require('./instructionHover');
 
 const SELECTOR = { language: 'flisp' };
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
@@ -116,7 +117,12 @@ function register(context, qaflispDiagnostics) {
       provideHover(doc, pos) {
         const a = analysisOf(doc);
         const sym = symbolAt(a, pos.line, pos.character);
-        if (!sym) return undefined;
+        if (!sym) {
+          // Not a symbol: maybe a mnemonic or directive.
+          const h = instructionHover.hoverAt(doc.lineAt(pos.line).text, pos.character);
+          if (!h) return undefined;
+          return new vscode.Hover(new vscode.MarkdownString(h.markdown), new vscode.Range(pos.line, h.start, pos.line, h.end));
+        }
         const { defs, refs } = occurrences(a, sym.name);
         const md = new vscode.MarkdownString();
         if (defs.length === 0) {
