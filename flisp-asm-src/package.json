@@ -1,7 +1,7 @@
 {
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
-  "description": "Syntax highlighting and assembling (with the bundled qaflisp) for FLISP (FLexible Instruction Set Processor) assembly, as used with DigiFlisp.",
+  "description": "Syntax highlighting and assembling for FLISP assembly, as used with DigiFlisp.",
   "version": "0.10.0",
   "publisher": "janibert",
   "author": "Jan Ebert",

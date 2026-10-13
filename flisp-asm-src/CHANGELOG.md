@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 0.10.0
 
 - **Many more checks while typing**, as qaflisp reports them: numbers whose digits do not fit their base (`0a`, `%0102`), errors in expressions (parentheses, missing values or operators, register names, division by zero), values that do not fit in a byte (`FCB 300`, also computed from labels and constants), branches that are too far, `#` in directives, and `ORG`/`RMB` values that qaflisp cannot know in its first pass (its *Forward reference* and *Phase error*).
