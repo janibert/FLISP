@@ -6,3 +6,5 @@ package-lock.json
 **/*.vsix
 **/*.exe
 !bin/qaflisp.exe
+images/*
+!images/icon.png

@@ -2,6 +2,8 @@
 
 Syntax highlighting and assembling for the assembly language of the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
 
+![A FLISP running-light program highlighted in VS Code](https://raw.githubusercontent.com/janibert/FLISP/main/flisp-asm-src/images/running-light.png)
+
 *This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp. The bundled `qaflisp.exe` and the DigiFlisp icon are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/THIRD-PARTY-NOTICES.md).*
 
 The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.

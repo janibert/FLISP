@@ -6,6 +6,8 @@ A Visual Studio Code extension for the assembly language of the FLISP processor 
 - **Assembling from the editor** with qaflisp (`F7` or the ▶ button): errors and warnings are underlined in the source and listed in the *Problems* panel
 - Works with the `qaflisp` assembler of an installed [DigiFlisp](https://www.gbgmv.se/studies.html) on Windows, Linux and macOS
 
+![A FLISP running-light program highlighted in VS Code](flisp-asm-src/images/running-light.png)
+
 ## Install
 
 In VS Code, open the Extensions view (`Ctrl+Shift+X`), search for **FLISP Assembly** and click *Install* — or install it from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=janibert.flisp-asm).

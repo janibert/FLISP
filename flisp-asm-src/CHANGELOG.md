@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
 
-- Symbols used in operands (labels, `EQU` constants) are highlighted (`variable.parameter.symbol`).
+- Symbols used in operands (labels, `EQU` constants) are highlighted (`variable.parameter.symbol`), e.g. `BRA Loop`, `STA LEDS`.
+- README: screenshot; `LICENSE` and `THIRD-PARTY-NOTICES.md` are links to the files on GitHub.
 - `package.json`: `author` field.
-- README: `LICENSE` and `THIRD-PARTY-NOTICES.md` are links to the files on GitHub.
 
 ## 0.4.1
 
