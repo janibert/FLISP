@@ -41,7 +41,9 @@ To develop without packaging: open the repository folder in VS Code and press `F
 
 `test/qaflisp-test.js` tests the qaflisp integration (`src/qaflisp.js`) without VS Code: parsing of qaflisp's messages, the command-line flags and the search order. If a real `qaflisp.exe` is found above the project folder or on the `PATH`, it also assembles a correct and a broken file with it; otherwise those two cases are skipped.
 
-`test/symbols-test.js` tests the symbol analysis (`src/symbols.js`) behind Go to Definition, references, outline, rename and the live check. If a real qaflisp is found, it also assembles probe files and checks that every line qaflisp reports as *Undefined symbol* or *Multiple definition* is reported by the live check as well, and that a file qaflisp accepts gives no live errors.
+`test/symbols-test.js` tests the symbol analysis (`src/symbols.js`) behind Go to Definition, references, outline, rename and the live check. If a real qaflisp is found, it also assembles probe files and checks that every line qaflisp reports as an error (undefined symbols, multiple definitions, addressing modes, expressions, numbers, value ranges, branch distances, …) is reported by the live check as well — for most probes exactly the same lines — and that a file qaflisp accepts gives no live errors. It also compares the computed address and length of every line (`src/layout.js`) with qaflisp's listing.
+
+`test/examples-test.js` checks the files in `test/examples/`: every code line ends with a comment `; OK`, `; ERROR` or `; WARNING`, and the live check must report exactly that. If qaflisp is found, it must report an error on exactly the `ERROR` lines (the few lines where qaflisp stays silent on purpose are listed in the test). The examples are meant for trying the live check in the editor; each file starts with suggestions what to change.
 
 `test/instructions-test.js` checks the instruction table (`src/instructions.js`) and the hover text. If a real qaflisp is found, it assembles every listed variant and compares opcode and length, and it checks that qaflisp rejects every addressing mode that is not listed — so the table is complete and has nothing extra.
 
@@ -104,8 +106,10 @@ test/instructions-test.js        tests for the instruction table and the hover
 test/fmem-test.js                tests for src/fmem.js
 test/format-test.js              tests for src/format.js, incl. same machine code before/after formatting
 test/completion-test.js          tests for src/completion.js
+test/examples-test.js            checks the OK / ERROR / WARNING comments in test/examples/ (live check and qaflisp)
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
+test/examples/                   examples to try the live check in the editor, one topic per file
 test/invalid-numbers.sflisp      numbers that do not fit their base, for the scope test
 test/running-light.sflisp        example program (used for the screenshot)
 test/qaflisp-output.fmem         qaflisp output for the test

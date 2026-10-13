@@ -1,0 +1,30 @@
+; 3 - Values with labels and constants
+; Labels have addresses, EQU constants have values. Both may be used in
+; expressions; a byte must be in the range -256 ... 255.
+;
+; Try it:
+;   - Hover over Table, Size, Mask, Neg, Hi: address or value in hex,
+;     decimal and binary (Hi does not fit in a byte).
+;   - Change "RMB 2" in line 25 to "RMB 200": Table moves to $F9,
+;     then Table+20 (line 18) is too big as well ($10D).
+
+Size        EQU     End-Table       ; OK: number of bytes of the table = 4
+Mask        EQU     1<<Size-1       ; OK: (1<<4)-1 = 15 - precedence as in qaflisp
+Neg         EQU     -3              ; OK: byte $FD
+Hi          EQU     Table+$E0       ; OK: an EQU itself may be big
+
+            ORG     $20
+Start       LDA     #Table          ; OK: address of Table as a value
+            LDX     #Table+20       ; OK
+            STA     Table+3         ; OK
+            LDA     Table+300       ; ERROR: the address does not fit in a byte
+            LDA     #Hi             ; ERROR: the value does not fit in a byte
+            ANDA    #Mask           ; OK
+            ADDA    #Neg            ; OK: -3 becomes $FD
+            FCB     Start,Size,Start+300 ; ERROR: only Start+300
+            RMB     2               ; OK
+Table       FCB     1,2,3,4         ; OK
+End         NOP                     ; OK
+            ASLA    Table           ; WARNING: ASLA has no operand - ASL Table is meant
+            NOP     #5              ; WARNING: NOP has no operand
+            RTS     back            ; OK: a plain word is a comment

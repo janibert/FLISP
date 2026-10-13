@@ -1,0 +1,35 @@
+; 5 - ORG and RMB in qaflisp's first pass
+; ORG and RMB determine addresses. qaflisp evaluates them in its first
+; pass, when later labels and some constants are not known yet.
+; qaflisp reports this as "Forward reference" - or as "Phase error"
+; at a completely different line. The live check shows the cause directly.
+;
+; Try it:
+;   - Assemble with F7: qaflisp reports only lines 25, 27 and 29 -
+;     line 27 as "Phase error" at the label Buf6. Lines 26 and 30 get
+;     lost in the follow-up error. The live check shows each cause.
+;   - Comment out all ERROR lines but one (Ctrl+/) and assemble:
+;     this shows qaflisp's message for each case on its own.
+;   - Line 23 (RMB Count) is OK although Count comes only in line 33:
+;     a constant with a plain number may come later, a label may not.
+
+N           EQU     4               ; OK
+Offset      EQU     Start+4         ; OK: but contains a label
+Late        EQU     Size            ; OK: but uses Size, defined later
+
+            ORG     $20
+Start       NOP                     ; OK
+Buf1        RMB     N*2             ; OK: number constant
+Buf2        RMB     Count           ; OK: later constant with a plain number
+Buf3        RMB     Start+2-Start   ; OK: labels from above, used directly
+Buf4        RMB     End-Start       ; ERROR: End is further down
+Buf5        RMB     Offset-$20      ; ERROR: Offset contains a label
+Buf6        RMB     Late            ; ERROR: Late uses Size, defined later
+            ORG     Start+$40       ; OK: label from above, used directly
+            ORG     Far             ; ERROR: Forward reference
+            ORG     Offset          ; ERROR: Offset contains a label
+End         NOP                     ; OK
+
+Count       EQU     3               ; OK
+Size        EQU     2               ; OK
+Far         EQU     $80             ; OK

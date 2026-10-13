@@ -1,0 +1,34 @@
+; 7 - Numbers, '#', FCB lists, FCS, RMB
+; Numbers: $1F hex, %0101 binary, 42 decimal, 'A' character.
+; A number runs to the end of the word; every digit must fit the base.
+;
+; Try it:
+;   - Hover over the errors: the message often suggests the correction.
+;   - Line 22: "FCB 1,2 3,4" - the blank ends the operand, "3,4"
+;     silently becomes a comment. Remove the blank.
+
+            ORG     $20
+            FCB     $1F,%0101,42,'A' ; OK
+            FCB     0a              ; ERROR: decimal with a letter - suggests $0A
+            FCB     0x1F            ; ERROR: C notation - suggests $1F
+            FCB     %000200100      ; ERROR: 2 is not a binary digit
+            FCB     $FG             ; ERROR: G is not a hex digit
+            FCB     $               ; ERROR: $ without digits
+            FCB     255,-256        ; OK: limits of a byte
+            FCB     256             ; ERROR: too big
+            FCB     -257            ; ERROR: too small
+            FCB     -129            ; OK: qaflisp silently takes $7F
+            FCB     200+100         ; ERROR: the result 300 is too big
+            FCB     1,2 3,4         ; WARNING: blank inside the list
+            FCB     1,2, 3,4        ; ERROR: the list ends with a comma
+            FCB     1,,2            ; ERROR: value missing between the commas
+K           EQU     #5              ; ERROR: directives take no #
+            ORG     #$40            ; ERROR: directives take no #
+            LDA     2+#1            ; ERROR: # only at the start
+            FCS     "OK"            ; OK
+            FCS     ""              ; ERROR: empty string
+            RMB     0               ; ERROR: RMB needs at least 1
+            RMB     -1              ; ERROR: negative
+A$b         NOP                     ; OK: qaflisp allows $ and . in a label
+NOP                                 ; WARNING: missing indent - only a label, no code
+            ORG     $100            ; WARNING: outside the memory

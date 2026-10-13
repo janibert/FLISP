@@ -1,0 +1,23 @@
+; 4 - Beyond the end of memory
+; The memory has 256 bytes ($00..$FF). qaflisp keeps counting addresses
+; ($100, $101 ...) but writes the bytes from $00 again, without a
+; message - overwriting what is there.
+;
+; Try it:
+;   - Hover over Wrapped: address $101, does not fit in a byte.
+;   - Delete line 18 (NOP): the code then ends exactly at $FF and the
+;     warning disappears. Wrapped is then $100 - "JMP Wrapped" is still
+;     an error, because $100 does not fit in a byte either.
+
+            ORG     $00
+Data        FCB     $AA             ; OK: will be overwritten later!
+
+            ORG     $F8
+Start       LDA     #1              ; OK: $F8, $F9
+            STA     $FC             ; OK: $FA, $FB
+            BRA     Start           ; OK: $FC, $FD
+            NOP                     ; OK: $FE
+            LDA     #2              ; WARNING: $FF and $100 - beyond $FF from here
+Wrapped     NOP                     ; OK: address $101, the byte goes to $01
+            BRA     Start           ; OK: the branch distance is computed without wrapping
+            JMP     Wrapped         ; ERROR: address $101 does not fit in a byte

@@ -1,0 +1,18 @@
+; 2 - Branch distance backward
+; Backward, a branch reaches exactly 128 bytes (from the next
+; instruction). For BSR the message suggests JSR, otherwise JMP.
+;
+; Try it:
+;   - Hover over Back (line 12): address $00.
+;   - Change "RMB 125" in line 13 to "RMB 123": then BEQ (line 15)
+;     is exactly -128 and OK, only BSR (line 16) is still too far.
+;   - JMP and JSR (lines 17, 18) jump to an absolute address: always OK.
+
+            ORG     $00
+Back        NOP                     ; OK: address $00
+            RMB     125             ; OK: space $01..$7D
+            BRA     Back            ; OK: at $7E, next $80, -128
+            BEQ     Back            ; ERROR: at $80, next $82, -130
+            BSR     Back            ; ERROR: -132 - suggests JSR
+            JMP     Back            ; OK: absolute jump
+            JSR     Back            ; OK: absolute subroutine call

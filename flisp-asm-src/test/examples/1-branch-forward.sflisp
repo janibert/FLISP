@@ -1,0 +1,22 @@
+; 1 - Branch distance forward
+; A branch (BRA, BEQ, BNE, BSR ...) reaches -128 ... +127 bytes,
+; counted from the address of the NEXT instruction.
+;
+; Try it:
+;   - Hover over Edge and Over (lines 19 and 22): addresses $81 and $84.
+;   - Delete the NOP in line 21: Over moves to $83, the error in
+;     line 16 disappears (now exactly +127).
+;   - Insert a line "NOP" right after line 17: Edge moves to $82,
+;     now line 15 is too far (+128).
+;   - While you type a new line, messages may move around briefly
+;     until the line is complete.
+
+            ORG     $00
+            BRA     Edge            ; OK: at $00, next $02, target $81 = +127
+            BRA     Over            ; ERROR: at $02, next $04, target $84 = +128
+            BNE     Edge            ; OK: at $04, next $06, +123
+            RMB     123             ; OK: space $06..$80
+Edge        NOP                     ; OK: address $81
+            RMB     1               ; OK: $82
+            NOP                     ; OK: $83
+Over        NOP                     ; OK: address $84
