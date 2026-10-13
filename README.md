@@ -89,6 +89,7 @@ src/mnemonics.js                 mnemonic lists derived from src/instructions.js
 src/instructionHover.js          hover text for mnemonics and directives (no VS Code API)
 src/addressing.js                addressing mode of an operand, operand check (no VS Code API)
 src/expression.js                reading and evaluating operand expressions like qaflisp (no VS Code API)
+src/layout.js                    addresses of all lines, computed like qaflisp (no VS Code API)
 src/fmem.js                      syntax check for .fmem files (no VS Code API)
 src/format.js                    column layout: tab stops and formatter (no VS Code API)
 src/completion.js                context-sensitive suggestions (no VS Code API)

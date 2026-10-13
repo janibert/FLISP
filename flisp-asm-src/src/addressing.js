@@ -97,4 +97,4 @@ function checkImmediateMarker(mnemonic, operand) {
   return { offset, message: `Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. ${mn} #5` };
 }
 
-module.exports = { modeOf, checkOperand, checkImmediateMarker, BRANCHES };
+module.exports = { modeOf, checkOperand, checkImmediateMarker, hashPositions, BRANCHES };

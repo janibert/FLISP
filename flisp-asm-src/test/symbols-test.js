@@ -140,6 +140,7 @@ test('values that do not fit in a byte; ORG outside the memory; negative RMB', (
     [4, 'error', 19, 23, 'Value -257 does not fit in a byte (−256…255)'],
     [4, 'error', 24, 31, 'Value 300 ($12C) does not fit in a byte (−256…255)'],
     [5, 'error', 5, 8, 'Value 70000 ($11170) does not fit in a byte (−256…255)'],
+    [5, 'error', 11, 16, 'Value 332 ($14C) does not fit in a byte (−256…255)'], // L+300 with L = $20
     [6, 'error', 6, 9, 'Value 256 ($100) does not fit in a byte (−256…255)'],
     [7, 'error', 5, 9, 'Address 256 ($100) does not fit in a byte (−256…255)'],
     [8, 'error', 5, 8, 'Offset 300 ($12C) does not fit in a byte (−256…255)'],
@@ -219,10 +220,67 @@ test('ORG and RMB: values qaflisp does not know in its first pass', () => {
   assert.match(explainPhaseError(analyze(PASS1.orgViaEquLabelAbove[1]), 4).message, /the ORG in line 4 .* sets a different address/);
 });
 
+test('addresses: branch distance, values with labels, beyond $FF', () => {
+  const msgs = (src) => analyze(src).diagnostics.slice().sort((a, b) => a.line - b.line)
+    .map((d) => `${d.line + 1}:${d.severity}:${d.message.split(' — ')[0]}`);
+  // BRA at $9E reaches $20 (-128); at $A0 it does not (-130). Labels are not wrapped at $FF.
+  assert.deepStrictEqual(msgs('\tORG\t$20\nBack\tNOP\n\tRMB\t125\n\tBRA\tBack\n\tBRA\tBack\n\tBSR\tFar\n\tRMB\t128\nFar\tRTS\n'), [
+    '5:error:Branch target 32 ($20) is 130 bytes back',
+    '6:error:Branch target 292 ($124) is 128 bytes ahead',
+    '7:warning:From here on, code or data lies beyond $FF ($100…)',
+  ]);
+  assert.match(analyze('\tORG\t$20\nB\tBSR\tF\n\tRMB\t200\nF\tRTS\n').diagnostics[0].message, /use JSR$/);
+  // values with labels: FCB Start+300, LDA of a label beyond $FF
+  assert.deepStrictEqual(msgs('\tORG\t$20\nStart\tFCB\tStart+300\n\tORG\t$FF\nT\tNOP\nU\tNOP\n\tLDA\tU\n'), [
+    '2:error:Value 332 ($14C) does not fit in a byte (−256…255)',
+    '5:warning:From here on, code or data lies beyond $FF ($100…)',
+    '6:error:Address 256 ($100) does not fit in a byte (−256…255)',
+  ]);
+  assert.deepStrictEqual(msgs('\tORG\t$20\nA$b\tNOP\nx.y\tNOP\n\tFCS\t""\n\tFCS\t"abc\n\tRMB\t0\n'), [
+    '4:error:Bad operand syntax: empty string',
+    '5:error:Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)',
+    '6:error:Undetermined size for reservation of storage',
+  ]);
+  const { layout } = analyze('\tORG\t$20\nL1\tNOP\nL1\tNOP\nL2\tNOP\n');
+  assert.strictEqual(layout.stoppedAt, 1, 'a multiple definition stops the layout (qaflisp: phase error)');
+  assert.strictEqual(layout.labels.get('L2'), undefined);
+});
+
 test("'%' after an operand is modulo, not a binary number", () => {
   const a = analyze('K\tEQU\t3\n\tFCB\t7%3,7%K,(7)%2,%11%%10\n');
   assert.deepStrictEqual(a.diagnostics, []);
   assert.deepStrictEqual(a.references.map((r) => r.name), ['K']);
+});
+
+test('FCB (1,2): the message explains that the comma splits the list', () => {
+  const msg = (op) => analyze(`\tFCB\t${op}\n`).diagnostics.map((d) => d.message);
+  assert.deepStrictEqual(msg('(1,2)'), ["Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '(1' is not closed; for a list of bytes write FCB 1,2"]);
+  assert.match(msg('3,(1,2),4')[0], /every comma separates two values.*'\(1' is not closed$/);
+  assert.deepStrictEqual(msg('(1+2'), ["Missing Parenthesis: '(' is not closed"], 'no comma: the short message');
+});
+
+test('an operand after an instruction without operand gets a warning; plain words do not', () => {
+  const src = '\tORG\t$20\nData\tFCB\t1\n\tPSHA\t$3\t; c\n\tNOP\t#5\n\tASLA\tData\n\tINCA\t2,X\n\tCLRA\t,X\n\tLSRA\tData+1\n' +
+    '\tRTS\tzurueck zum Aufrufer\n\tNOP\tDatenbyte\n\tRTI\t; ok\n\tNOP\n';
+  assert.deepStrictEqual(analyze(src).diagnostics.map((d) => `${d.line + 1}:${d.severity}:${d.message}`), [
+    "3:warning:PSHA has no operand — qaflisp silently treats '$3' as a comment; remove it, or put a comment after ';'",
+    "4:warning:NOP has no operand — qaflisp silently treats '#5' as a comment; remove it, or put a comment after ';'",
+    "5:warning:ASLA has no operand — qaflisp silently treats 'Data' as a comment; to work on memory write ASL Data",
+    "6:warning:INCA has no operand — qaflisp silently treats '2,X' as a comment; to work on memory write INC 2,X",
+    "7:warning:CLRA has no operand — qaflisp silently treats ',X' as a comment; remove it, or put a comment after ';'",
+    "8:warning:LSRA has no operand — qaflisp silently treats 'Data+1' as a comment; to work on memory write LSR Data+1",
+  ]);
+});
+
+test('a mnemonic name in column 1 is a label; alone it generates no code', () => {
+  const a = analyze('Neg\tEQU\t3\n\tORG\t$20\nEnd\tNOP\nInc\tINCA\n\tLDA\t#Neg\n\tBRA\tEnd\nNOP\nRTS\t; c\nLDA\t#1\n');
+  assert.deepStrictEqual(a.diagnostics.map((d) => `${d.line + 1}:${d.severity}:${d.message.split(' — ')[0]}`), [
+    "7:warning:'NOP' in column 1 is read as a label, so this line generates no code",
+    "8:warning:'RTS' in column 1 is read as a label, so this line generates no code",
+    "9:error:Illegal mnemonic: 'LDA' in column 1 is read as a label",
+  ]);
+  assert.strictEqual(a.valueOf('End'), 0x20);
+  assert.strictEqual(a.valueOf('Neg'), 3);
 });
 
 test('explainPhaseError points to the multiple definition above', () => {
@@ -286,8 +344,12 @@ const PROBES = {
   ].map((l) => `\t${l}\n`).join('') + 'Q\tEQU\t(1\n',
   // ("Phase error" of an RMB is reported by qaflisp at the later label, so it is tested above only.)
   forward: '\tORG\t$20\nL0\tRMB\tL1-L0\nL1\tNOP\n\tRMB\tK\nK\tEQU\t2\n\tORG\tK2\nK2\tEQU\t$40\n\tORG\tL1+4\n\tRMB\tL1+2-L0\n\tBRA\t*+2\n',
+  mnemonicLabels: 'Neg\tEQU\t3\n\tORG\t$20\nEnd\tNOP\nInc\tINCA\n\tLDA\t#Neg\n\tBRA\tEnd\nNOP\nRTS\t; c\nLDA\t#1\n',
+  // branch distances and values with labels (needs the address layout)
+  branches: 'L0\tNOP\n\tORG\t$20\nBack\tNOP\n\tRMB\t125\n\tBRA\tBack\n\tBRA\tBack\n\tBRA\tFwd\n\tRMB\t126\nFwd\tNOP\n\tBRA\tFwd2\n\tRMB\t127\n' +
+    'Fwd2\tNOP\n\tORG\t$F0\n\tBRA\t$10\n\tBRA\t$F0\n\tBSR\t$C0\n\tBRA\tL0+$100\n\tFCB\tFwd2\n\tLDA\tBack+$E0\n\tLDA\t#Fwd\n\tFCS\t""\n\tRMB\t0\n',
 };
-const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label|Illegal [Aa]ddressing [Mm]ode|Illegal register combination|Syntax Error|Illegal character|Bad operand syntax|Unterminated expression|Illegal (decimal|binary|hexadecimal) digit|is truncated|Undetermined size|Parenthesis|Operand expected|Missing operator|reserved word|divide by zero|Bad delimiter|unreacheable|Forward reference|Bad operand syntax/;
+const SYMBOL_ERROR = /Undefined symbol|Multiple definition|previously defined|Illegal mnemonic|Illegal label|Illegal [Aa]ddressing [Mm]ode|Illegal register combination|Syntax Error|Illegal character|Bad operand syntax|Unterminated expression|Illegal (decimal|binary|hexadecimal) digit|is truncated|Undetermined size|Parenthesis|Operand expected|Missing operator|reserved word|divide by zero|Bad delimiter|unreacheable|Forward reference|Displacement/;
 
 if (realExe) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flisp-symbols-'));
@@ -300,7 +362,7 @@ if (realExe) {
       const ours = [...new Set(errors(analyze(source)).map((d) => d.line))];
       for (const line of theirs) assert.ok(ours.includes(line), `qaflisp reports line ${line + 1}, we do not (${r.output})`);
       if (theirs.length === 0) assert.deepStrictEqual(ours, [], 'qaflisp finds no symbol errors, we do');
-      if (['immediate', 'fcbList', 'numbers', 'values', 'expressions', 'forward'].includes(name)) assert.deepStrictEqual(ours.sort((x, y) => x - y), theirs.sort((x, y) => x - y), 'exactly the lines qaflisp reports');
+      if (['immediate', 'fcbList', 'numbers', 'values', 'expressions', 'forward', 'branches', 'mnemonicLabels'].includes(name)) assert.deepStrictEqual(ours.sort((x, y) => x - y), theirs.sort((x, y) => x - y), 'exactly the lines qaflisp reports');
     });
   }
   test('ORG and RMB in pass 1: an error exactly where qaflisp reports one (some report it at a later line)', async () => {
@@ -311,6 +373,38 @@ if (realExe) {
       const theirs = r.messages.some((m) => m.severity === 'error');
       assert.strictEqual(theirs, PASS1_DIFFERENT.has(name) ? !flag : flag, `${name}: qaflisp ${theirs ? 'reports an error' : 'accepts it'} (${r.output})`);
     }
+  });
+  // Addresses: compare the computed layout with qaflisp's listing, line by line.
+  const LAYOUT_PROBE = '\tORG\t$20\nL1\tFCS\t"AB"\nL2\tFCS\t"A\\"B"\nL4\tFCS\t"a\\nb"\nL5\tFCB\t1,2,3\nL7\tRMB\t3\nL8\tLDA\tFoo\n' +
+    'L9\tSTA\t#5\nL10\tLDAA\t#1\nL11\tTFR\tA,X\nL12\tLDA\t#300\nL13\tLDA\t,Z+\nL14\tFCB\t1,(2\nL16\tCLR\t,X+\nL17\tLDA\t2*(3,X\n' +
+    'L18\tBRA\tL1\nL19\tMOVE\t#1,2\nL20\tFCB\tL19\nL21\tEQU\t5\nL22\tLSL\nL23\tLDA\t#1+\nL26\tFCB\t1,2 ,3\nL27\tFCB\t1,2, 3\n' +
+    "L28\tLDA\t#'A\nL29\tJMP\t#5\nL30\tLDA\tX+1\nL32\tFCB\t,1\nL33\tLDA\t#(1,2)\nL34\tFCS\t\"x\",3\nL39\tLDA\t5/0\nL40\tFCB\t1,5/0,3\n" +
+    'M1\tFCB\t2,#3\nM2\tFCB\t0a\nM3\tFCB\t1,0a,2\nM4\tLDA\t0a\nM5\tLDA\t2+#1\nM6\tFCB\t1,X\nM9\tLDA\t#$FG\nM14\tFCB\t1,1~2,3\n' +
+    'M15\tFCB\t1,(2+),3\nM16\tLDA\t#()\nM17\tLDA\t#1~2\nM18\tFCB\t%0102,1\nM19\tANDCC\t$20\nN1\tLDA\t1=2\nN2\tLDA\t#1.5\nN3\tLDA\t1<2\n' +
+    'N4\tFCB\t1=2,3\nN5\tFCB\t4,1.5,6\nA$b\tNOP\nx.y\tNOP\nN6\tFCS\t""\n\tORG\t$F0\nW1\tNOP\nW2\tRMB\t$20\nW3\tNOP\n\tBRA\tW1\n';
+  test('addresses: computed layout equals the qaflisp listing', async () => {
+    const sources = { layout: LAYOUT_PROBE, ...PROBES };
+    for (const name of ['running-light.sflisp', 'sample.sflisp', 'screenshot-errors.sflisp']) sources[name] = fs.readFileSync(path.join(__dirname, name), 'utf8');
+    let compared = 0;
+    for (const [name, source] of Object.entries(sources)) {
+      const file = path.join(tmp, `layout-${name.replace(/\.sflisp$/, '')}.sflisp`);
+      fs.writeFileSync(file, source);
+      await runQaflisp(realExe, file, { listFile: true });
+      const listing = new Map();
+      for (const l of fs.readFileSync(file.replace(/\.sflisp$/, '.lst'), 'latin1').split(/\r?\n/)) {
+        const m = /^([0-9A-F]{2})((?: [0-9A-F]{2})*)\s+(\d+)\.(.*)$/.exec(l);
+        if (m) listing.set(+m[3] - 1, { address: parseInt(m[1], 16), bytes: m[2].trim() ? m[2].trim().split(' ').length : 0, text: m[4] });
+      }
+      for (const [line, ours] of analyze(source).layout.lines) {
+        const theirs = listing.get(line);
+        if (!theirs || /^\s*\S*\s+(EQU|ORG|END)\b/i.test(theirs.text)) continue; // no code; listing shows the value
+        const sizeOk = /\bRMB\b/i.test(theirs.text) || theirs.bytes === Math.min(ours.size, 6); // listing: at most 6 bytes, RMB one
+        assert.ok((ours.address & 0xFF) === theirs.address && sizeOk,
+          `${name} line ${line + 1}: ours $${(ours.address & 0xFF).toString(16)}/${ours.size}, qaflisp $${theirs.address.toString(16)}/${theirs.bytes}: ${theirs.text.trim()}`);
+        compared++;
+      }
+    }
+    assert.ok(compared > 150, `only ${compared} lines compared`);
   });
   tests.push(['(cleanup)', () => fs.rmSync(tmp, { recursive: true, force: true })]);
 }

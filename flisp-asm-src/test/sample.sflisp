@@ -49,6 +49,9 @@ MorseCode   FCB     2,%01000000 ; Morsecode fuer 'A'
 ; Fehler: Mnemonic in Spalte 1 wird als Label gelesen
 LDA         #1
 
+; Kein Fehler: ein Label darf wie ein Mnemonic heissen, wenn ein Mnemonic folgt
+Neg         EQU     3
+
             ORG     $FF
             FCB     Start
             END     Start Startadresse

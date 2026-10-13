@@ -61,9 +61,9 @@ The extension knows every label and `EQU` constant in the file:
 | Go to the definition | `F12` or `Ctrl`+click on a symbol, e.g. on `Loop` in `BRA Loop` |
 | Find all uses | `Shift+F12`; clicking a symbol also highlights all its occurrences |
 | Overview of all labels | *Outline* view, breadcrumbs, or `Ctrl+Shift+O` — code labels, data (`FCB`, `FCS`, `RMB`) and constants (`EQU`) have their own icons |
-| Show the definition | hover over a symbol: its defining line and the number of uses |
+| Show the definition | hover over a symbol: its defining line, the number of uses, and the address of a label or the value of a constant (hex, decimal, binary), computed as qaflisp does |
 | Rename | `F2` on a symbol renames its definition and every use |
-| Check while typing | undefined symbols, labels defined twice, unknown mnemonics, labels that do not start in column 1, addressing modes an instruction does not have (`STA #5`), `#` in directives (`EQU #$FB`), a blank inside an `FCB` list (`FCB 1,2 3,4`), numbers whose digits do not fit their base (`0a`, `%0102`, `$FG`), errors in expressions (missing or extra parentheses, a missing value or operator, register names, division by zero), values that do not fit in a byte (`FCB 300`, `LDA #K*4`), `ORG` outside the memory, values in `ORG` and `RMB` that qaflisp does not know in its first pass (qaflisp: *Forward reference*, *Phase error*), wrong register pairs (`TFR A,X`) and missing or malformed operands are underlined immediately, without assembling — with the allowed forms in the message |
+| Check while typing | undefined symbols, labels defined twice, unknown mnemonics, labels that do not start in column 1, addressing modes an instruction does not have (`STA #5`), `#` in directives (`EQU #$FB`), a blank inside an `FCB` list (`FCB 1,2 3,4`), numbers whose digits do not fit their base (`0a`, `%0102`, `$FG`), errors in expressions (missing or extra parentheses, a missing value or operator, register names, division by zero), values that do not fit in a byte (`FCB 300`, `LDA #K*4`), `ORG` outside the memory, values in `ORG` and `RMB` that qaflisp does not know in its first pass (qaflisp: *Forward reference*, *Phase error*), branches whose target is too far away, code that runs beyond `$FF`, an operand after an instruction that has none (`ASLA Data`, `NOP #5`), wrong register pairs (`TFR A,X`) and missing or malformed operands are underlined immediately, without assembling — with the allowed forms in the message |
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
 
@@ -176,7 +176,7 @@ So a newer qaflisp in your workspace, on the `PATH` or next to DigiFlisp always 
 
 ## Limitations
 
-No debugger. While you type, symbols, the line structure, the addressing modes, numbers and values out of range are checked; values that depend on label addresses (e.g. `FCB Start+300`) and branch targets too far away are found only when you assemble. Labels and symbols work within one file. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
+No debugger. While you type, symbols, the line structure, the addressing modes, expressions, values out of range and branch distances are checked; the addresses are computed as qaflisp does, but after a label defined twice the live check stops computing them and leaves the rest to assembling. Labels and symbols work within one file. On Linux and macOS, assembling needs an installed DigiFlisp (or another qaflisp). Use DigiFlisp to run and debug the program.
 
 ## License
 

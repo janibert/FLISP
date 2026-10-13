@@ -1,0 +1,18 @@
+; 2 - Sprungweite rueckwaerts
+; Rueckwaerts reicht ein Branch genau 128 Bytes weit (ab der naechsten
+; Instruktion). Bei BSR schlaegt die Meldung JSR vor, sonst JMP.
+;
+; Ausprobieren:
+;   - Hover ueber Back (Zeile 12): Adresse $00.
+;   - Aendere in Zeile 13 "RMB 125" in "RMB 123": dann ist BEQ (Zeile 15)
+;     genau -128 und OK, nur BSR (Zeile 16) bleibt zu weit.
+;   - JMP und JSR (Zeile 17, 18) springen absolut und sind immer OK.
+
+            ORG     $00
+Back        NOP                     ; OK: Adresse $00
+            RMB     125             ; OK: Platz $01..$7D
+            BRA     Back            ; OK: bei $7E, naechste $80, -128
+            BEQ     Back            ; FEHLER: bei $80, naechste $82, -130
+            BSR     Back            ; FEHLER: -132 - Vorschlag JSR
+            JMP     Back            ; OK: absoluter Sprung
+            JSR     Back            ; OK: absoluter Unterprogrammaufruf

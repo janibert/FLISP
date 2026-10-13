@@ -1,0 +1,34 @@
+; 7 - Zahlen, '#', FCB-Listen, FCS, RMB
+; Zahlen: $1F hex, %0101 binaer, 42 dezimal, 'A' Zeichen.
+; Eine Zahl reicht bis zum Wortende; jede Ziffer muss zur Basis passen.
+;
+; Ausprobieren:
+;   - Hover ueber den Fehlern: die Meldung schlaegt oft die Korrektur vor.
+;   - Zeile 22: "FCB 1,2 3,4" - das Leerzeichen beendet den Operanden,
+;     "3,4" wird still zum Kommentar. Entferne das Leerzeichen.
+
+            ORG     $20
+            FCB     $1F,%0101,42,'A' ; OK
+            FCB     0a              ; FEHLER: dezimal mit Buchstabe - Vorschlag $0A
+            FCB     0x1F            ; FEHLER: C-Schreibweise - Vorschlag $1F
+            FCB     %000200100      ; FEHLER: 2 ist keine Binaerziffer
+            FCB     $FG             ; FEHLER: G ist keine Hex-Ziffer
+            FCB     $               ; FEHLER: $ ohne Ziffern
+            FCB     255,-256        ; OK: Grenzen eines Bytes
+            FCB     256             ; FEHLER: zu gross
+            FCB     -257            ; FEHLER: zu klein
+            FCB     -129            ; OK: qaflisp nimmt still $7F
+            FCB     200+100         ; FEHLER: Ergebnis 300 zu gross
+            FCB     1,2 3,4         ; WARNUNG: Leerzeichen in der Liste
+            FCB     1,2, 3,4        ; FEHLER: Liste endet mit Komma
+            FCB     1,,2            ; FEHLER: Wert fehlt zwischen den Kommas
+K           EQU     #5              ; FEHLER: Direktiven ohne #
+            ORG     #$40            ; FEHLER: Direktiven ohne #
+            LDA     2+#1            ; FEHLER: # nur am Anfang
+            FCS     "OK"            ; OK
+            FCS     ""              ; FEHLER: leerer String
+            RMB     0               ; FEHLER: RMB braucht mindestens 1
+            RMB     -1              ; FEHLER: negativ
+A$b         NOP                     ; OK: qaflisp erlaubt $ und . im Label
+NOP                                 ; WARNUNG: Einruecken vergessen - nur ein Label, kein Code
+            ORG     $100            ; WARNUNG: ausserhalb des Speichers

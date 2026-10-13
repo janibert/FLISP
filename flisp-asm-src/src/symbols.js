@@ -9,8 +9,10 @@ const { isMnemonic, isInherent, takesOperand, isRegister } = require('./mnemonic
 const { checkOperand, checkImmediateMarker, modeOf } = require('./addressing');
 const { INSTRUCTIONS } = require('./instructions');
 const { tokenize, parse, constantValues, RESERVED } = require('./expression');
+const { computeLayout, expressionParts } = require('./layout');
 
-const IDENT = /[A-Za-z_][A-Za-z0-9_]*/y;
+// A label in column 1: qaflisp also accepts "$" and "." after the first character (A$b, x.y).
+const IDENT = /[A-Za-z_][A-Za-z0-9_$.]*/y;
 
 // Kind of a definition, from the mnemonic on its line.
 function kindOf(mnemonic) {
@@ -29,8 +31,14 @@ function parseLine(text) {
   if (/[A-Za-z_]/.test(text[0])) {
     IDENT.lastIndex = 0;
     const name = IDENT.exec(text)[0];
-    // A mnemonic in column 1 is read as a label by qaflisp and fails ("Illegal mnemonic").
-    if (isMnemonic(name)) return { invalidLabel: { name, start: 0, end: name.length, reason: 'mnemonic' } };
+    if (isMnemonic(name)) {
+      // qaflisp reads a mnemonic in column 1 as a label. Followed by a mnemonic it is one
+      // ("Neg EQU 3", "End NOP"); followed by anything else the line fails ("LDA #1":
+      // Illegal mnemonic); alone it is a label without code ("NOP" - usually a missing indent).
+      const next = /^:?[ \t]+([^ \t;]+)/.exec(text.slice(name.length));
+      if (next && !isMnemonic(next[1])) return { invalidLabel: { name, start: 0, end: name.length, reason: 'mnemonic' } };
+      if (!next) result.mnemonicAsLabel = true;
+    }
     result.label = { name, start: 0, end: name.length };
     i = name.length;
     if (text[i] === ':') i++;
@@ -52,7 +60,12 @@ function parseLine(text) {
     if (next) result.next = next[1];
     return result;
   }
-  if (!takesOperand(result.mnemonic.text) || isInherent(result.mnemonic.text)) return result;
+  if (!takesOperand(result.mnemonic.text) || isInherent(result.mnemonic.text)) {
+    // No operand: qaflisp reads the rest of the line as a comment (also "ASLA Data").
+    while (i < text.length && /[ \t]/.test(text[i])) i++;
+    if (i < text.length && text[i] !== ';') result.comment = { text: text.slice(i), start: i };
+    return result;
+  }
 
   while (i < text.length && /[ \t]/.test(text[i])) i++;
   if (i >= text.length || text[i] === ';') return result;
@@ -145,6 +158,10 @@ function lineProblems(p, line) {
     return [at(p.invalidLabel, 'error',
       `Illegal mnemonic: '${p.invalidLabel.name}' in column 1 is read as a label — indent instructions`)];
   }
+  if (p.mnemonicAsLabel) {
+    return [at(p.label, 'warning',
+      `'${p.label.name}' in column 1 is read as a label, so this line generates no code — indent it if it is meant as an instruction`)];
+  }
   if (p.invalidLabel) {
     return [at(p.invalidLabel, 'error', 'Illegal label — a label must start with a letter or \'_\'')];
   }
@@ -187,32 +204,6 @@ function lineProblems(p, line) {
 const hex = (v) => `$${(v >>> 0).toString(16).toUpperCase()}`;
 const show = (v) => (v < 0 ? String(v) : `${v} (${hex(v)})`);
 const lowByte = (v) => `$${(v & 0xFF).toString(16).toUpperCase().padStart(2, '0')}`;
-
-// Items of an FCB list with their offsets. Every comma splits, as in qaflisp ("(1,2)" is an error).
-function listItems(text) {
-  const items = [];
-  let start = 0;
-  for (const t of tokenize(text)) {
-    if (t.type === 'other' && t.text === ',') {
-      items.push({ text: text.slice(start, t.start), start, kind: 'Value' });
-      start = t.end;
-    }
-  }
-  items.push({ text: text.slice(start), start, kind: 'Value' });
-  return items;
-}
-
-// The parts of an operand that are expressions, with their offsets and what their value is.
-function expressionParts(mn, operand) {
-  if (mn === 'FCB') return listItems(operand);
-  if (mn === 'ORG' || mn === 'EQU' || mn === 'RMB') return [{ text: operand, start: 0, kind: mn }];
-  if (!INSTRUCTIONS[mn]) return []; // FCS, END
-  const { mode } = modeOf(mn, operand);
-  if (mode === 'imm') return [{ text: operand.slice(1), start: 1, kind: 'Value' }];
-  if (mode === 'abs' || mode === 'rel') return [{ text: operand, start: 0, kind: mode === 'abs' ? 'Address' : 'Target' }];
-  if (mode === 'nx' || mode === 'ny' || mode === 'nsp') return [{ text: operand.slice(0, operand.lastIndexOf(',')), start: 0, kind: 'Offset' }];
-  return [];
-}
 
 // ORG and RMB are evaluated in qaflisp's first pass, where not every value is known yet
 // (measured, see CONTRIBUTING.md "Where expressions can be used"):
@@ -260,9 +251,18 @@ function passOneProblem(part, line, firstDef) {
   return undefined;
 }
 
-function valueProblems(p, line, valueOf, firstDef) {
+function valueProblems(p, line, valueOf, firstDef, layout) {
   const mn = p.mnemonic.text.toUpperCase();
   const at = (start, end, severity, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, message });
+  if (mn === 'FCS') {
+    // qaflisp: "Bad operand syntax"; it writes 2 bytes for "" and adds a newline byte to an open string
+    const o = p.operand.text;
+    if (o === '""') return [at(0, 2, 'error', 'Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)')];
+    let i = 1;
+    while (i < o.length && o[i] !== '"') i += o[i] === '\\' ? 2 : 1;
+    if (o.startsWith('"') && i >= o.length) return [at(0, o.length, 'error', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
+    return [];
+  }
   // A syntax problem is the only message of the line; values out of range are all reported.
   const out = [];
   for (const part of expressionParts(mn, p.operand.text)) {
@@ -274,19 +274,60 @@ function valueProblems(p, line, valueOf, firstDef) {
     if (problem) {
       const end = Math.max(problem.end, problem.start + 1); // a missing value at the end: mark one character
       const start = Math.min(problem.start, Math.max(0, part.text.length - 1));
-      return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, problem.message)];
+      let { message } = problem;
+      // FCB (1,2): the comma splits the list even inside parentheses - say so instead of only "not closed"
+      const rest = p.operand.text.slice(part.start + part.text.length);
+      if (mn === 'FCB' && message.startsWith("Missing Parenthesis: '(' is not closed") && rest.startsWith(',')) {
+        const whole = /^\((.*)\)$/.exec(p.operand.text);
+        message = `Missing Parenthesis: in FCB every comma separates two values, also inside parentheses — '${part.text.trim()}' is not closed` +
+          (whole ? `; for a list of bytes write FCB ${whole[1]}` : '');
+      }
+      return [at(part.start + start, part.start + Math.min(end, Math.max(part.text.length, 1)), problem.severity, message)];
     }
     const forward = passOneProblem(part, line, firstDef);
     if (forward) return [{ ...at(part.start + forward.start, part.start + forward.end, 'error', forward.message), cause: 'pass1', mnemonic: mn }];
     if (v === undefined) continue;
     const whole = (severity, message) => out.push(at(part.start, part.start + part.text.length, severity, message));
     if (part.kind === 'ORG' && (v < 0 || v > 255)) whole('warning', `ORG ${show(v)} is outside the memory ($00–$FF) — qaflisp silently uses ${lowByte(v)}`);
-    if (part.kind === 'RMB' && v < 0) whole('error', `Undetermined size for reservation of storage — RMB ${v}: the number of bytes cannot be negative`);
+    if (part.kind === 'RMB' && v <= 0) whole('error', `Undetermined size for reservation of storage — RMB ${v}: the number of bytes must be at least 1`);
     if (['Value', 'Address', 'Offset'].includes(part.kind) && (v < -256 || v > 255)) {
       whole('error', `${part.kind} ${show(v)} does not fit in a byte (−256…255) — qaflisp reports "Value is truncated" and writes only ${lowByte(v)}`);
     }
+    // Branch: displacement from the next instruction, -128..127 (qaflisp: "Displacement (0x...) is out of range")
+    const here = part.kind === 'Target' && layout && layout.lines.get(line);
+    if (here && here.size > 0) {
+      const displacement = v - (here.address + here.size);
+      if (displacement < -128 || displacement > 127) {
+        const far = displacement < 0 ? `${-displacement} bytes back` : `${displacement} bytes ahead`;
+        const instead = mn === 'BSR' ? 'JSR' : 'JMP (with the opposite branch around it for a conditional branch)';
+        whole('error', `Branch target ${show(v)} is ${far} — a branch reaches only −128…+127 bytes from the next instruction ` +
+          `(qaflisp: "Displacement is out of range"); use ${instead}`);
+      }
+    }
   }
   return out;
+}
+
+// An instruction without operand (PSHA, NOP, ASLA ...) followed by something that looks like an
+// operand: qaflisp silently treats it as a comment ("ASLA Data" shifts A, not Data). Plain words
+// ("RTS back to caller") are comments and stay unflagged.
+function ignoredOperand(p, firstDef) {
+  if (!p.comment || !p.mnemonic) return undefined;
+  const mn = p.mnemonic.text.toUpperCase();
+  const d = INSTRUCTIONS[mn];
+  if (!d || !d.variants.every((v) => v.mode === 'inh')) return undefined;
+  const word = /^[^ \t;]+/.exec(p.comment.text)[0];
+  const lead = /^[A-Za-z_][A-Za-z0-9_]*/.exec(word);
+  const looksLikeOperand = /^[#$%'(,0-9~!-]/.test(word)
+    || /,(X|Y|SP|[+-]?[XY][+-]?)$/i.test(word)
+    || Boolean(lead && firstDef.has(lead[0]) && (lead[0] === word || /^[+\-*/%&|^<>,]/.test(word.slice(lead[0].length))));
+  if (!looksLikeOperand) return undefined;
+  // ASLA Data -> ASL Data, if that form exists and accepts the operand
+  const base = mn.endsWith('A') && INSTRUCTIONS[mn.slice(0, -1)] && !checkOperand(mn.slice(0, -1), word)
+    ? mn.slice(0, -1) : undefined;
+  const hint = base ? `; to work on memory write ${base} ${word}` : `; remove it, or put a comment after ';'`;
+  return { start: p.comment.start, end: p.comment.start + word.length,
+    message: `${mn} has no operand — qaflisp silently treats '${word}' as a comment${hint}` };
 }
 
 function analyze(source) {
@@ -295,6 +336,7 @@ function analyze(source) {
   const references = [];
   const lineDiagnostics = [];
   const valueLines = []; // lines without other problems, checked for values once all EQUs are known
+  const records = []; // all lines up to END, for the address layout
 
   for (let line = 0; line < lines.length; line++) {
     const text = lines[line];
@@ -302,6 +344,7 @@ function analyze(source) {
     const mnemonic = p.mnemonic ? p.mnemonic.text : undefined;
     const problems = lineProblems(p, line);
     lineDiagnostics.push(...problems);
+    records.push({ line, p });
     if (!problems.length && p.operand && isMnemonic(mnemonic)) valueLines.push({ p, line });
     if (p.label) {
       definitions.push({
@@ -316,10 +359,33 @@ function analyze(source) {
     }
     if (mnemonic && mnemonic.toUpperCase() === 'END') break; // qaflisp stops here
   }
-  const valueOf = constantValues(definitions);
   const firstDef = new Map();
-  for (const d of definitions) if (!firstDef.has(d.name)) firstDef.set(d.name, d);
-  for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf, firstDef));
+  const twice = new Set();
+  for (const d of definitions) {
+    if (firstDef.has(d.name)) twice.add(d.name);
+    else firstDef.set(d.name, d);
+  }
+  // Addresses (src/layout.js), then values with labels: FCB Start+300, branch targets, ...
+  const unknownInPassOne = new Set(records
+    .filter(({ p }) => p.operand && p.mnemonic && ['ORG', 'RMB'].includes(p.mnemonic.text.toUpperCase()))
+    .filter(({ p, line }) => expressionParts(p.mnemonic.text.toUpperCase(), p.operand.text).some((part) => passOneProblem(part, line, firstDef)))
+    .map(({ line }) => line));
+  const layout = computeLayout(records, twice, constantValues(definitions), unknownInPassOne);
+  const valueOf = constantValues(definitions, (name) => layout.labels.get(name));
+  for (const { p, line } of valueLines) lineDiagnostics.push(...valueProblems(p, line, valueOf, firstDef, layout));
+  for (const { p, line } of records) {
+    const w = ignoredOperand(p, firstDef);
+    if (w) lineDiagnostics.push({ line, start: w.start, end: w.end, severity: 'warning', message: w.message });
+  }
+  if (layout.beyond !== undefined) {
+    const { p, line } = records.find((r) => r.line === layout.beyond);
+    const where = p.mnemonic || p.label;
+    const start = layout.lines.get(line).address;
+    const address = start < 0 ? start : Math.max(start, 0x100); // the first byte beyond $FF
+    lineDiagnostics.push({ line, start: where.start, end: where.end, severity: 'warning',
+      message: `From here on, code or data lies beyond $FF (${address < 0 ? address : hex(address)}…) — the memory has only 256 bytes; ` +
+        `qaflisp silently wraps around to $00 and overwrites what is there` });
+  }
 
   const byName = new Map();
   for (const d of definitions) {
@@ -357,7 +423,14 @@ function analyze(source) {
       message: `Undefined symbol '${r.name}'${hint}` });
   }
 
-  return { definitions, references, byName, diagnostics };
+  return { definitions, references, byName, diagnostics, layout, valueOf };
+}
+
+// A value for the hover: `$FC` = 252 = `%11111100`; negative values with their byte.
+function describeValue(v) {
+  if (v >= 0 && v <= 255) return `\`$${v.toString(16).toUpperCase().padStart(2, '0')}\` = ${v} = \`%${v.toString(2).padStart(8, '0')}\``;
+  if (v < 0 && v >= -256) return `${v} (byte \`${lowByte(v)}\`)`;
+  return `\`${hex(v)}\` = ${v} — does not fit in a byte`;
 }
 
 // The symbol (definition or reference) at a position, if any.
@@ -418,4 +491,4 @@ function checkNewName(analysis, oldName, newName) {
   return undefined;
 }
 
-module.exports = { analyze, parseLine, operandSymbols, symbolAt, checkNewName, explainPhaseError, kindOf };
+module.exports = { analyze, parseLine, operandSymbols, symbolAt, checkNewName, explainPhaseError, kindOf, describeValue };

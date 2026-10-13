@@ -97,6 +97,8 @@ const expectations = [
   ['sample.sflisp', 'LOOP:', ':', 'punctuation.separator.label'],
   ['sample.sflisp', 'BEQ     Start', 'Start', '!entity.name.function.label'],
   ['sample.sflisp', 'LDA         #1', 'LDA', 'invalid.illegal'],
+  ['sample.sflisp', 'Neg         EQU', 'Neg', 'entity.name.function.label'],
+  ['sample.sflisp', 'Neg         EQU', 'Neg', '!invalid'],
 
   // Symbols used in operands
   ['sample.sflisp', 'BEQ     Start', 'Start', 'variable.parameter.symbol'],

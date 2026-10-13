@@ -203,7 +203,8 @@ function evaluate(text, valueOf) {
 
 // Values of the EQU constants of an analysis (symbols.analyze), as far as they are known
 // without assembling. Labels of code and data have no value here.
-function constantValues(definitions) {
+// labelValue(name): address of a label, if known (src/layout.js).
+function constantValues(definitions, labelValue = () => undefined) {
   const operands = new Map();
   for (const d of definitions) {
     if (d.kind !== 'constant' || d.operand === undefined) continue;
@@ -213,6 +214,7 @@ function constantValues(definitions) {
   const busy = new Set();
   const valueOf = (name) => {
     if (values.has(name)) return values.get(name);
+    if (!operands.has(name)) return labelValue(name);
     const operand = operands.get(name);
     if (operand === undefined || busy.has(name)) return undefined;
     busy.add(name);

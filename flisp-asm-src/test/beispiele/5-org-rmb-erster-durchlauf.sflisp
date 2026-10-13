@@ -1,0 +1,35 @@
+; 5 - ORG und RMB im ersten Durchlauf von qaflisp
+; ORG und RMB legen Adressen fest. qaflisp wertet sie im ersten Durchlauf
+; aus, wenn spaetere Labels und manche Konstanten noch unbekannt sind.
+; qaflisp meldet das als "Forward reference" - oder als "Phase error"
+; an einer ganz anderen Zeile. Der Live-Check zeigt die Ursache direkt.
+;
+; Ausprobieren:
+;   - Assembliere mit F7: qaflisp meldet nur die Zeilen 25, 27 und 29 -
+;     Zeile 27 als "Phase error" am Label Buf6. Die Zeilen 26 und 30 gehen
+;     im Folgefehler unter. Der Live-Check zeigt jede Ursache an ihrer Zeile.
+;   - Kommentiere alle FEHLER-Zeilen bis auf eine aus (Strg+#) und
+;     assembliere: so siehst du qaflisps Meldung fuer jeden Fall einzeln.
+;   - Zeile 23 (RMB Count) ist OK, obwohl Count erst in Zeile 33 kommt:
+;     eine Konstante mit reiner Zahl darf spaeter stehen, ein Label nicht.
+
+N           EQU     4               ; OK
+Offset      EQU     Start+4         ; OK: aber enthaelt ein Label
+Late        EQU     Size            ; OK: aber nutzt das spaetere Size
+
+            ORG     $20
+Start       NOP                     ; OK
+Buf1        RMB     N*2             ; OK: Zahl-Konstante
+Buf2        RMB     Count           ; OK: spaetere Konstante mit reiner Zahl
+Buf3        RMB     Start+2-Start   ; OK: Labels von oben, direkt
+Buf4        RMB     End-Start       ; FEHLER: End steht weiter unten
+Buf5        RMB     Offset-$20      ; FEHLER: Offset enthaelt ein Label
+Buf6        RMB     Late            ; FEHLER: Late nutzt das spaetere Size
+            ORG     Start+$40       ; OK: Label von oben, direkt
+            ORG     Far             ; FEHLER: Forward reference
+            ORG     Offset          ; FEHLER: Offset enthaelt ein Label
+End         NOP                     ; OK
+
+Count       EQU     3               ; OK
+Size        EQU     2               ; OK
+Far         EQU     $80             ; OK

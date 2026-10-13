@@ -4,7 +4,7 @@
 // For .fmem files: the syntax check of src/fmem.js while typing.
 
 const vscode = require('vscode');
-const { analyze, symbolAt, checkNewName } = require('./symbols');
+const { analyze, symbolAt, checkNewName, describeValue } = require('./symbols');
 const instructionHover = require('./instructionHover');
 const { analyzeFmem, normalizeFmemColumns, formatFmemLine, fmemCompletionsAt, fmemCommandTakesArgument } = require('./fmem');
 const format = require('./format');
@@ -149,6 +149,11 @@ function register(context, qaflispDiagnostics) {
         } else {
           md.appendMarkdown(`**${sym.name}** — ${KIND_TEXT[defs[0].kind]}`);
           if (defs.length > 1) md.appendMarkdown(` (defined ${defs.length} times)`);
+          else {
+            // address of a label or value of a constant, as qaflisp computes it (src/layout.js)
+            const v = a.valueOf(sym.name);
+            if (v !== undefined) md.appendMarkdown(` · ${defs[0].kind === 'constant' ? 'value' : 'address'} ${describeValue(v)}`);
+          }
           for (const d of defs) md.appendCodeblock(d.text.trimEnd(), 'flisp');
         }
         md.appendMarkdown(`\n\n${refs.length} reference${refs.length === 1 ? '' : 's'}`);

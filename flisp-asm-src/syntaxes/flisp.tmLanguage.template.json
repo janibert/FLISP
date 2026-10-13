@@ -17,10 +17,10 @@
     },
 
     "label": {
-      "comment": "Spalte 1 ist immer ein Label. Steht dort ein Mnemonic oder eine Direktive, meldet qaflisp 'Illegal mnemonic' - das wird als Fehler markiert.",
+      "comment": "Spalte 1 ist immer ein Label, auch wenn es wie ein Mnemonic heisst (Neg EQU 3). Folgt auf ein Mnemonic in Spalte 1 aber kein Mnemonic (LDA #1), meldet qaflisp 'Illegal mnemonic' - das wird als Fehler markiert.",
       "patterns": [
         {
-          "match": "^(?i:({{ALL}}))(?![A-Za-z0-9_])",
+          "match": "^(?i:({{ALL}}))(?=:?[ \\t]+(?!(?i:{{ALL}})(?![A-Za-z0-9_]))[^ \\t;])",
           "captures": {
             "1": { "name": "invalid.illegal.mnemonic-in-label-column.flisp" }
           }

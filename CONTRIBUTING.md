@@ -22,9 +22,9 @@ The grammar and the extension depend on the following, verified with qaflisp 1.3
 
 Every line is `[Label] Mnemonic [Operand] [Comment]`.
 
-- Column 1 is always a label (optionally followed by `:`). An indented label, or a mnemonic in column 1, gives *Illegal mnemonic*. The grammar therefore flags a mnemonic in column 1 as an error.
+- Column 1 is always a label (optionally followed by `:`), even if it is named like a mnemonic: `Neg EQU 3`, `End NOP` and `Inc INCA` are valid. A mnemonic in column 1 followed by something that is not a mnemonic (`LDA #1`) gives *Illegal mnemonic*, and so does an indented label. A mnemonic alone in column 1 (`NOP`, `RTS ; c`) is silently a label without code — usually a missing indent; the live check warns, the grammar flags only the `LDA #1` case.
 - The operand ends at the first whitespace outside a string; everything after it is a comment, no `;` needed. Consequence: `LDA #K + 1` assembles as `LDA #K`.
-- For instructions without an operand (`NOP`, `PSHA`, `RTS`, `INCA` …), everything after the mnemonic is a comment.
+- For instructions without an operand (`NOP`, `PSHA`, `RTS`, `INCA` …), everything after the mnemonic is a comment, without any message — also `PSHA $3`, `NOP #5` and `ASLA Data` (which shifts A, not `Data`). The live check warns when the first word looks like an operand (starts with `#` `$` `%` `'` `(` `,` `-` or a digit, is an indexed form like `2,X`, or is a symbol of the file, also in an expression like `Data+1`) and suggests the memory form (`ASL Data`) where it exists; plain words (`RTS back to caller`) stay comments.
 - A `;` directly after an operand without a space (`LDA #1;x`) gives *Syntax Error*. Comments starting with `*` are not supported.
 - `END` takes an optional start symbol, which sets the start address in the S9 record of the `.s19` file (it does not appear in the `.fmem` file). Text after the symbol is a comment. An undefined symbol gives the misleading warning *start symbol 'X' is defined* (meaning: not defined). Nothing after `END` is assembled.
 
@@ -43,7 +43,7 @@ Every line is `[Label] Mnemonic [Operand] [Comment]`.
 The live symbol check (`src/symbols.js`) follows these rules; `test/symbols-test.js` compares it with the real qaflisp.
 
 - **Symbols are case-sensitive**: `Loop` and `loop` are two different symbols and may both be defined; `BRA loop` does not find `Loop` (*Undefined symbol 'loop'*). Mnemonics and register names are case-insensitive.
-- A name consists of letters, digits and `_`; a digit at the start gives *Illegal label*. The `:` after a label is not part of the name (`L1:` is used as `L1`; `BRA L1:` gives *Bad operand syntax*).
+- A name consists of letters, digits and `_`; a digit at the start gives *Illegal label*. In the label column qaflisp also accepts `$` and `.` after the first character (`A$b`, `x.y`), but such a label cannot be used in an operand (`BRA x.y`: *Bad operand syntax*); `q#r` gives *Illegal mnemonic*. The `:` after a label is not part of the name (`L1:` is used as `L1`; `BRA L1:` gives *Bad operand syntax*).
 - Register names (`A`, `X`, `Y`, `SP`, `PC`, `CC`, any case) are reserved: `X EQU 3` is accepted, but using `X` as a value gives *Illegal use of reserved word*.
 - Forward references are allowed (`LDA #K` before `K EQU 3`), except in `ORG` (*Forward reference*). An `EQU` that uses a later `EQU` gives the warning *symbol 'M' is forward referenced from line 2*.
 - Symbols can be used in expressions and indexed operands: `LDA Tab+1`, `LDX #Tab`, `LDA Off,X`, `FCB Start`.
@@ -146,6 +146,19 @@ Not reported:
 - Addresses beyond `$FF`: `ORG $1234`, `ORG 300` and `ORG -1` silently use the low byte (`$34`, `$2C`, `$FF`); `RMB $1000` and code or data running past `$FF` wrap around to `$00` without a message.
 
 The live check reports the same *truncated* errors where the value is known without assembling (numbers, expressions, `EQU` constants — not label addresses) and warns about `ORG` outside `$00`–`$FF`. Branch displacements (*Displacement (0x…) is out of range*) need label addresses and are left to qaflisp.
+
+### Addresses
+
+Measured with listings (`qaflisp -L`); the live check computes the same layout (`src/layout.js`), and `test/symbols-test.js` compares it line by line with the listing (also 1360 single-instruction probes and about 170 probe files during development: no difference).
+
+- The location counter starts at `$00`; `ORG` sets it. It is **not wrapped** at `$FF`: a label after `ORG $F0` and `RMB $20` has the address `$110`. Only the bytes are written to the address modulo 256 (`$10`), without a message — the memory has 256 bytes.
+- Every instruction variant has a fixed length (`src/instructions.js`, checked against qaflisp); there are no short and long forms.
+- `FCB`: one byte per value. `FCS`: one byte per character, `\"` and `\n` count once, no terminating byte. Quirks: `FCS ""` gives *Bad operand syntax* but writes 2 bytes (`22 0A`); a string without closing quote gives *Bad operand syntax* and an extra newline byte (`"abc` → `61 62 63 0A`); `FCS #"AB"` writes nothing. `RMB n`: n bytes; `RMB 0` gives *Undetermined size for reservation of storage*.
+- **Lines with errors**: a syntax error in an instruction (bad operand, addressing mode, register pair, invalid number, `#`, expression syntax) — and an unknown mnemonic, including `MOVE` and `CMJEQ` — occupies **0 bytes**. An undefined symbol, a value out of range or a division by zero keeps the normal length (the value written is 0 or the low byte). `FCB` writes the values before the first syntax error (`FCB 1,(2` → 1 byte, `FCB 2,#3` → 1 byte); a value followed by `=`, `.`, `:`, `<` or `>` is still written and ends the list (`FCB 1=2,3` → 1 byte, *Bad delimiter*). Quirk: `LDA 1<2` is assembled (2 bytes, *Reached unreacheable point in Parser..P0*), `LDA 1=2` is not.
+- A line whose label is defined twice is not assembled (see below); after the resulting *Phase error*, qaflisp reports no further errors in the file.
+- Branches: the displacement is counted from the next instruction and must be −128…+127 (*Displacement (0x…) is out of range*), computed with the unwrapped addresses. Using a label beyond `$FF` as a byte (`LDA U` with `U` at `$100`) gives *Value is truncated*.
+
+The live check uses the layout for branch distances, values with labels (`FCB Start+300`), a warning where code or data first goes beyond `$FF`, and the hover (address of a label, value of a constant). It stops the layout at a multiple definition and at an `ORG`/`RMB` whose value qaflisp does not know in pass 1, so it does not guess addresses after them.
 
 ### Phase error between passes
 

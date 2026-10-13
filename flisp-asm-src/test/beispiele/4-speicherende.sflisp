@@ -1,0 +1,23 @@
+; 4 - Ueber das Speicherende hinaus
+; Der Speicher hat 256 Bytes ($00..$FF). qaflisp zaehlt die Adressen
+; weiter ($100, $101 ...), schreibt die Bytes aber ohne Meldung wieder
+; ab $00 - und ueberschreibt, was dort steht.
+;
+; Ausprobieren:
+;   - Hover ueber Wrapped: Adresse $101, passt nicht in ein Byte.
+;   - Loesche Zeile 18 (NOP): dann endet der Code genau bei $FF und die
+;     Warnung verschwindet. Wrapped ist dann $100 - "JMP Wrapped" bleibt
+;     ein Fehler, denn auch $100 passt nicht in ein Byte.
+
+            ORG     $00
+Data        FCB     $AA             ; OK: wird spaeter ueberschrieben!
+
+            ORG     $F8
+Start       LDA     #1              ; OK: $F8, $F9
+            STA     $FC             ; OK: $FA, $FB
+            BRA     Start           ; OK: $FC, $FD
+            NOP                     ; OK: $FE
+            LDA     #2              ; WARNUNG: $FF und $100 - ab hier ueber $FF
+Wrapped     NOP                     ; OK: Adresse $101, Byte landet bei $01
+            BRA     Start           ; OK: Sprungweite rechnet ohne Umbruch
+            JMP     Wrapped         ; FEHLER: Adresse $101 passt nicht in ein Byte
