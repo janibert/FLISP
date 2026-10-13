@@ -8,23 +8,31 @@
 // expressions all use it). A string "..." may contain blanks and \x (one character, also \");
 // without closing quote it runs to the end of the text. A character constant is always the
 // 3 characters 'x' (also ' ' and ''').
-// Returns { end, closed, length } for the string starting at text[start] (length: characters
-// between the quotes).
+// Returns { end, closed, length, bytes } for the string starting at text[start] (length:
+// characters between the quotes; bytes: their size in UTF-8 - qaflisp writes the bytes of the
+// file, so "å" is 2 bytes in a UTF-8 file and 1 in a single-byte code page).
+const utf8Length = (cp) => (cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4);
+
 function scanString(text, start) {
   let i = start + 1;
   let length = 0;
+  let bytes = 0;
+  // One character of the string at text[i + skip] (skip 1 after a '\').
+  const take = (skip) => {
+    const cp = i + skip < text.length ? text.codePointAt(i + skip) : 0;
+    bytes += utf8Length(cp);
+    length++;
+    i += skip + (cp > 0xFFFF ? 2 : 1);
+  };
   // qaflisp takes the first character as content even if it is '"': "" is no empty string,
   // it goes on to the next '"' or to the end of the line ("" ab"cd is the string '" ab').
-  if (text[i] === '"') {
-    i++;
-    length++;
-  }
-  while (i < text.length && text[i] !== '"') {
-    i += text[i] === '\\' ? 2 : 1;
-    length++;
-  }
-  return { end: Math.min(i + 1, text.length), closed: i < text.length, length };
+  if (text[i] === '"') take(0);
+  while (i < text.length && text[i] !== '"') take(text[i] === '\\' ? 1 : 0);
+  return { end: Math.min(i + 1, text.length), closed: i < text.length, length, bytes };
 }
+
+// Characters outside 7-bit ASCII (FLISP and DigiFlisp know only ASCII).
+const NON_ASCII = /[^\x00-\x7F]/;
 
 // End of the string or character constant that starts at text[i], or i + 1 for any other character.
 function skipQuoted(text, i) {
@@ -34,7 +42,7 @@ function skipQuoted(text, i) {
 }
 
 // Splits an operand into tokens: number, symbol, char, string, op, other.
-// String tokens also have closed and length (see scanString).
+// String tokens also have closed, length and bytes (see scanString).
 function tokenize(text) {
   const tokens = [];
   let afterOperand = false; // decides whether '%' is modulo or the binary prefix
@@ -47,9 +55,9 @@ function tokenize(text) {
     const c = text[i];
     const start = i;
     if (c === '"') {
-      const { end, closed, length } = scanString(text, start);
+      const { end, closed, length, bytes } = scanString(text, start);
       i = end;
-      push('string', start, i, { closed, length });
+      push('string', start, i, { closed, length, bytes });
     } else if (c === "'") {
       i = skipQuoted(text, start);
       push('char', start, i);
@@ -266,4 +274,4 @@ function constantValues(definitions, labelValue = () => undefined) {
   return valueOf;
 }
 
-module.exports = { tokenize, skipQuoted, numberValue, parse, evaluate, constantValues, RESERVED };
+module.exports = { tokenize, skipQuoted, NON_ASCII, numberValue, parse, evaluate, constantValues, RESERVED };

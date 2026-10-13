@@ -11,6 +11,7 @@
 - qaflisp messages are no longer placed on the wrong lines when the file is edited while qaflisp runs (e.g. with *Assemble on Save* and auto save); such a result is only written to the output channel.
 - *Assemble* (F7) on an unsaved file with *Assemble on Save* no longer starts qaflisp twice; qaflisp runs for one file one at a time, so its output files cannot be written by two processes at once.
 - The read-only copy of a file in a diff view (Source Control) no longer gets its own live diagnostics, so errors are not listed twice in *Problems*.
+- **Characters outside 7-bit ASCII** (å, ä, ö, ü, €, …): FLISP and DigiFlisp know only ASCII, so such characters belong in comments only. In labels, mnemonics and operands they are an error with a clear message (instead of follow-up errors); in a string (`FCS "på"`) they get a warning, and their size is counted as qaflisp does — the bytes of the file's encoding (2 bytes for `å` in UTF-8, 1 in a single-byte code page), so later addresses stay right; a character constant `'å'` is an error in a UTF-8 file (as in qaflisp) and a warning otherwise.
 - Shift+Tab with several cursors: every cursor goes back to its previous column, also when blanks are deleted before another cursor.
 
 ## 0.10.1

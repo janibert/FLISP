@@ -648,6 +648,46 @@
   ],
   "stoppedAt": null
  },
+ "probes/enc-nonAscii.sflisp": {
+  "diagnostics": [
+   "4:5-10 warning: 'å' is not 7-bit ASCII — qaflisp writes the bytes of the file (in this UTF-8 file 2 bytes), and DigiFlisp shows only ASCII; use such characters only in comments",
+   "5:6-9 error: Illegal character — in a UTF-8 file 'å' has 2 bytes, so qaflisp does not read 'å' as a character constant; FLISP uses 7-bit ASCII — write the value as a number",
+   "7:7-8 error: Unterminated expression: a value is missing at the end",
+   "10:0-1 error: Illegal character 'Ö' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "11:5-6 error: Illegal character 'Ö' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "12:1-2 error: Illegal character 'å' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "13:7-8 error: Illegal character 'å' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "15:7-10 error: Illegal character — in a UTF-8 file 'å' has 2 bytes, so qaflisp does not read 'å' as a character constant; FLISP uses 7-bit ASCII — write the value as a number",
+   "16:5-8 error: Illegal character — in a UTF-8 file 'å' has 2 bytes, so qaflisp does not read 'å' as a character constant; FLISP uses 7-bit ASCII — write the value as a number",
+   "17:5-10 warning: 'å' is not 7-bit ASCII — qaflisp writes the bytes of the file (in this UTF-8 file 2 bytes), and DigiFlisp shows only ASCII; use such characters only in comments",
+   "18:5-10 warning: '€' is not 7-bit ASCII — qaflisp writes the bytes of the file (in this UTF-8 file 3 bytes), and DigiFlisp shows only ASCII; use such characters only in comments",
+   "19:6-9 error: Illegal character — in a UTF-8 file '€' has 3 bytes, so qaflisp does not read '€' as a character constant; FLISP uses 7-bit ASCII — write the value as a number"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +0",
+   "3: 32 +2",
+   "4: 34 +6",
+   "5: 40 +0",
+   "6: 40 +3",
+   "7: 43 +0",
+   "8: 43 +1",
+   "9: 44 +2",
+   "10: 46 +0",
+   "11: 46 +0",
+   "12: 46 +0",
+   "13: 46 +0",
+   "14: 46 +1",
+   "15: 47 +1",
+   "16: 48 +0",
+   "17: 48 +4",
+   "18: 52 +5",
+   "19: 57 +0",
+   "20: 57 +1",
+   "21: 58 +0"
+  ],
+  "stoppedAt": null
+ },
  "probes/expr-p.sflisp": {
   "diagnostics": [
    "4:23-24 error: Missing Parenthesis: '(' is not closed",

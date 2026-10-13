@@ -3,7 +3,8 @@
 //   - the location counter starts at 0; ORG sets it; it is not wrapped at $FF (labels can be $122),
 //     only the bytes are written to address & $FF
 //   - every instruction variant has a fixed length (src/instructions.js); FCB: one byte per value,
-//     FCS: one byte per character (\x counts once), RMB: its value
+//     FCS: one byte per character (\x counts once) - in a UTF-8 file the bytes of the character
+//     (å is 2), in a single-byte code page one; RMB: its value
 //   - a line qaflisp rejects for its syntax (bad operand, addressing mode, register pair, number,
 //     '#') occupies 0 bytes; an undefined symbol, a value out of range or a division by zero do not
 //     change the length; FCB writes the values before the first such syntax error
@@ -13,7 +14,7 @@
 
 const { INSTRUCTIONS } = require('./instructions');
 const { modeOf, checkOperand, checkImmediateMarker, hashPositions } = require('./addressing');
-const { tokenize, parse, numberValue, evaluate } = require('./expression');
+const { tokenize, parse, numberValue, evaluate, NON_ASCII } = require('./expression');
 const { isMnemonic } = require('./mnemonics');
 
 // Items of an FCB list with their offsets. Every comma splits, as in qaflisp ("(1,2)" is an error).
@@ -61,12 +62,16 @@ const syntaxFails = (text) => expressionSyntax(text) !== 'ok';
 
 // Bytes of an FCS operand: the characters of the string ("\x" counts once). Measured quirks:
 // a string without closing quote gets an extra newline byte (FCS "" is one, see scanString),
-// FCS #"AB" writes nothing.
-function fcsSize(operand) {
+// FCS #"AB" writes nothing. encoding: 'utf8' or 'singleByte', the encoding of the file.
+function fcsSize(operand, encoding = 'utf8') {
   const [string] = tokenize(operand);
   if (!string || string.type !== 'string') return 0;
-  return string.closed ? string.length : string.length + 1;
+  const n = encoding === 'utf8' ? string.bytes : string.length;
+  return string.closed ? n : n + 1;
 }
+
+// 'å' in a UTF-8 file has 2 bytes between the quotes: qaflisp reports "Illegal character".
+const badCharConstant = (text, encoding) => encoding === 'utf8' && tokenize(text).some((t) => t.type === 'char' && NON_ASCII.test(t.text));
 
 // Size of an instruction line in bytes (0 if qaflisp rejects its syntax).
 function instructionSize(mn, operand) {
@@ -87,7 +92,8 @@ function instructionSize(mn, operand) {
 // unknownInPassOne: lines (ORG, RMB) whose value qaflisp does not know in pass 1 - the layout stops.
 // Returns { lines: Map line -> { address, size }, labels: Map name -> address,
 //           beyond: first line with bytes beyond $FF, stoppedAt: line where the layout stopped }.
-function computeLayout(records, twice, valueOf, unknownInPassOne = new Set()) {
+// encoding: 'utf8' or 'singleByte', the encoding of the file (sizes of non-ASCII characters).
+function computeLayout(records, twice, valueOf, unknownInPassOne = new Set(), encoding = 'utf8') {
   const lines = new Map();
   const labels = new Map();
   const known = (name) => (labels.has(name) ? labels.get(name) : valueOf(name));
@@ -114,13 +120,14 @@ function computeLayout(records, twice, valueOf, unknownInPassOne = new Set()) {
       size = v === undefined ? 0 : Math.max(v, 0); // no value: no bytes, as in qaflisp
     } else if (mn === 'FCB' && operand !== undefined) {
       const items = listItems(operand);
-      const bad = items.findIndex((item) => syntaxFails(item.text));
+      const bad = items.findIndex((item) => badCharConstant(item.text, encoding) || syntaxFails(item.text));
       // a value followed by a stray delimiter (1=2, 1.5) is still written, then the list ends
-      size = bad < 0 ? items.length : bad + (expressionSyntax(items[bad].text).startsWith('partial') ? 1 : 0);
+      const partial = bad >= 0 && !badCharConstant(items[bad].text, encoding) && expressionSyntax(items[bad].text).startsWith('partial');
+      size = bad < 0 ? items.length : bad + (partial ? 1 : 0);
     } else if (mn === 'FCS' && operand !== undefined) {
-      size = fcsSize(operand);
+      size = fcsSize(operand, encoding);
     } else if (mn && INSTRUCTIONS[mn]) {
-      size = instructionSize(mn, operand);
+      size = operand !== undefined && badCharConstant(operand, encoding) ? 0 : instructionSize(mn, operand);
     }
     lines.set(line, { address: loc, size });
     if (beyond === undefined && size > 0 && (loc < 0 || loc + size > 0x100)) beyond = line;

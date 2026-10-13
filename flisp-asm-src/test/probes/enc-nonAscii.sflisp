@@ -1,0 +1,21 @@
+	ORG	$20
+; Kommentar: Övning på svenska, Grüße
+Start	LDA	#1	; å ä ö Ü ß
+	FCS	"åäö"
+	LDA	#'å'
+	FCS	"Hej"	; ÅÄÖ
+	LDA	#1+	; Fehler nach Umlaut? nein: davor
+	NOP
+	BRA	Start
+Över	NOP
+	BRA	Över
+Låda	EQU	3
+	LDA	#Låda
+	NOP	kommentar ohne Semikolon: åäö
+	FCB	1,'å',2
+	FCB	'å'
+	FCS	"aåb"
+	FCS	"x€y"
+	LDA	#'€'
+	NOP
+	END

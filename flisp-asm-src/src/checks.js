@@ -5,7 +5,7 @@
 const { isMnemonic, isRegister } = require('./mnemonics');
 const { checkOperand, checkImmediateMarker } = require('./addressing');
 const { INSTRUCTIONS } = require('./instructions');
-const { tokenize, parse } = require('./expression');
+const { tokenize, parse, NON_ASCII } = require('./expression');
 const { expressionParts } = require('./layout');
 
 // Numbers whose digits do not fit their base (qaflisp: "Illegal decimal/binary/hexadecimal
@@ -60,6 +60,43 @@ function fcbListProblem(p, at) {
   const lost = list[0].replace(/^,[ \t]*/, '');
   return at({ start: comment.start, end: comment.start + list[0].length }, 'warning', 'fcbBlank',
     `Blank in the ${mn} list — the rest of the line is a comment, so ${lost} is not assembled; remove the blank: ${mn} ${operand},${lost}`);
+}
+
+// Characters outside 7-bit ASCII. FLISP and DigiFlisp know only ASCII; qaflisp reads the bytes
+// of the file, so a label, mnemonic or symbol with å is an error in every encoding, and a string
+// or character constant depends on the encoding (measured, see CONTRIBUTING.md). Comments are free.
+// Errors block the other checks of the line.
+function nonAsciiProblems(p, line, encoding) {
+  const found = [];
+  const at = (start, end, severity, kind, message) => ({ line, start, end, severity, kind, message });
+  const char = (text, i) => String.fromCodePoint(text.codePointAt(i));
+  const illegal = (text, offset, i) => at(offset + i, offset + i + char(text, i).length, 'error', 'nonAscii',
+    `Illegal character '${char(text, i)}' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments`);
+  for (const word of [p.label && { text: p.label.name, start: p.label.start }, p.invalidLabel && { text: p.invalidLabel.name, start: p.invalidLabel.start }, p.mnemonic]) {
+    const i = word ? word.text.search(NON_ASCII) : -1;
+    if (i >= 0) return [illegal(word.text, word.start, i)];
+  }
+  if (!p.operand) return found;
+  for (const t of tokenize(p.operand.text)) {
+    const i = t.text.search(NON_ASCII);
+    if (i < 0) continue;
+    const c = char(t.text, i);
+    const start = p.operand.start + t.start;
+    if (t.type === 'string') {
+      const bytes = encoding === 'utf8' ? `in this UTF-8 file ${Buffer.byteLength(c)} bytes` : 'one byte of the code page of this file';
+      found.push(at(start, start + t.text.length, 'warning', 'nonAsciiString',
+        `'${c}' is not 7-bit ASCII — qaflisp writes the bytes of the file (${bytes}), and DigiFlisp shows only ASCII; use such characters only in comments`));
+    } else if (t.type === 'char' && encoding === 'utf8') {
+      return [at(start, start + t.text.length, 'error', 'nonAsciiChar',
+        `Illegal character — in a UTF-8 file '${c}' has ${Buffer.byteLength(c)} bytes, so qaflisp does not read ${t.text} as a character constant; FLISP uses 7-bit ASCII — write the value as a number`)];
+    } else if (t.type === 'char') {
+      found.push(at(start, start + t.text.length, 'warning', 'nonAsciiChar',
+        `'${c}' is not 7-bit ASCII — its value depends on the code page of the file, and in a UTF-8 file qaflisp rejects it; write the value as a number`));
+    } else {
+      return [illegal(t.text, start, i)];
+    }
+  }
+  return found;
 }
 
 // Directives without their label or operand. qaflisp ignores such a line (no bytes, ORG keeps
@@ -381,10 +418,17 @@ function symbolProblems(byName, references) {
 //   5. symbolProblems: register names, multiple definitions, undefined symbols
 // records: [{ line, p }] up to END, references, byName, firstDef: from symbols.analyze;
 // layout: computeLayout; valueOf: values of constants and labels.
-function checkSource({ records, references, byName, firstDef, layout, valueOf }) {
+function checkSource({ records, references, byName, firstDef, layout, valueOf, encoding = 'utf8' }) {
   const diagnostics = [];
   const valueLines = [];
+  const nonAsciiLines = new Set(); // lines with a non-ASCII error get no other message
   for (const { p, line } of records) {
+    const ascii = nonAsciiProblems(p, line, encoding);
+    diagnostics.push(...ascii);
+    if (ascii.some((d) => d.severity === 'error')) {
+      nonAsciiLines.add(line);
+      continue;
+    }
     const problems = lineProblems(p, line);
     diagnostics.push(...problems);
     if (!problems.length && p.operand && isMnemonic(p.mnemonic.text)) valueLines.push({ p, line });
@@ -403,11 +447,11 @@ function checkSource({ records, references, byName, firstDef, layout, valueOf })
       message: `From here on, code or data lies beyond $FF (${address < 0 ? address : hex(address)}…) — the memory has only 256 bytes; ` +
         `qaflisp silently wraps around to $00 and overwrites what is there` });
   }
-  diagnostics.push(...symbolProblems(byName, references));
+  diagnostics.push(...symbolProblems(byName, references).filter((d) => !nonAsciiLines.has(d.line)));
   return diagnostics;
 }
 
 module.exports = {
-  checkSource, unknownInPassOne, lineProblems, valueProblems, passOneProblem, ignoredOperand, symbolProblems,
+  checkSource, unknownInPassOne, lineProblems, nonAsciiProblems, valueProblems, passOneProblem, ignoredOperand, symbolProblems,
   numberProblem, fcbListProblem, explainPhaseError, describeValue,
 };

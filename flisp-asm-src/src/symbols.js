@@ -86,8 +86,10 @@ function operandSymbols(operand) {
     .map((t) => ({ name: t.text, start: operand.start + t.start, end: operand.start + t.end }));
 }
 
-function analyze(source) {
-  const lines = source.split(/\r?\n/);
+// encoding: 'utf8' (VS Code's default) or 'singleByte' (cp1252 and similar) - the encoding of the
+// file qaflisp reads; it decides the size of non-ASCII characters in strings.
+function analyze(source, { encoding = 'utf8' } = {}) {
+  const lines = source.split(/\r\n|\r|\n/); // the line breaks of VS Code
   const definitions = [];
   const references = [];
   const records = []; // all lines up to END, for the checks and the address layout
@@ -128,9 +130,9 @@ function analyze(source) {
     byName.get(d.name).push(d);
   }
   // Addresses (src/layout.js), then values with labels: FCB Start+300, branch targets, ...
-  const layout = computeLayout(records, twice, constantValues(definitions), unknownInPassOne(records, firstDef));
+  const layout = computeLayout(records, twice, constantValues(definitions), unknownInPassOne(records, firstDef), encoding);
   const valueOf = constantValues(definitions, (name) => layout.labels.get(name));
-  const diagnostics = checkSource({ records, references, byName, firstDef, layout, valueOf });
+  const diagnostics = checkSource({ records, references, byName, firstDef, layout, valueOf, encoding });
   return { definitions, references, byName, diagnostics, layout, valueOf };
 }
 

@@ -56,6 +56,21 @@ test('FCS: warnings for what qaflisp does silently ("" at the start, text after 
   assert.deepStrictEqual(kinds('\tFCS\t"a\\"b"\n\tFCS\t"a b" ; c\n'), []);
 });
 
+test('non-ASCII: error outside comments, strings and character constants depend on the encoding', () => {
+  const src = "\tORG\t$20\nÖver\tNOP\t; å is fine here\n\tBRA\tÖver\n\tFCS\t\"åb\"\n\tLDA\t#'å'\n\tNOP\n";
+  const kinds = (encoding) => analyze(src, { encoding }).diagnostics.map((d) => [d.line, d.severity, d.kind]);
+  assert.deepStrictEqual(kinds('utf8'), [[1, 'error', 'nonAscii'], [2, 'error', 'nonAscii'], [3, 'warning', 'nonAsciiString'], [4, 'error', 'nonAsciiChar']]);
+  assert.deepStrictEqual(kinds('singleByte'), [[1, 'error', 'nonAscii'], [2, 'error', 'nonAscii'], [3, 'warning', 'nonAsciiString'], [4, 'warning', 'nonAsciiChar']]);
+  // FCS "åb": 3 bytes in UTF-8, 2 in a single-byte code page; LDA #'å' is rejected in UTF-8 (0 bytes)
+  const nop = (encoding) => analyze(src, { encoding }).layout.lines.get(5).address;
+  assert.strictEqual(nop('utf8'), 0x20 + 3);
+  assert.strictEqual(nop('singleByte'), 0x20 + 2 + 2);
+});
+
+test('lines are split like VS Code does: CRLF, LF and a lone CR', () => {
+  assert.deepStrictEqual(analyze('\tLDA\tA1\r\n\tLDA\tA2\n\tLDA\tA3\r\tLDA\tA4').diagnostics.map((d) => d.line), [0, 1, 2, 3]);
+});
+
 test('an undefined start symbol after END is only a warning, as in qaflisp', () => {
   const a = analyze('Start\tNOP\n\tEND\tstart\n');
   assert.deepStrictEqual(a.diagnostics.map((d) => [d.line, d.severity, d.kind]), [[1, 'warning', 'undefinedStartSymbol']]);
