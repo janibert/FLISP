@@ -2,7 +2,7 @@
 // (no VS Code API; used by the hover and by the live check).
 
 const { INSTRUCTIONS, MODES, DIRECTIVES } = require('./instructions');
-const { tokenize } = require('./expression');
+const { tokenize, skipQuoted } = require('./expression');
 
 const BRANCHES = new Set(Object.entries(INSTRUCTIONS)
   .filter(([, d]) => d.variants.some((v) => v.mode === 'rel')).map(([mn]) => mn));
@@ -14,6 +14,22 @@ function modeOf(mnemonic, operand) {
   if (!operand) return { mode: 'inh' };
   const o = operand.trim();
   if (mn === 'TFR' || mn === 'EXG') return { mode: 'reg', operand: o.toUpperCase() };
+  return modeOfMasked(mn, maskQuoted(o));
+}
+
+// The operand with every string and character constant replaced by '_', so that a ','
+// inside one (CMPA #',') is not taken for an index separator.
+function maskQuoted(text) {
+  let masked = '';
+  for (let i = 0; i < text.length;) {
+    const end = skipQuoted(text, i);
+    masked += end - i > 1 ? '_'.repeat(end - i) : text[i];
+    i = end;
+  }
+  return masked;
+}
+
+function modeOfMasked(mn, o) {
   if (o.startsWith('#')) {
     return o.includes(',') ? { mode: 'bad', reason: 'immediate data cannot be combined with an index register' } : { mode: 'imm' };
   }

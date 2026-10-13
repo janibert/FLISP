@@ -1,0 +1,9 @@
+	ORG	$20
+	CMPA	#','
+	LDA	','
+	LDA	',',X
+	LDA	',',SP
+	LDA	','+1
+	CMPA	#',',X
+	LDA	',
+	END

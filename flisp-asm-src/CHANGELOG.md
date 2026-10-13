@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Live check: `LDA #1` in column 1 also defines the label `LDA`, as in qaflisp, so a second `LDA …` in column 1 is reported as a multiple definition.
+- Live check: a comma inside a character constant (`CMPA #','`, `LDA ',',X`) is no longer taken for an index register; such lines were wrongly reported as errors and shifted all later addresses.
 
 ## 0.10.1
 

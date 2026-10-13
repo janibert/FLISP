@@ -42,7 +42,9 @@ test('mnemonic lists are derived from the instruction table (92 words)', () => {
 test('modeOf recognises every addressing mode', () => {
   const cases = { '': 'inh', '#5': 'imm', '$20': 'abs', 'Tab+1': 'abs', '2,SP': 'nsp', 'n,X': 'nx', '-3,y': 'ny',
     'A,X': 'ax', 'a,y': 'ay', ',X+': 'xinc', ',X-': 'xdec', ',+X': 'incx', ',-X': 'decx',
-    ',Y+': 'yinc', ',Y-': 'ydec', ',+Y': 'incy', ',-Y': 'decy' };
+    ',Y+': 'yinc', ',Y-': 'ydec', ',+Y': 'incy', ',-Y': 'decy',
+    // a ',' inside a character constant is no index separator (qaflisp 1.3 accepts these)
+    "#','": 'imm', "','": 'abs', "','+1": 'abs', "',',X": 'nx', "',',SP": 'nsp', "#',',X": 'bad' };
   for (const [op, mode] of Object.entries(cases)) assert.strictEqual(modeOf('LDA', op || undefined).mode, mode, op);
   assert.strictEqual(modeOf('BEQ', 'Loop').mode, 'rel');
   assert.deepStrictEqual(modeOf('TFR', 'a,cc'), { mode: 'reg', operand: 'A,CC' });

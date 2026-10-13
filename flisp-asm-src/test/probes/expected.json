@@ -881,6 +881,24 @@
   ],
   "stoppedAt": null
  },
+ "probes/modes-charComma.sflisp": {
+  "diagnostics": [
+   "7:6-12 error: Bad operand '#',',X' — immediate data cannot be combined with an index register",
+   "8:5-7 error: Character constant without closing quote — write 'A'"
+  ],
+  "layout": [
+   "1: 32 +0",
+   "2: 32 +2",
+   "3: 34 +2",
+   "4: 36 +2",
+   "5: 38 +2",
+   "6: 40 +2",
+   "7: 42 +0",
+   "8: 42 +0",
+   "9: 42 +0"
+  ],
+  "stoppedAt": null
+ },
  "probes/modes-m.sflisp": {
   "diagnostics": [
    "2:5-7 error: Illegal addressing mode — STA has no immediate addressing (#Data); allowed: Adr  n,SP  n,X  A,X  ,X+  ,X-  ,+X  ,-X  n,Y  A,Y  ,Y+  ,Y-  ,+Y  ,-Y",
