@@ -5,7 +5,7 @@ Contributions to the grammar, the qaflisp integration and the documentation are 
 - Write code, documentation, commit messages and issues in English.
 - Run `npm test` in `flisp-asm-src/` before opening a pull request, and add a test case for every grammar change.
 - The `.sflisp` grammar is generated: edit `syntaxes/flisp.tmLanguage.template.json` or the instruction table in `src/instructions.js`, then run `npm run build:grammar` (see the [README](README.md)).
-- If you find qaflisp behaving differently from what is described below, please open an issue or update this file together with the grammar.
+- If you find `qaflisp` behaving differently from what is described below, please open an issue or update this file together with the grammar.
 
 ## Sources of truth
 

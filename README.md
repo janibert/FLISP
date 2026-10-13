@@ -71,9 +71,12 @@ If a colour looks wrong: `Ctrl+Shift+P` → *Developer: Inspect Editor Tokens an
 ### Repository layout
 
 ```
-CONTRIBUTING.md   how to contribute; FLISP / qaflisp / DigiFlisp domain knowledge
-docs/user-guide.md  the complete user documentation (linked from the Marketplace page)
-flisp-asm-src/    the extension (source, grammars, tests); its README.md is the short Marketplace page
+README.md            this page (developer documentation)
+CONTRIBUTING.md      how to contribute; FLISP / qaflisp / DigiFlisp domain knowledge
+LICENSE              MIT license of the extension's own code
+docs/user-guide.md   the complete user documentation (linked from the Marketplace page)
+flisp-asm-src/       the extension (source, grammars, tests); its README.md is the short Marketplace page
+.vscode/launch.json  F5 configuration "Run FLISP extension"
 ```
 
 ### Source Files
