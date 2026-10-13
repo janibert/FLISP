@@ -10,3 +10,6 @@ images/*
 !images/icon.png
 scripts/**
 syntaxes/*.template.json
+**/*.fmem
+**/*.s19
+**/*.lst
