@@ -113,7 +113,8 @@ function analyze(source) {
     // FCS takes only a string; qaflisp ignores what follows it ("ab"cd), so it uses no symbols.
     const fcs = mnemonic && mnemonic.toUpperCase() === 'FCS';
     if (p.operand && !malformed && !fcs) {
-      for (const s of operandSymbols(p.operand)) references.push({ ...s, line });
+      const atEnd = mnemonic.toUpperCase() === 'END';
+      for (const s of operandSymbols(p.operand)) references.push(atEnd ? { ...s, line, atEnd } : { ...s, line });
     }
     if (mnemonic && mnemonic.toUpperCase() === 'END') break; // qaflisp stops here
   }

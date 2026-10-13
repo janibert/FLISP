@@ -349,6 +349,12 @@ function symbolProblems(byName, references) {
     if (byName.has(r.name)) continue;
     const similar = lowerNames.get(r.name.toLowerCase());
     const hint = similar ? ` — did you mean '${similar[0]}'? Symbols are case-sensitive.` : '';
+    if (r.atEnd) {
+      // qaflisp only warns, with the misleading text "start symbol 'X' is defined"
+      diagnostics.push({ line: r.line, start: r.start, end: r.end, severity: 'warning', kind: 'undefinedStartSymbol',
+        message: `Undefined start symbol '${r.name}'${hint || ' — END takes the label where the program starts'} (qaflisp only warns: "start symbol '${r.name}' is defined")` });
+      continue;
+    }
     diagnostics.push({ line: r.line, start: r.start, end: r.end, severity: 'error', kind: 'undefinedSymbol',
       message: `Undefined symbol '${r.name}'${hint}` });
   }

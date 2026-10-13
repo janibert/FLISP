@@ -47,6 +47,12 @@ test('directives without operand or label; the layout goes on after them as in q
   assert.deepStrictEqual(a.layout.lines.get(9), { address: 0x20, size: 1 });
 });
 
+test('an undefined start symbol after END is only a warning, as in qaflisp', () => {
+  const a = analyze('Start\tNOP\n\tEND\tstart\n');
+  assert.deepStrictEqual(a.diagnostics.map((d) => [d.line, d.severity, d.kind]), [[1, 'warning', 'undefinedStartSymbol']]);
+  assert.match(a.diagnostics[0].message, /did you mean 'Start'/);
+});
+
 test('FCB list with a blank: error after a trailing comma, warning if bytes follow', () => {
   const a = analyze("\tFCB\t1,2, 3,4\n\tFCB\t1,2 ,3\n\tFCB\t1,2 3,4\n\tFCB\t1,2,\n\tFCB\t1,2 %0101,'A'\n" +
     '\tFCB\t1,2 first two\n\tFCB\t1,2 Start,3\nStart\tFCB\t1,2 4 bytes\n\tFCB\t1,2 ; ok\n\tFCB\t1,2 3 cycles, then more\n');

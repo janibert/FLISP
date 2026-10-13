@@ -50,6 +50,7 @@ Mistakes are underlined immediately, without assembling. The extension reads the
 | `LDA #1` in column 1 | error — a mnemonic in column 1 is read as a label |
 | `NOP` alone in column 1 | warning — only a label, no code (missing indent) |
 | `BRA loop` with label `Loop` | error — undefined symbol; symbols are case-sensitive, the message suggests `Loop` |
+| `END Strat` with label `Start` | warning — undefined start symbol; qaflisp only warns |
 | a label defined twice | error on every defining line |
 
 A label may be named like a mnemonic (`Neg EQU 3`, `End NOP`) — qaflisp accepts that.

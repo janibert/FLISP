@@ -1665,7 +1665,7 @@
  },
  "probes/qa-end2.sflisp": {
   "diagnostics": [
-   "3:5-8 error: Undefined symbol 'foo'"
+   "3:5-8 warning: Undefined start symbol 'foo' — END takes the label where the program starts (qaflisp only warns: \"start symbol 'foo' is defined\")"
   ],
   "layout": [
    "1: 32 +0",
@@ -1961,7 +1961,7 @@
  },
  "probes/qa4-e2.sflisp": {
   "diagnostics": [
-   "3:5-9 error: Undefined symbol 'Rest'"
+   "3:5-9 warning: Undefined start symbol 'Rest' — END takes the label where the program starts (qaflisp only warns: \"start symbol 'Rest' is defined\")"
   ],
   "layout": [
    "1: 32 +0",
@@ -2010,7 +2010,7 @@
  },
  "probes/qa4-f2.sflisp": {
   "diagnostics": [
-   "4:5-9 error: Undefined symbol 'Rest'"
+   "4:5-9 warning: Undefined start symbol 'Rest' — END takes the label where the program starts (qaflisp only warns: \"start symbol 'Rest' is defined\")"
   ],
   "layout": [
    "1: 32 +0",
