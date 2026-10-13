@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build:grammar": "node scripts/build-grammar.js",
-    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/checks-test.js && node test/layout-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/format-test.js && node test/completion-test.js && node test/examples-test.js && node test/probes-test.js && node test/tokenize-test.js",
+    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/checks-test.js && node test/layout-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/fileBytes-test.js && node test/format-test.js && node test/completion-test.js && node test/examples-test.js && node test/probes-test.js && node test/tokenize-test.js",
     "test:update-snapshot": "node test/probes-test.js --update",
     "test:vscode": "node test/vscode/run.js",
     "vscode:prepublish": "node scripts/build-grammar.js",

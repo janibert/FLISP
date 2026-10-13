@@ -74,6 +74,42 @@ test('Shift+Tab with two cursors: blanks are deleted and the other cursor moves 
   assert.deepStrictEqual(editor.selections.map((s) => [s.active.line, s.active.character]), [[0, 12], [1, 12]]);
 });
 
+// Writes raw bytes (VS Code hides BOM, line endings and encoding) and opens the file.
+async function openBytes(name, bytes) {
+  const file = path.join(workspace(), name);
+  fs.writeFileSync(file, bytes);
+  const doc = await vscode.workspace.openTextDocument(file);
+  await vscode.window.showTextDocument(doc);
+  return doc;
+}
+
+test('file bytes: a BOM is reported on line 1, with a quick fix', async () => {
+  const doc = await openBytes('bom.sflisp', Buffer.concat([Buffer.from([0xEF, 0xBB, 0xBF]), Buffer.from(SOURCE)]));
+  await diagnosticsWhen(doc, (l) => l.some((d) => d.startsWith('flisp 1: The file starts with an invisible byte order mark')), 'BOM error expected');
+  const actions = await vscode.commands.executeCommand('vscode.executeCodeActionProvider', doc.uri, new vscode.Range(0, 0, 0, 1));
+  assert.ok(actions.some((a) => /Save with Encoding/.test(a.title)), `quick fix expected: ${actions.map((a) => a.title)}`);
+});
+
+test('file bytes: a lone CR is reported, Ctrl+S writes uniform line endings and it disappears', async () => {
+  const doc = await openBytes('cr.sflisp', Buffer.from('\tORG\t$20\r\n\tNOP\r\tNOP\n\tEND\r\n', 'latin1'));
+  await diagnosticsWhen(doc, (l) => l.some((d) => d.startsWith('flisp 2: This line ends with CR only')), 'lone CR warning expected');
+  await vscode.commands.executeCommand('workbench.action.files.save');
+  await diagnosticsWhen(doc, (l) => l.length === 0, 'no warning after saving');
+  assert.ok(!fs.readFileSync(doc.uri.fsPath, 'latin1').includes('\r\t'), 'uniform line endings on disk');
+});
+
+test('file bytes: strings are counted in the encoding of the file (cp1252: one byte per character)', async () => {
+  await vscode.workspace.getConfiguration('files').update('encoding', 'windows1252', vscode.ConfigurationTarget.Global);
+  try {
+    const doc = await openBytes('cp1252.sflisp', Buffer.from('\tORG\t$20\n\tFCS\t"åäö"\nNext\tNOP\n\tBRA\tNext\n', 'latin1'));
+    assert.strictEqual(doc.lineAt(1).text, '\tFCS\t"åäö"', 'VS Code decodes the file as cp1252');
+    await diagnosticsWhen(doc, (l) => l.some((d) => d.startsWith("flisp 2: 'å' is not 7-bit ASCII")), 'non-ASCII warning expected');
+    assert.match(await hoverText(doc, 3, 6), /\$23/); // $20 + 3 bytes (6 in UTF-8)
+  } finally {
+    await vscode.workspace.getConfiguration('files').update('encoding', undefined, vscode.ConfigurationTarget.Global);
+  }
+});
+
 test('hover: address of a label, description of an instruction', async () => {
   const doc = await openFile('hover.sflisp', SOURCE);
   assert.match(await hoverText(doc, 4, 6), /Start[\s\S]*\$20/);

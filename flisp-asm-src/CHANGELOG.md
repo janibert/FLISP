@@ -12,6 +12,7 @@
 - *Assemble* (F7) on an unsaved file with *Assemble on Save* no longer starts qaflisp twice; qaflisp runs for one file one at a time, so its output files cannot be written by two processes at once.
 - The read-only copy of a file in a diff view (Source Control) no longer gets its own live diagnostics, so errors are not listed twice in *Problems*.
 - **Characters outside 7-bit ASCII** (å, ä, ö, ü, €, …): FLISP and DigiFlisp know only ASCII, so such characters belong in comments only. In labels, mnemonics and operands they are an error with a clear message (instead of follow-up errors); in a string (`FCS "på"`) they get a warning, and their size is counted as qaflisp does — the bytes of the file's encoding (2 bytes for `å` in UTF-8, 1 in a single-byte code page), so later addresses stay right; a character constant `'å'` is an error in a UTF-8 file (as in qaflisp) and a warning otherwise.
+- **What VS Code hides but qaflisp reads**: a byte order mark (UTF-8 with BOM — qaflisp loses line 1) and UTF-16 files are errors; lines that end with a lone CR (old Mac format, or mixed line endings from other editors — qaflisp joins such lines, so its line numbers shift) get a warning. Quick fixes: *Save with uniform line endings* and *Save with Encoding*. The encoding of the file (UTF-8 or a single-byte code page such as Windows-1252) is detected from its bytes.
 - Shift+Tab with several cursors: every cursor goes back to its previous column, also when blanks are deleted before another cursor.
 
 ## 0.10.1

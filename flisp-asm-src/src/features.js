@@ -3,6 +3,7 @@
 // hover, rename and the live symbol check while typing.
 // For .fmem files: the syntax check of src/fmem.js while typing.
 
+const fs = require('fs');
 const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
 const { describeValue } = require('./checks');
@@ -10,6 +11,7 @@ const instructionHover = require('./instructionHover');
 const { analyzeFmem, normalizeFmemColumns, formatFmemLine, fmemCompletionsAt, fmemCommandTakesArgument } = require('./fmem');
 const format = require('./format');
 const { completionsAt, fieldAt } = require('./completion');
+const { inspectBytes, encodingFor, fileProblems } = require('./fileBytes');
 
 const COMPLETION_KIND = {
   mnemonic: vscode.CompletionItemKind.Keyword,
@@ -34,14 +36,32 @@ const SYMBOL_KIND = {
   constant: vscode.SymbolKind.Constant,
 };
 
-const cache = new Map(); // uri -> { version, analysis }
+const cache = new Map(); // uri -> { version, encoding, analysis }
+const fileInfo = new Map(); // uri -> inspectBytes() of the file on disk (undefined: not readable)
+
+// Reads the bytes of the file qaflisp will read; done on refresh while the editor shows the
+// file as it is on disk (a changed document keeps the last result: encoding and BOM stay).
+function updateFileInfo(doc) {
+  const key = doc.uri.toString();
+  if (doc.isDirty && fileInfo.has(key)) return;
+  let info;
+  try {
+    if (doc.uri.scheme === 'file' && fs.statSync(doc.uri.fsPath).size < 4e6) info = inspectBytes(fs.readFileSync(doc.uri.fsPath));
+  } catch (e) {
+    info = undefined; // not on disk (yet)
+  }
+  fileInfo.set(key, info);
+}
+
+const encodingOf = (doc) => encodingFor(fileInfo.get(doc.uri.toString()), vscode.workspace.getConfiguration('files', doc.uri).get('encoding'));
 
 function analysisOf(doc) {
   const key = doc.uri.toString();
+  const encoding = encodingOf(doc);
   const hit = cache.get(key);
-  if (hit && hit.version === doc.version) return hit.analysis;
-  const analysis = analyze(doc.getText());
-  cache.set(key, { version: doc.version, analysis });
+  if (hit && hit.version === doc.version && hit.encoding === encoding) return hit.analysis;
+  const analysis = analyze(doc.getText(), { encoding });
+  cache.set(key, { version: doc.version, encoding, analysis });
   return analysis;
 }
 
@@ -72,10 +92,17 @@ function register(context, qaflispDiagnostics) {
       return;
     }
     if (doc.languageId !== 'flisp') return;
+    updateFileInfo(doc);
     const analysis = analysisOf(doc);
     // Lines that already carry a qaflisp message keep only that message.
     const qaflispLines = new Set((qaflispDiagnostics.get(doc.uri) || []).map((d) => d.range.start.line));
-    live.set(doc.uri, analysis.diagnostics.filter((d) => !qaflispLines.has(d.line)).map((d) => toDiagnostic(d, 'flisp')));
+    const info = fileInfo.get(doc.uri.toString());
+    // BOM and line endings: always shown, they explain what qaflisp reports (code: for the quick fixes)
+    const file = info ? fileProblems(info, { dirty: doc.isDirty, lineLength: (l) => (l < doc.lineCount ? doc.lineAt(l).text.length : 0) }) : [];
+    live.set(doc.uri, [
+      ...file.map((d) => Object.assign(toDiagnostic(d, 'flisp'), { code: d.kind })),
+      ...analysis.diagnostics.filter((d) => !qaflispLines.has(d.line)).map((d) => toDiagnostic(d, 'flisp')),
+    ]);
   }
 
   function refreshSoon(doc) {
@@ -87,6 +114,7 @@ function register(context, qaflispDiagnostics) {
   context.subscriptions.push(
     live,
     vscode.workspace.onDidOpenTextDocument(refresh),
+    vscode.workspace.onDidSaveTextDocument(refresh), // the bytes on disk may have changed (encoding, line endings)
     vscode.workspace.onDidChangeTextDocument((e) => refreshSoon(e.document)),
     vscode.workspace.onDidCloseTextDocument((doc) => {
       const key = doc.uri.toString();
@@ -94,7 +122,27 @@ function register(context, qaflispDiagnostics) {
       timers.delete(key);
       live.delete(doc.uri);
       cache.delete(key);
+      fileInfo.delete(key);
     }),
+
+    // Quick fixes for what VS Code hides but qaflisp reads (src/fileBytes.js).
+    vscode.languages.registerCodeActionsProvider(SELECTOR, {
+      provideCodeActions(doc, range, ctx) {
+        const actions = [];
+        const add = (title, command, diagnostic) => {
+          const action = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix);
+          action.command = { title, command };
+          action.diagnostics = [diagnostic];
+          actions.push(action);
+        };
+        for (const d of ctx.diagnostics) {
+          if (d.source !== 'flisp') continue;
+          if (d.code === 'loneCr' || d.code === 'crLineEnds') add('Save with uniform line endings', 'workbench.action.files.save', d);
+          if (d.code === 'bom' || d.code === 'utf16') add('Change the encoding (Save with Encoding → UTF-8)', 'workbench.action.editor.changeEncoding', d);
+        }
+        return actions;
+      },
+    }, { providedCodeActionKinds: [vscode.CodeActionKind.QuickFix] }),
 
     vscode.languages.registerDefinitionProvider(SELECTOR, {
       provideDefinition(doc, pos) {
