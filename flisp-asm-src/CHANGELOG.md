@@ -2,22 +2,12 @@
 
 ## Unreleased
 
-- Live check: `#` in a directive (`EQU #$FB`, `ORG #$00`, `FCB 2,#3`) or inside an instruction's operand (`LDA 2+#1`) is underlined while typing, with the corrected line in the message.
-- Live check: a blank inside an `FCB` list ends the operand. `FCB 1,2, 3,4` is an error (as in qaflisp); `FCB 1,2 3,4` or `FCB 1,2 ,3` gets a warning, because qaflisp silently treats the rest as a comment and assembles only `1,2`.
-- Numbers whose digits do not fit their base (`0a`, `%000200100`, `$FG`, `0x1F`, a lone `$` or `%`) are shown as invalid and underlined while typing, as qaflisp reports them; for decimal numbers with hex letters the message suggests the hex form (`$0A`).
-- Live check: values that do not fit in a byte (outside −256…255) are errors, as in qaflisp ("Value is truncated") — in `FCB` lists, immediate data, addresses and offsets, also when computed from expressions and `EQU` constants (`FCB 200+100`, `LDA #K*4`); expressions are evaluated with qaflisp's operator precedence. `ORG` outside `$00`–`$FF` gets a warning (qaflisp silently uses the low byte), `RMB` with a negative count an error.
-- Live check: errors in expressions are underlined while typing, as qaflisp reports them — missing or extra parentheses (`2*(3`, `2*3)`), a missing value or operator (`2+`, `2**3`, `2(3)`), characters that are not operators (`1<2`, `1=2`), register names in expressions (`FCB X+1`; `PC` is not reserved and is reported as an undefined symbol, as in qaflisp), division by zero (also via `EQU` constants). Two things qaflisp silently accepts get a warning: a missing value before `)` (qaflisp uses 0: `(2+)` is 2) and `~` or `!` after a value (qaflisp drops the value before it: `1~2` is `~2`).
-- Live check: `ORG` and `RMB` with values qaflisp does not know in its first pass are errors — a symbol further down in `ORG` ("Forward reference"), a label further down in `RMB`, and an `EQU` that contains a label or uses a symbol defined after it (qaflisp: "Phase error between passes" at a later label, or "Undetermined size"). The explanation of a phase error now points to that `ORG`/`RMB` line. `BRA *+2` explains that there is no location counter `*`.
-- Live check with addresses: the extension computes the address of every line as qaflisp does (checked against qaflisp's listings). Branches whose target is out of reach (−128…+127) are errors, values with labels are checked too (`FCB Start+300`, `LDA` of a label beyond `$FF`), and the first line that runs beyond `$FF` gets a warning (qaflisp silently wraps around to `$00`).
-- Hover over a label shows its address, over a constant its value — in hex, decimal and binary.
-- `FCB (1,2)`: the message explains that every comma separates two values, also inside parentheses, and suggests `FCB 1,2`.
-- Live check: an operand after an instruction that has none (`PSHA $3`, `NOP #5`, `ASLA Data`) gets a warning — qaflisp silently treats it as a comment; for `ASLA Data` the message suggests `ASL Data`. Plain words after the mnemonic stay comments.
-- Live check: a label named like a mnemonic (`Neg EQU 3`, `End NOP`) is no longer reported, as in qaflisp; a mnemonic alone in column 1 (`NOP`) gets a warning, because it is only a label and generates no code.
-- Live check: `FCS ""`, `FCS` without closing quote and `RMB 0` are errors, as in qaflisp. Labels with `$` or `.` (`A$b`), which qaflisp accepts, are no longer reported.
-- `%` after an operand is the modulo operator (`7%3`), not a binary number — in the highlighting and in the live check. Operators `% & | ^ << >> && || ~ !` are highlighted like `+ - * /`.
-- Suggestions: none inside a number (`%001d…`, `$F`) and none after a `#` that qaflisp rejects (`EQU #`, `LDA 2+#`). After a comma in an `FCB` list, symbols are suggested again (previously nothing).
-- Marketplace page: `#5` in code examples (e.g. `LDA #5`) is no longer turned into a link to a GitHub issue.
-- README: the limitations no longer claim that there is no autocompletion.
+- **Many more checks while typing**, as qaflisp reports them: numbers whose digits do not fit their base (`0a`, `%0102`), errors in expressions (parentheses, missing values or operators, register names, division by zero), values that do not fit in a byte (`FCB 300`, also computed from labels and constants), branches that are too far, `#` in directives, and `ORG`/`RMB` values that qaflisp cannot know in its first pass (its *Forward reference* and *Phase error*).
+- **Warnings where qaflisp says nothing** but the code probably does not do what was meant: an operand after an instruction that has none (`ASLA Data` — suggests `ASL Data`), a blank inside an `FCB` list, a mnemonic alone in column 1 (only a label, no code), code beyond `$FF`, `ORG` outside the memory.
+- **Addresses**: the extension computes the address of every line as qaflisp does; hover over a label shows its address, over a constant its value in hex, decimal and binary.
+- Expressions are evaluated with qaflisp's precedence (only two levels: `2<<1+1` is 5); `%` after a value is modulo.
+- Fixes: labels named like a mnemonic (`Neg EQU 3`) and labels with `$` or `.` are no longer reported; no suggestions inside numbers; symbols are suggested after a comma in `FCB` lists; `#5` on the Marketplace page is no longer turned into an issue link.
+- **Shorter Marketplace page**; all details moved to the [user guide](https://github.com/janibert/FLISP/blob/main/docs/user-guide.md), and [examples to try](https://github.com/janibert/FLISP/tree/main/flisp-asm-src/test/examples) each check.
 
 ## 0.9.0
 

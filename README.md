@@ -4,6 +4,8 @@ A Visual Studio Code extension for the assembly language of the FLISP processor 
 
 - **Syntax highlighting** for `.sflisp` source files and `.fmem` memory images
 - **Assembling from the editor** with qaflisp (`F7` or the ▶ button): errors and warnings are underlined in the source and listed in the *Problems* panel
+- **Checks while typing** that find qaflisp's errors before assembling — and warn where qaflisp silently accepts code that probably does something else than meant
+- **Hover** for instructions (operation, opcode, cycles, flags) and for labels and constants (address, value)
 - Works with the `qaflisp` assembler of an installed [DigiFlisp](https://www.gbgmv.se/studies.html) on Windows, Linux and macOS
 
 ![A FLISP running-light program highlighted in VS Code](flisp-asm-src/images/running-light.png)
@@ -14,7 +16,9 @@ In VS Code, open the Extensions view (`Ctrl+Shift+X`), search for **FLISP Assemb
 
 ## User Documentation
 
-See the extension's README: [`flisp-asm-src/README.md`](flisp-asm-src/README.md).
+- **[User guide](docs/user-guide.md)** — all features and every check with examples.
+- **[Examples](flisp-asm-src/test/examples)** — small files to try the checks in the editor.
+- The Marketplace page ([`flisp-asm-src/README.md`](flisp-asm-src/README.md)) is a short summary. Keep it short; new details go into the user guide.
 
 
 ## Building and Development
@@ -68,7 +72,8 @@ If a colour looks wrong: `Ctrl+Shift+P` → *Developer: Inspect Editor Tokens an
 
 ```
 CONTRIBUTING.md   how to contribute; FLISP / qaflisp / DigiFlisp domain knowledge
-flisp-asm-src/    the extension (source, grammars, tests)
+docs/user-guide.md  the complete user documentation (linked from the Marketplace page)
+flisp-asm-src/    the extension (source, grammars, tests); its README.md is the short Marketplace page
 ```
 
 ### Source Files

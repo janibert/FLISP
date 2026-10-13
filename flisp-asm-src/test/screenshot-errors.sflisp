@@ -8,6 +8,7 @@ Loop        STA     #LEDS           ; send pattern to the LEDs
             LSLA                    next pattern
             BNE     loop            ; until all bits are through
             TFR     A,X
+            ASLA    LEDS            ; shift the LED pattern
  Wait       NOP
             BRA     Start
 
