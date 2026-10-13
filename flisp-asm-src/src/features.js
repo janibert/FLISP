@@ -1,10 +1,12 @@
 // Language features for .sflisp files, built on src/symbols.js:
 // Go to Definition, Find References, occurrence highlighting, Outline,
 // hover, rename and the live symbol check while typing.
+// For .fmem files: the syntax check of src/fmem.js while typing.
 
 const vscode = require('vscode');
 const { analyze, symbolAt, checkNewName } = require('./symbols');
 const instructionHover = require('./instructionHover');
+const { analyzeFmem } = require('./fmem');
 
 const SELECTOR = { language: 'flisp' };
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
@@ -38,20 +40,23 @@ function register(context, qaflispDiagnostics) {
   const live = vscode.languages.createDiagnosticCollection('flisp');
   const timers = new Map();
 
+  const toDiagnostic = (d, source) => {
+    const diag = new vscode.Diagnostic(rangeOf(d), d.message,
+      d.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
+    diag.source = source;
+    return diag;
+  };
+
   function refresh(doc) {
+    if (doc.languageId === 'fmem') {
+      live.set(doc.uri, analyzeFmem(doc.getText()).map((d) => toDiagnostic(d, 'fmem')));
+      return;
+    }
     if (doc.languageId !== 'flisp') return;
     const analysis = analysisOf(doc);
     // Lines that already carry a qaflisp message keep only that message.
     const qaflispLines = new Set((qaflispDiagnostics.get(doc.uri) || []).map((d) => d.range.start.line));
-    const list = analysis.diagnostics
-      .filter((d) => !qaflispLines.has(d.line))
-      .map((d) => {
-        const diag = new vscode.Diagnostic(rangeOf(d), d.message,
-          d.severity === 'warning' ? vscode.DiagnosticSeverity.Warning : vscode.DiagnosticSeverity.Error);
-        diag.source = 'flisp';
-        return diag;
-      });
-    live.set(doc.uri, list);
+    live.set(doc.uri, analysis.diagnostics.filter((d) => !qaflispLines.has(d.line)).map((d) => toDiagnostic(d, 'flisp')));
   }
 
   function refreshSoon(doc) {

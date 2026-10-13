@@ -88,6 +88,12 @@ The extension adds this explanation to the message and links to the nearest mult
 - Exit code: on Windows the number of errors; the **Linux build exits with 0 even on errors**. Count errors from the messages, not from the exit code.
 - `.fmem` format: header lines (`QAflisp - …`, `(c) GMV …`, `File: …`), then ` # ClearAllMemory`, ` # ClearAllRegisters` and one ` #setMemory  20=F0` line per byte (leading space, two spaces after `#setMemory`).
 
+### `.fmem` commands in DigiFlisp
+
+DigiFlisp loads `.fmem` files ("FLISP memory source"). Its program contains these command names, in lower case — so they are compared case-insensitively: `setmemory`, `setregister`, `clearallmemory`, `clearallregisters`. They are translated to internal commands (`wm<addr><data>` for memory; `wa`, `wx`, `wy`, `wp`, `ws`, `wc` for the registers A, X, Y, PC, SP, CC). Lines without `#` are ignored, which is why qaflisp's header lines do no harm.
+
+The syntax of `#setRegister` is not documented and qaflisp never writes it; the check (`src/fmem.js`) therefore knows the command but does not check its arguments. If you know the exact format (e.g. `#setRegister A=05`?), please add it.
+
 ## The instruction table (`src/instructions.js`)
 
 The table behind the hover and the mnemonic lists has one entry per mnemonic qaflisp accepts (84 instructions with 265 variants, plus 6 directives and 2 lab instructions). Its data comes from two sources:

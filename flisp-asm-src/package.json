@@ -33,6 +33,7 @@
   "main": "./extension.js",
   "activationEvents": [
     "onLanguage:flisp",
+    "onLanguage:fmem",
     "onCommand:flisp.assemble"
   ],
   "capabilities": {
@@ -46,7 +47,7 @@
   },
   "scripts": {
     "build:grammar": "node scripts/build-grammar.js",
-    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/tokenize-test.js",
+    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/tokenize-test.js",
     "vscode:prepublish": "node scripts/build-grammar.js",
     "package": "vsce package",
     "publish": "vsce publish"

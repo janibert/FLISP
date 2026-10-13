@@ -31,6 +31,8 @@ The grammar follows the *FLISP-Handbok* and the `qaflisp` assembler.
 **`.fmem` (memory image)** — `#setMemory` directives with address and value;
 `# ClearAllMemory` and `# ClearAllRegisters` with their own highlighting (scope `keyword.control.reset`); the header lines are shown as comments.
 
+`.fmem` files are also checked while typing: unknown commands (with a hint for typos such as `#setMemroy`), addresses and values that are not 1–2 hex digits (`#setMemory 2G=05`), a missing `=` or value, a command without `#` (DigiFlisp ignores such lines), and an address that is set twice.
+
 ### Line structure and comments
 
 qaflisp reads every line as `[Label] Mnemonic [Operand] [Comment]`:
