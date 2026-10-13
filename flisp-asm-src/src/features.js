@@ -8,6 +8,18 @@ const { analyze, symbolAt, checkNewName } = require('./symbols');
 const instructionHover = require('./instructionHover');
 const { analyzeFmem } = require('./fmem');
 const format = require('./format');
+const { completionsAt, fieldAt } = require('./completion');
+
+const COMPLETION_KIND = {
+  mnemonic: vscode.CompletionItemKind.Keyword,
+  directive: vscode.CompletionItemKind.Keyword,
+  lab: vscode.CompletionItemKind.Keyword,
+  code: vscode.CompletionItemKind.Function,
+  data: vscode.CompletionItemKind.Variable,
+  constant: vscode.CompletionItemKind.Constant,
+  register: vscode.CompletionItemKind.EnumMember,
+  undefined: vscode.CompletionItemKind.Reference,
+};
 
 const SELECTOR = { language: 'flisp' };
 const KIND_TEXT = { code: 'label', data: 'data', constant: 'constant' };
@@ -160,6 +172,30 @@ function register(context, qaflispDiagnostics) {
         for (const s of [...defs, ...refs]) edit.replace(doc.uri, rangeOf(s), newName);
         return edit;
       },
+    }),
+
+    // Completion depending on the column of the cursor (src/completion.js).
+    vscode.languages.registerCompletionItemProvider(SELECTOR, {
+      provideCompletionItems(doc, pos) {
+        const items = completionsAt(doc.lineAt(pos.line).text, pos.character, analysisOf(doc));
+        return items.map((x) => {
+          const item = new vscode.CompletionItem(x.label, COMPLETION_KIND[x.kind]);
+          item.detail = x.detail;
+          item.sortText = x.sort;
+          return item;
+        });
+      },
+    }, '#', ','),
+
+    // Tab while the suggestion list is open: accept, and in the label or mnemonic column
+    // go on to the next column, so one Tab is enough (in the operand an expression may continue).
+    vscode.commands.registerCommand('flisp.acceptSuggestionAndNextColumn', async () => {
+      await vscode.commands.executeCommand('acceptSelectedSuggestion');
+      const editor = vscode.window.activeTextEditor;
+      if (!editor || editor.document.languageId !== 'flisp') return;
+      const pos = editor.selection.active;
+      const { field } = fieldAt(editor.document.lineAt(pos.line).text, pos.character);
+      if (field === 'label' || field === 'mnemonic') await vscode.commands.executeCommand('flisp.nextColumn');
     }),
 
     // Column layout: formatter and Tab / Shift+Tab to the next / previous column.

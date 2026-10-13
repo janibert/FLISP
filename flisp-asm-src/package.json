@@ -47,7 +47,7 @@
   },
   "scripts": {
     "build:grammar": "node scripts/build-grammar.js",
-    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/format-test.js && node test/tokenize-test.js",
+    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/instructions-test.js && node test/fmem-test.js && node test/format-test.js && node test/completion-test.js && node test/tokenize-test.js",
     "vscode:prepublish": "node scripts/build-grammar.js",
     "package": "vsce package",
     "publish": "vsce publish"
@@ -121,7 +121,8 @@
         "editor.insertSpaces": true,
         "editor.detectIndentation": false,
         "editor.tabSize": 4,
-        "editor.guides.indentation": false
+        "editor.guides.indentation": false,
+        "editor.wordBasedSuggestions": "off"
       }
     },
     "commands": [
@@ -140,6 +141,11 @@
       {
         "command": "flisp.previousColumn",
         "title": "Move to previous column",
+        "category": "FLISP"
+      },
+      {
+        "command": "flisp.acceptSuggestionAndNextColumn",
+        "title": "Accept suggestion and move to next column",
         "category": "FLISP"
       }
     ],
@@ -170,6 +176,10 @@
         {
           "command": "flisp.previousColumn",
           "when": "false"
+        },
+        {
+          "command": "flisp.acceptSuggestionAndNextColumn",
+          "when": "false"
         }
       ]
     },
@@ -188,6 +198,11 @@
         "command": "flisp.previousColumn",
         "key": "shift+tab",
         "when": "editorTextFocus && editorLangId == flisp && !editorReadonly && !editorTabMovesFocus && !inSnippetMode && !suggestWidgetVisible && !inlineSuggestionVisible && !editorHasSelection"
+      },
+      {
+        "command": "flisp.acceptSuggestionAndNextColumn",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == flisp && suggestWidgetVisible && !inSnippetMode && !editorHasSelection"
       }
     ],
     "configuration": {

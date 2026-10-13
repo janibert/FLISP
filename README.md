@@ -90,6 +90,7 @@ src/instructionHover.js          hover text for mnemonics and directives (no VS 
 src/addressing.js                addressing mode of an operand, operand check (no VS Code API)
 src/fmem.js                      syntax check for .fmem files (no VS Code API)
 src/format.js                    column layout: tab stops and formatter (no VS Code API)
+src/completion.js                context-sensitive suggestions (no VS Code API)
 src/qaflisp.js                   finding and running qaflisp, parsing its output
 bin/qaflisp.exe                  bundled qaflisp 1.3 (GMV, see THIRD-PARTY-NOTICES.md)
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)
@@ -100,6 +101,7 @@ test/symbols-test.js             tests for src/symbols.js
 test/instructions-test.js        tests for the instruction table and the hover
 test/fmem-test.js                tests for src/fmem.js
 test/format-test.js              tests for src/format.js, incl. same machine code before/after formatting
+test/completion-test.js          tests for src/completion.js
 test/tokenize-test.js            scope test
 test/sample.sflisp               sample code for the test
 test/running-light.sflisp        example program (used for the screenshot)

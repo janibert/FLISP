@@ -63,6 +63,25 @@ The extension knows every label and `EQU` constant in the file:
 
 The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` are different — the message suggests the other spelling), register names such as `X` cannot be symbols, and nothing after `END` counts. After assembling, qaflisp's own messages take the place of the live check on the same lines; editing a line removes the outdated qaflisp message there.
 
+## Suggestions
+
+Suggestions (`Ctrl+Space`, or while typing) depend on the column you are in:
+
+| Column | Suggested |
+|---|---|
+| label | symbols that are used but not defined yet |
+| mnemonic | mnemonics with a short description, directives, lab instructions |
+| operand of a branch, jump or `END` | code labels first |
+| after `#` | constants (`EQU`) first |
+| after a comma | only the index forms the instruction allows, e.g. `X+`, `-Y` after `LDA ,`, or `X`, `Y`, `SP` after `CLR 2,` |
+| operand of `TFR` / `EXG` | the allowed register pairs |
+| other operands | data labels, constants, code labels |
+| comment | nothing |
+
+VS Code's general word suggestions are switched off for FLISP, so only these appear.
+
+In the label and mnemonic columns, **Tab** accepts the suggestion and moves on to the next column in one go (`JM` + Tab → `JMP`, cursor in the operand column). In the operand column Tab only accepts, because an expression may continue (`Tab+1`). Enter always just accepts.
+
 ## Columns: Tab and formatting
 
 FLISP code reads best as a table: label, mnemonic, operand, comment. The extension keeps these columns aligned (default: columns 0, 12, 20 and 36):
