@@ -9,6 +9,7 @@ let output;
 let diagnostics;
 let extensionRoot;
 let languageFeatures;
+const latestRun = new Map(); // document uri -> number of its latest qaflisp run
 
 function activate(context) {
   extensionRoot = context.extensionPath;
@@ -93,6 +94,11 @@ async function assemble(doc, { fromSave }) {
     debugInfo: config.get('debugInfo'),
   };
 
+  const key = doc.uri.toString();
+  const run = (latestRun.get(key) || 0) + 1;
+  latestRun.set(key, run);
+  const version = doc.version;
+
   let result;
   try {
     result = await runQaflisp(exe, sourceFile, options);
@@ -107,6 +113,11 @@ async function assemble(doc, { fromSave }) {
   output.appendLine(result.output.trimEnd());
   output.appendLine('');
 
+  // Line numbers of an older text, or an older run that finished last: not shown.
+  if (latestRun.get(key) !== run || doc.version !== version || doc.isClosed) {
+    output.appendLine('(Not shown in the editor: the file changed, or was assembled again, while qaflisp was running.)');
+    return;
+  }
   publishDiagnostics(doc, result.messages);
   languageFeatures.refresh(doc); // the live check steps back on lines with a qaflisp message
 

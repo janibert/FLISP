@@ -8,6 +8,7 @@
 - Live check: `FCS` follows qaflisp more closely: an operand that is no string (`FCS Text`, `FCS 'A'`) is reported; `FCS ""` is no empty string for qaflisp, it reads on to the next `"` or the end of the line (comment included), and the addresses below now account for that; words after the closing quote are ignored instead of reported as undefined symbols.
 - Live check: an undefined start symbol after `END` (`END Strat`) is a warning, not an error — qaflisp only warns and assembles the file.
 - Assembling a file in a folder with letters like `Ö` or `å` (`C:\Users\Björn\…`) showed qaflisp's errors in the notification but not in the editor; they were attached to a garbled path in *Problems*. The output channel now shows such paths correctly too.
+- qaflisp messages are no longer placed on the wrong lines when the file is edited while qaflisp runs (e.g. with *Assemble on Save* and auto save); such a result is only written to the output channel.
 
 ## 0.10.1
 

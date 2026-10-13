@@ -93,6 +93,17 @@ if (qaflisp) {
     assert.ok(fs.existsSync(path.join(workspace(), 'assemble.s19')), 'qaflisp writes its output next to the source');
   });
 
+  test('assemble: a result for an older text is not shown', async () => {
+    const doc = await openFile('stale.sflisp', `${SOURCE}\tBRA\tStrat\n\tEND\n`);
+    const assembling = vscode.commands.executeCommand('flisp.assemble', doc.uri);
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(doc.uri, new vscode.Position(0, 0), '; a new first line\n');
+    assert.ok(await vscode.workspace.applyEdit(edit)); // while qaflisp runs (or before: then it is saved first)
+    await assembling;
+    const list = await diagnosticsWhen(doc, (l) => l.some((d) => d.startsWith('flisp 7:') || d.startsWith('qaflisp 7:')), 'error in line 7 expected');
+    assert.ok(!list.some((d) => d.startsWith('qaflisp 6:')), `qaflisp message on the old line: ${list}`);
+  });
+
   test('assemble: messages reach the document in a folder with non-ASCII letters', async () => {
     const doc = await openFile('Övning å/umlaut.sflisp', `${SOURCE}\tBRA\tStrat\n\tEND\n`);
     await vscode.commands.executeCommand('flisp.assemble', doc.uri);
