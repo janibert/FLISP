@@ -26,11 +26,14 @@ Requires Node.js 20 or later. The extension lives in `flisp-asm-src/`; run all c
 ```bash
 cd flisp-asm-src
 npm install          # fetches vsce and the test libraries
-npm test             # unit tests for the qaflisp integration, then the grammar tests
-npm run package      # creates flisp-asm-<version>.vsix
+npm run build:grammar  # generates syntaxes/flisp.tmLanguage.json from the template and src/mnemonics.js
+npm test             # grammar up to date?, qaflisp integration, symbol analysis, grammar tests
+npm run package      # creates flisp-asm-<version>.vsix (regenerates the grammar first)
 ```
 
-The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/` and `node_modules/` out of the package, and every `.exe` except `bin/qaflisp.exe`.
+The `.vsix` ends up in the project folder. `.vscodeignore` keeps `test/`, `scripts/`, the grammar template and `node_modules/` out of the package, and every `.exe` except `bin/qaflisp.exe`.
+
+**The `.sflisp` grammar is generated.** Edit `syntaxes/flisp.tmLanguage.template.json` (structure, scopes) or `src/mnemonics.js` (mnemonic, directive and register lists), never `syntaxes/flisp.tmLanguage.json` directly; then run `npm run build:grammar`. `npm test` fails if the generated grammar is out of date.
 
 To develop without packaging: open the repository folder in VS Code and press `F5` (configuration *Run FLISP extension* in `.vscode/launch.json`). This launches a second VS Code window with the extension from `flisp-asm-src/` loaded and the `test/` folder open — open a `.sflisp` file there, e.g. `running-light.sflisp`, and check the highlighting directly.
 
@@ -71,12 +74,14 @@ In `flisp-asm-src/`:
 ```
 package.json                     metadata, file extensions, command, settings, build scripts
 language-configuration.json      comment character, bracket pairs
-syntaxes/flisp.tmLanguage.json   grammar for .sflisp
+syntaxes/flisp.tmLanguage.template.json  grammar template for .sflisp (edit this)
+syntaxes/flisp.tmLanguage.json   grammar for .sflisp (generated, do not edit)
 syntaxes/fmem.tmLanguage.json    grammar for .fmem
+scripts/build-grammar.js         inserts the lists from src/mnemonics.js into the template
 extension.js                     command, diagnostics, settings (VS Code side)
 src/features.js                  definition, references, outline, hover, rename, live check (VS Code side)
 src/symbols.js                   symbol analysis of a .sflisp file (no VS Code API)
-src/mnemonics.js                 lists of mnemonics, directives and registers
+src/mnemonics.js                 lists of mnemonics, directives and registers (single source)
 src/qaflisp.js                   finding and running qaflisp, parsing its output
 bin/qaflisp.exe                  bundled qaflisp 1.3 (GMV, see THIRD-PARTY-NOTICES.md)
 images/icon.png                  logo (DigiFlisp icon, extracted from digiflisp.exe)
@@ -93,11 +98,7 @@ test/qaflisp-output.fmem         qaflisp output for the test
 
 ## Customizing
 
-The grammar is in `syntaxes/flisp.tmLanguage.json`. A new custom instruction goes in three places:
-
-1. in `statement-operand`, group 3 (`MOVE|CMJEQ`) — or in `statement-inherent` if it takes no operand,
-2. in the list of the first `label` rule, so that it is flagged as an error in column 1,
-3. in `src/mnemonics.js` (`LAB`, or `INHERENT` if it takes no operand), so that the symbol analysis knows it.
+A new custom instruction goes in one place: the list `LAB` in `src/mnemonics.js` (or `INHERENT` if it takes no operand). Then run `npm run build:grammar`. The grammar, the column-1 check and the symbol analysis all use these lists.
 
 Colours come from the active VS Code theme, not from the extension. The scopes are chosen so that the default themes (2026 Dark/Light, Dark/Light Modern) give each element its own colour. In particular, directives (`support.type.directive`) and instructions (`keyword.other.instruction`) must never share a scope family — students should see at a glance what is an instruction for the assembler and what is an instruction for the processor. The test suite checks this.
 

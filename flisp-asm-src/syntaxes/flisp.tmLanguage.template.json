@@ -1,0 +1,162 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "_generated": "{{GENERATED_NOTE}}",
+  "name": "FLISP Assembly",
+  "scopeName": "source.flisp",
+  "comment": "Zeilenaufbau wie bei qaflisp: [Label] Mnemonic [Operand] [Kommentar]. Spalte 1 ist immer ein Label. Der Operand endet am ersten Leerzeichen (ausser in Strings), alles danach ist Kommentar - auch ohne ';'. Bei Befehlen ohne Operand ist alles nach dem Mnemonic Kommentar.",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#label" },
+    { "include": "#statement-inherent" },
+    { "include": "#statement-operand" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.semicolon.flisp",
+      "match": ";.*$"
+    },
+
+    "label": {
+      "comment": "Spalte 1 ist immer ein Label. Steht dort ein Mnemonic oder eine Direktive, meldet qaflisp 'Illegal mnemonic' - das wird als Fehler markiert.",
+      "patterns": [
+        {
+          "match": "^(?i:({{ALL}}))(?![A-Za-z0-9_])",
+          "captures": {
+            "1": { "name": "invalid.illegal.mnemonic-in-label-column.flisp" }
+          }
+        },
+        {
+          "match": "^([A-Za-z_][A-Za-z0-9_]*)(:)?",
+          "captures": {
+            "1": { "name": "entity.name.function.label.flisp" },
+            "2": { "name": "punctuation.separator.label.flisp" }
+          }
+        }
+      ]
+    },
+
+    "statement-inherent": {
+      "comment": "Befehle ohne Operand. Alles danach ist Kommentar. (END gehoert nicht hierher: es hat ein optionales Startsymbol als Operand.)",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:({{INHERENT_FLOW}})|({{INHERENT}}))(?![A-Za-z0-9_])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.flisp" },
+        "2": { "name": "keyword.other.instruction.flisp" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#trailing-comment" }
+      ]
+    },
+
+    "statement-operand": {
+      "comment": "Befehle und Direktiven mit Operand. END hat ein optionales Startsymbol (Startadresse im S9-Record der .s19). Gruppe 3 sind die selbst definierten Laborinstruktionen.",
+      "begin": "(?i)(?<![A-Za-z0-9_])(?:({{FLOW}})|({{DIRECTIVES}})|({{LAB}})|({{OPERAND_INSTRUCTIONS}}))(?![A-Za-z0-9_])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.flisp" },
+        "2": { "name": "support.type.directive.flisp" },
+        "3": { "name": "entity.name.type.instruction.custom.flisp" },
+        "4": { "name": "keyword.other.instruction.flisp" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#operand" }
+      ]
+    },
+
+    "operand": {
+      "comment": "Beginnt beim ersten Zeichen nach dem Mnemonic und endet am Zeilenende. Das erste Leerzeichen ausserhalb eines Strings leitet den Kommentar ein.",
+      "begin": "(?=[^ \\t;])",
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#string" },
+        { "include": "#char" },
+        { "include": "#immediate" },
+        { "include": "#number" },
+        { "include": "#indexed" },
+        { "include": "#register" },
+        { "include": "#symbol" },
+        { "include": "#separator" },
+        { "include": "#operator" },
+        { "include": "#trailing-comment" }
+      ]
+    },
+
+    "trailing-comment": {
+      "match": "(?<=\\S|^)[ \\t]+(\\S.*)$",
+      "captures": {
+        "1": { "name": "comment.line.trailing.flisp" }
+      }
+    },
+
+    "string": {
+      "name": "string.quoted.double.flisp",
+      "begin": "\"",
+      "end": "\"|$",
+      "patterns": [
+        { "name": "constant.character.escape.flisp", "match": "\\\\." }
+      ]
+    },
+
+    "char": {
+      "name": "constant.character.flisp",
+      "match": "'.'"
+    },
+
+    "immediate": {
+      "name": "keyword.operator.immediate.flisp",
+      "match": "#"
+    },
+
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.flisp",
+          "match": "\\$[0-9A-Fa-f]+"
+        },
+        {
+          "name": "constant.numeric.binary.flisp",
+          "match": "%[01]+"
+        },
+        {
+          "name": "constant.numeric.decimal.flisp",
+          "match": "(?<![A-Za-z0-9_$%])-?[0-9]+(?![A-Za-z0-9_])"
+        }
+      ]
+    },
+
+    "indexed": {
+      "comment": "n,SP  n,X  A,Y  ,X+  ,X-  ,+X  ,-X - indiziert wird nur ueber X, Y und SP.",
+      "match": "(,)([+-])?(?i:(SP|X|Y))([+-])?(?![A-Za-z0-9_])",
+      "captures": {
+        "1": { "name": "punctuation.separator.operand.flisp" },
+        "2": { "name": "keyword.operator.increment.flisp" },
+        "3": { "name": "variable.language.register.flisp" },
+        "4": { "name": "keyword.operator.increment.flisp" }
+      }
+    },
+
+    "register": {
+      "name": "variable.language.register.flisp",
+      "match": "(?i)(?<![A-Za-z0-9_])({{REGISTERS}})(?![A-Za-z0-9_])"
+    },
+
+    "symbol": {
+      "comment": "Verwendung eines Symbols im Operanden (Label oder EQU-Konstante). Ob es definiert ist, kann die Grammatik nicht pruefen - sie sieht nur die aktuelle Zeile. Register werden vorher erkannt.",
+      "name": "variable.parameter.symbol.flisp",
+      "match": "(?<![A-Za-z0-9_$%])[A-Za-z_][A-Za-z0-9_]*"
+    },
+
+    "separator": {
+      "name": "punctuation.separator.operand.flisp",
+      "match": ","
+    },
+
+    "operator": {
+      "name": "keyword.operator.arithmetic.flisp",
+      "match": "[+\\-*/]"
+    }
+  }
+}

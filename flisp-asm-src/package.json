@@ -45,7 +45,9 @@
     }
   },
   "scripts": {
-    "test": "node test/qaflisp-test.js && node test/symbols-test.js && node test/tokenize-test.js",
+    "build:grammar": "node scripts/build-grammar.js",
+    "test": "node scripts/build-grammar.js --check && node test/qaflisp-test.js && node test/symbols-test.js && node test/tokenize-test.js",
+    "vscode:prepublish": "node scripts/build-grammar.js",
     "package": "vsce package",
     "publish": "vsce publish"
   },

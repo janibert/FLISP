@@ -8,3 +8,5 @@ package-lock.json
 !bin/qaflisp.exe
 images/*
 !images/icon.png
+scripts/**
+syntaxes/*.template.json
