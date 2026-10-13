@@ -68,7 +68,7 @@ The check works like qaflisp: **symbols are case-sensitive** (`Loop` and `loop` 
 FLISP code reads best as a table: label, mnemonic, operand, comment. The extension keeps these columns aligned (default: columns 0, 12, 20 and 36):
 
 - **Tab** jumps to the next column, filling with blanks; **Shift+Tab** goes back to the previous one (removing the blanks before the cursor). With a selection, Tab indents as usual.
-- **Format Document** (`Shift+Alt+F`) or *Format Selection* aligns all lines. Only blanks change, never the meaning: comments without `;` stay comments, strings stay untouched, and lines with a structural error (e.g. an indented label) are left as they are, so the live check can still point to them.
+- **Format Document** (`Shift+Alt+F`, or right-click in the editor) aligns all lines; with text selected, *Format Selection* (`Ctrl+K Ctrl+F`, also in the context menu) aligns only the selected lines. Only blanks change, never the meaning: comments without `;` stay comments, strings stay untouched, and lines with a structural error (e.g. an indented label) are left as they are, so the live check can still point to them.
 - `.sflisp` files use blanks instead of tab characters, and VS Code's indentation guides (useful for nested code, not for assembly) are switched off for FLISP.
 
 To format on every save, add `"[flisp]": { "editor.formatOnSave": true }` to your settings. Other columns: set `flisp.columns`. If you would like vertical lines at the columns, add `"[flisp]": { "editor.rulers": [12, 20, 36] }` — they run through every line, including comment lines.
