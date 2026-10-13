@@ -37,6 +37,16 @@ test("'#' only at the start of an instruction's operand, never in directives (ex
   ]);
 });
 
+test('directives without operand or label; the layout goes on after them as in qaflisp', () => {
+  const a = analyze('\tORG\n\tRMB\t; size?\nK\tEQU\n\tEQU\t5\n\tFCB\n\tFCS\n\tORG\t$20\n\tORG\t1+\n\tRMB\tNix\nL\tNOP\n');
+  assert.deepStrictEqual(errors(a).map((d) => [d.line, d.kind]), [
+    [0, 'missingOperand'], [1, 'missingOperand'], [2, 'missingOperand'], [3, 'equWithoutLabel'],
+    [4, 'missingOperand'], [5, 'missingOperand'], [7, 'missingValue'], [8, 'undefinedSymbol'],
+  ]);
+  assert.strictEqual(a.layout.stoppedAt, undefined);
+  assert.deepStrictEqual(a.layout.lines.get(9), { address: 0x20, size: 1 });
+});
+
 test('FCB list with a blank: error after a trailing comma, warning if bytes follow', () => {
   const a = analyze("\tFCB\t1,2, 3,4\n\tFCB\t1,2 ,3\n\tFCB\t1,2 3,4\n\tFCB\t1,2,\n\tFCB\t1,2 %0101,'A'\n" +
     '\tFCB\t1,2 first two\n\tFCB\t1,2 Start,3\nStart\tFCB\t1,2 4 bytes\n\tFCB\t1,2 ; ok\n\tFCB\t1,2 3 cycles, then more\n');

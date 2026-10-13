@@ -60,12 +60,12 @@ function expressionSyntax(text) {
 const syntaxFails = (text) => expressionSyntax(text) !== 'ok';
 
 // Bytes of an FCS operand: the characters of the string ("\x" counts once). Measured quirks:
-// FCS "" writes 2 bytes, a string without closing quote gets an extra newline byte, FCS #"AB" none.
+// a string without closing quote gets an extra newline byte (FCS "" is one, see scanString),
+// FCS #"AB" writes nothing.
 function fcsSize(operand) {
   const [string] = tokenize(operand);
   if (!string || string.type !== 'string') return 0;
-  if (!string.closed) return string.length + 1;
-  return string.length === 0 ? 2 : string.length;
+  return string.closed ? string.length : string.length + 1;
 }
 
 // Size of an instruction line in bytes (0 if qaflisp rejects its syntax).
@@ -103,16 +103,15 @@ function computeLayout(records, twice, valueOf, unknownInPassOne = new Set()) {
     const mn = p.mnemonic && isMnemonic(p.mnemonic.text) ? p.mnemonic.text.toUpperCase() : undefined;
     const operand = p.operand ? p.operand.text : undefined;
     if (mn === 'ORG') {
+      // qaflisp ignores an ORG without a value (missing, malformed or undefined operand)
       const v = operand === undefined ? undefined : evaluate(operand, known);
-      if (v === undefined) return { lines, labels, beyond, stoppedAt: line };
-      loc = v;
+      if (v !== undefined) loc = v;
     }
     if (p.label && mn !== 'EQU') labels.set(p.label.name, loc);
     let size = 0;
     if (mn === 'RMB') {
       const v = operand === undefined ? undefined : evaluate(operand, known);
-      if (v === undefined) return { lines, labels, beyond, stoppedAt: line };
-      size = Math.max(v, 0);
+      size = v === undefined ? 0 : Math.max(v, 0); // no value: no bytes, as in qaflisp
     } else if (mn === 'FCB' && operand !== undefined) {
       const items = listItems(operand);
       const bad = items.findIndex((item) => syntaxFails(item.text));

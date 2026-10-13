@@ -4,6 +4,8 @@
 
 - Live check: `LDA #1` in column 1 also defines the label `LDA`, as in qaflisp, so a second `LDA …` in column 1 is reported as a multiple definition.
 - Live check: a comma inside a character constant (`CMPA #','`, `LDA ',',X`) is no longer taken for an index register; such lines were wrongly reported as errors and shifted all later addresses.
+- Live check: directives without their operand (`ORG`, `RMB`, `FCB`, `FCS`, `K EQU`) and `EQU` without a label are reported, as qaflisp does. Such an `ORG` or `RMB` no longer stops the address computation (qaflisp ignores the line), so branch ranges and addresses below it are still checked.
+- Live check: `FCS` follows qaflisp more closely: an operand that is no string (`FCS Text`, `FCS 'A'`) is reported; `FCS ""` is no empty string for qaflisp, it reads on to the next `"` or the end of the line (comment included), and the addresses below now account for that; words after the closing quote are ignored instead of reported as undefined symbols.
 
 ## 0.10.1
 

@@ -1,0 +1,15 @@
+	ORG
+	NOP
+	ORG	$20
+	RMB	; size?
+K	EQU
+	EQU	5
+	FCB
+	FCS
+	NOP
+L	ORG
+	ORG	1+
+	RMB	(2
+	ORG	Nix
+	BRA	L
+	END

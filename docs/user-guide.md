@@ -63,6 +63,9 @@ A label may be named like a mnemonic (`Neg EQU 3`, `End NOP`) — qaflisp accept
 | `STA #5`, `CLR ,X+` | error — the instruction has no such addressing mode; the message lists the allowed forms |
 | `TFR A,X` | error — register pair not allowed |
 | `LDA`, `#5,X`, `,X`, `3,PC` | error — missing or malformed operand |
+| `ORG`, `RMB`, `FCB`, `FCS`, `K EQU` without a value | error — the directive needs an operand |
+| `EQU 5` without a name in column 1 | error — no label for `EQU` |
+| `FCS Text`, `FCS 'A'`, `FCS ""` | error — `FCS` needs a string with at least one character; for single bytes use `FCB` |
 | `ASLA Data`, `NOP #5` | warning — the instruction has no operand, qaflisp silently treats the rest as a comment; for `ASLA Data` the message suggests `ASL Data` |
 
 ![Warning on ASLA LEDS: ASLA has no operand, qaflisp silently treats LEDS as a comment; to work on memory write ASL LEDS](../flisp-asm-src/images/live-check-warning.png)

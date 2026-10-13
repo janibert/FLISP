@@ -1,0 +1,12 @@
+	ORG	$20
+	FCS	""
+	FCS	""  ;c
+	FCS	"" ab"cd
+	FCS	""x"
+	FCS	"",1
+	FCS	"a""b"
+	FCS	Foo
+	FCS	"a"Foo
+	FCS	'A'
+	NOP
+	END

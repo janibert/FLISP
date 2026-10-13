@@ -13,6 +13,12 @@
 function scanString(text, start) {
   let i = start + 1;
   let length = 0;
+  // qaflisp takes the first character as content even if it is '"': "" is no empty string,
+  // it goes on to the next '"' or to the end of the line ("" ab"cd is the string '" ab').
+  if (text[i] === '"') {
+    i++;
+    length++;
+  }
   while (i < text.length && text[i] !== '"') {
     i += text[i] === '\\' ? 2 : 1;
     length++;

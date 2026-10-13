@@ -62,7 +62,24 @@ function fcbListProblem(p, at) {
     `Blank in the ${mn} list — the rest of the line is a comment, so ${lost} is not assembled; remove the blank: ${mn} ${operand},${lost}`);
 }
 
-const OPERAND_KIND = { missing: 'missingOperand', bad: 'badOperand', mode: 'addressingMode', pair: 'registerPair' };
+// Directives without their label or operand. qaflisp ignores such a line (no bytes, ORG keeps
+// the address) and reports it as below; "No label" comes first.
+const DIRECTIVE_EXAMPLE = { ORG: 'ORG $20', RMB: 'RMB 4', FCB: 'FCB 1,2,3', EQU: 'K EQU 5' };
+
+function directiveProblem(p, at) {
+  const mn = p.mnemonic.text.toUpperCase();
+  if (mn === 'EQU' && !p.label) {
+    return at(p.mnemonic, 'error', 'equWithoutLabel', 'No label for "EQU" — the name of the constant must stand in column 1, e.g. K EQU 5');
+  }
+  if (p.operand) return undefined;
+  if (mn === 'FCS') return at(p.mnemonic, 'error', 'missingOperand', 'Bad operand syntax — FCS needs a string, e.g. FCS "TEXT"');
+  if (DIRECTIVE_EXAMPLE[mn]) {
+    return at(p.mnemonic, 'error', 'missingOperand', `Unterminated expression — ${mn} needs a value, e.g. ${DIRECTIVE_EXAMPLE[mn]}`);
+  }
+  return undefined;
+}
+
+const OPERAND_KIND ={ missing: 'missingOperand', bad: 'badOperand', mode: 'addressingMode', pair: 'registerPair' };
 
 // Problems of the line structure that qaflisp reports as "Illegal mnemonic" / "Illegal label".
 function lineProblems(p, line) {
@@ -100,6 +117,8 @@ function lineProblems(p, line) {
     if (fcb) return [fcb];
   }
   if (p.mnemonic) {
+    const directive = directiveProblem(p, at);
+    if (directive) return [directive];
     // Addressing mode / operand of an instruction (qaflisp: "Illegal Addressing Mode",
     // "Illegal register combination", "Syntax Error").
     const problem = checkOperand(p.mnemonic.text, p.operand ? p.operand.text : undefined);
@@ -169,11 +188,15 @@ function valueProblems(p, line, valueOf, firstDef, layout) {
   const mn = p.mnemonic.text.toUpperCase();
   const at = (start, end, severity, kind, message) => ({ line, start: p.operand.start + start, end: p.operand.start + end, severity, kind, message });
   if (mn === 'FCS') {
-    // qaflisp: "Bad operand syntax"; it writes 2 bytes for "" and adds a newline byte to an open string
+    // qaflisp: "Bad operand syntax"; it adds a newline byte to an open string. "" is no empty
+    // string for qaflisp: the second '"' is the first character and the string goes on (scanString).
     const o = p.operand.text;
-    if (o === '""') return [at(0, 2, 'error', 'emptyString', 'Bad operand syntax: empty string — FCS needs at least one character (qaflisp still writes 2 bytes)')];
     const [string] = tokenize(o);
-    if (string.type === 'string' && !string.closed) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
+    if (string.type === 'string' && !string.closed && o.startsWith('""')) {
+      return [at(0, o.length, 'error', 'emptyString', 'Bad operand syntax: empty string — FCS needs at least one character; qaflisp takes the second \'"\' as a character and reads on to the end of the line')];
+    }
+    if (string.type !== 'string') return [at(0, o.length, 'error', 'fcsNotString', 'Bad operand syntax — FCS takes a string in double quotes, e.g. FCS "TEXT"; for single bytes use FCB')];
+    if (!string.closed) return [at(0, o.length, 'error', 'unterminatedString', 'Bad operand syntax: the string has no closing \'"\' (qaflisp adds a newline byte)')];
     return [];
   }
   // A syntax problem is the only message of the line; values out of range are all reported.
