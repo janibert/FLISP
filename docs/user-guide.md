@@ -239,6 +239,23 @@ qaflisp is looked for in this order:
 
 So a newer qaflisp in your workspace, on the `PATH` or next to DigiFlisp always takes precedence over the bundled one. The *FLISP* output channel shows which `qaflisp.exe` was used. If none is found, a message offers to pick it with a file dialog.
 
+## Characters, encodings and line endings
+
+**Write FLISP programs in 7-bit ASCII.** FLISP and DigiFlisp know only ASCII. Letters such as å, ä, ö, ü, ß or € belong in comments only — there they are fine in every encoding.
+
+qaflisp reads the raw bytes of the file, while VS Code hides some of them. The live check therefore also looks at the bytes of the saved file:
+
+| In the file | What qaflisp does | Live check |
+|---|---|---|
+| `Över NOP`, `LDA #Låda` | error in every encoding | error — only ASCII outside comments |
+| `FCS "på"` | writes the bytes of the file: `å` is 2 bytes in UTF-8, 1 in Windows-1252 | warning; later addresses are computed with the real size |
+| `LDA #'å'` | error in a UTF-8 file, the code-page value otherwise | error in UTF-8, warning otherwise |
+| UTF-8 **with BOM** (an invisible mark some editors put at the start) | *Illegal mnemonic* in line 1, the line is lost | error on line 1; quick fix: status bar → *Save with Encoding* → *UTF-8* |
+| UTF-16 | cannot read the file | error; save as UTF-8 |
+| lines ending with **CR only** (old Mac format, or mixed line endings from other editors) | no line break: two lines become one, line numbers shift | warning; quick fix: save with Ctrl+S — VS Code writes uniform line endings |
+
+CRLF (Windows) and LF (Linux, macOS) both work. The encoding (UTF-8 or a single-byte code page such as Windows-1252 / ISO 8859-1) is detected from the bytes; for a pure ASCII file the setting `files.encoding` decides — which does not matter as long as the program is ASCII.
+
 ## Limitations
 
 - No debugger — use DigiFlisp to run and debug the program.

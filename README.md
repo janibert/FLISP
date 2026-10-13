@@ -112,6 +112,7 @@ src/addressing.js                addressing mode of an operand, operand check (n
 src/expression.js                reading and evaluating operand expressions like qaflisp (no VS Code API)
 src/layout.js                    addresses of all lines, computed like qaflisp (no VS Code API)
 src/fmem.js                      syntax check for .fmem files (no VS Code API)
+src/fileBytes.js                 BOM, line endings and encoding of the file on disk (no VS Code API)
 src/format.js                    column layout: tab stops and formatter (no VS Code API)
 src/completion.js                context-sensitive suggestions (no VS Code API)
 src/qaflisp.js                   finding and running qaflisp, parsing its output
@@ -126,6 +127,7 @@ test/layout-test.js              tests for src/layout.js; addresses compared wit
 test/check-probes.js             probe sources shared by checks-test.js and layout-test.js
 test/instructions-test.js        tests for the instruction table and the hover
 test/fmem-test.js                tests for src/fmem.js
+test/fileBytes-test.js           tests for src/fileBytes.js; BOM and lone CR compared with qaflisp
 test/format-test.js              tests for src/format.js, incl. same machine code before/after formatting
 test/completion-test.js          tests for src/completion.js
 test/examples-test.js            checks the OK / ERROR / WARNING comments in test/examples/ (live check and qaflisp)

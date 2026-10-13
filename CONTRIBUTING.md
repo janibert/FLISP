@@ -28,6 +28,15 @@ Every line is `[Label] Mnemonic [Operand] [Comment]`.
 - A `;` directly after an operand without a space (`LDA #1;x`) gives *Syntax Error*. Comments starting with `*` are not supported.
 - `END` takes an optional start symbol, which sets the start address in the S9 record of the `.s19` file (it does not appear in the `.fmem` file). Text after the symbol is a comment. An undefined symbol gives the misleading warning *start symbol 'X' is defined* (meaning: not defined). Nothing after `END` is assembled.
 
+### Bytes of the file: encoding, BOM, line endings
+
+qaflisp reads the raw bytes; VS Code hides BOM, line endings and encoding. Measured with the Windows and the Linux build of qaflisp 1.3 (identical results):
+
+- Only LF and CRLF end a line. A lone CR (old Mac format, mixed line endings) is no line break: `NOP\rNOP` is one line with one `NOP`, and all later line numbers are one lower than in VS Code; a file with CR only is a single line. VS Code shows a line break at every CR and writes uniform line endings when the file is saved with Ctrl+S (`TextDocument.save()` does not write an unchanged document).
+- A UTF-8 byte order mark is read as part of line 1: *Illegal mnemonic*, the line is lost (also before a comment or an empty line; an `ORG` there is ignored). VS Code keeps the BOM when saving.
+- Non-ASCII bytes in a label, mnemonic or operand are an error in every encoding (*Illegal label*, *Illegal mnemonic*, *Bad operand syntax*, *Illegal character*). In an `FCS` string they are written byte by byte without a message: `"åäö"` is `C3 A5 C3 A4 C3 B6` in UTF-8 and `E5 E4 F6` in Windows-1252. A character constant `'å'` is *Illegal character* in UTF-8 (more than one byte between the quotes) and the code-page value in a single-byte encoding. Comments may contain anything.
+- Because the first non-ASCII byte outside a comment or string is already an error, the bytes before a *Position[n]* are always ASCII: n is also the column in the editor.
+
 ### Syntax details
 
 - Directives: `ORG`, `EQU`, `FCB`, `FCS`, `RMB`, `END`. `FDB`, `SET` and `INCLUDE` give *Illegal mnemonic*.
