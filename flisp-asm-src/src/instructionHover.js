@@ -3,11 +3,10 @@
 
 const { INSTRUCTIONS, MODES, DIRECTIVES, LAB } = require('./instructions');
 const { parseLine } = require('./symbols');
-const { modeOf, checkOperand } = require('./addressing');
+const { modeOf, operandSyntax, checkOperand } = require('./addressing');
 
 function variantSyntax(mn, v) {
-  if (v.mode === 'reg') return `${mn} ${v.operand}`;
-  const s = MODES[v.mode].syntax;
+  const s = operandSyntax(v);
   return s ? `${mn} ${s}` : mn;
 }
 

@@ -2,7 +2,8 @@ const vscode = require('vscode');
 const path = require('path');
 const { findQaflisp, findDigiflispDirs, bundledQaflisp, runQaflisp } = require('./src/qaflisp');
 const features = require('./src/features');
-const { analyze, explainPhaseError } = require('./src/symbols');
+const { analyze } = require('./src/symbols');
+const { explainPhaseError } = require('./src/checks');
 
 let output;
 let diagnostics;

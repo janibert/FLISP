@@ -95,7 +95,8 @@ syntaxes/fmem.tmLanguage.json    grammar for .fmem
 scripts/build-grammar.js         inserts the mnemonic lists into the template
 extension.js                     command, diagnostics, settings (VS Code side)
 src/features.js                  definition, references, outline, hover, rename, live check (VS Code side)
-src/symbols.js                   symbol analysis of a .sflisp file (no VS Code API)
+src/symbols.js                   parsing lines, definitions and references of a .sflisp file (no VS Code API)
+src/checks.js                    the live checks and their order; phase-error explanation (no VS Code API)
 src/instructions.js              instruction set: variants, opcodes, bytes, cycles, flags, operations;
                                  directives and lab instructions (single source)
 src/mnemonics.js                 mnemonic lists derived from src/instructions.js, register names

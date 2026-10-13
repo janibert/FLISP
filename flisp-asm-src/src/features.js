@@ -4,7 +4,8 @@
 // For .fmem files: the syntax check of src/fmem.js while typing.
 
 const vscode = require('vscode');
-const { analyze, symbolAt, checkNewName, describeValue } = require('./symbols');
+const { analyze, symbolAt, checkNewName } = require('./symbols');
+const { describeValue } = require('./checks');
 const instructionHover = require('./instructionHover');
 const { analyzeFmem, normalizeFmemColumns, formatFmemLine, fmemCompletionsAt, fmemCommandTakesArgument } = require('./fmem');
 const format = require('./format');

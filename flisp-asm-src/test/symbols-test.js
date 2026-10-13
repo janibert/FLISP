@@ -5,7 +5,8 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { analyze, parseLine, symbolAt, checkNewName, explainPhaseError } = require('../src/symbols');
+const { analyze, parseLine, symbolAt, checkNewName } = require('../src/symbols');
+const { explainPhaseError } = require('../src/checks');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 
 const tests = [];

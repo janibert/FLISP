@@ -46,18 +46,18 @@ function expressionParts(mn, operand) {
 // 'partial': a complete value followed by one of = . : < > ("Bad delimiter", "Reached
 // unreacheable point") — FCB still writes that value and stops the list there.
 // Values (undefined symbols, range, division by zero) do not matter.
-function syntaxOf(text) {
+function expressionSyntax(text) {
   if (text === '' || hashPositions(text).length) return 'fail';
   if (tokenize(text).some((t) => t.type === 'number' && numberValue(t.text) === undefined)) return 'fail';
   const { problem } = parse(text);
   if (!problem || problem.severity !== 'error' || problem.kind === 'divideByZero') return 'ok';
   const c = text[problem.start];
-  if ('=.:<>'.includes(c) && problem.kind === 'unexpectedChar' && problem.start > 0 && syntaxOf(text.slice(0, problem.start)) === 'ok') {
+  if ('=.:<>'.includes(c) && problem.kind === 'unexpectedChar' && problem.start > 0 && expressionSyntax(text.slice(0, problem.start)) === 'ok') {
     return c === '<' || c === '>' ? 'partial<>' : 'partial';
   }
   return 'fail';
 }
-const syntaxFails = (text) => syntaxOf(text) !== 'ok';
+const syntaxFails = (text) => expressionSyntax(text) !== 'ok';
 
 // Bytes of an FCS operand: the characters of the string ("\x" counts once). Measured quirks:
 // FCS "" writes 2 bytes, a string without closing quote gets an extra newline byte, FCS #"AB" none.
@@ -75,7 +75,7 @@ function instructionSize(mn, operand) {
   if (operand === undefined) return inherent ? inherent.bytes : 0; // missing operand: Syntax Error
   if (checkOperand(mn, operand) || checkImmediateMarker(mn, operand)) return 0;
   // LDA 1<2 is assembled (qaflisp quirk), LDA 1=2 is not
-  if (expressionParts(mn, operand).some((part) => !['ok', 'partial<>'].includes(syntaxOf(part.text)))) return 0;
+  if (expressionParts(mn, operand).some((part) => !['ok', 'partial<>'].includes(expressionSyntax(part.text)))) return 0;
   const { mode } = modeOf(mn, operand);
   const variant = d.variants.find((v) => v.mode === mode);
   return variant ? variant.bytes : 0;
@@ -117,7 +117,7 @@ function computeLayout(records, twice, valueOf, unknownInPassOne = new Set()) {
       const items = listItems(operand);
       const bad = items.findIndex((item) => syntaxFails(item.text));
       // a value followed by a stray delimiter (1=2, 1.5) is still written, then the list ends
-      size = bad < 0 ? items.length : bad + (syntaxOf(items[bad].text).startsWith('partial') ? 1 : 0);
+      size = bad < 0 ? items.length : bad + (expressionSyntax(items[bad].text).startsWith('partial') ? 1 : 0);
     } else if (mn === 'FCS' && operand !== undefined) {
       size = fcsSize(operand);
     } else if (mn && INSTRUCTIONS[mn]) {

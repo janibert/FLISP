@@ -39,7 +39,8 @@ function modeOf(mnemonic, operand) {
   return { mode: BRANCHES.has(mn) ? 'rel' : 'abs' };
 }
 
-const syntaxOf = (v) => (v.mode === 'reg' ? v.operand : MODES[v.mode].syntax);
+// Operand of a variant as written in the source: "n,X", "#Data", "A,CC" ('' without operand).
+const operandSyntax = (v) => (v.mode === 'reg' ? v.operand : MODES[v.mode].syntax);
 
 // Checks the operand of an instruction. Returns undefined if it is fine, otherwise
 // { kind, message } with kind 'missing' | 'bad' | 'mode' | 'pair'.
@@ -47,7 +48,7 @@ function checkOperand(mnemonic, operand) {
   const mn = mnemonic.toUpperCase();
   const d = INSTRUCTIONS[mn];
   if (!d || d.variants.every((v) => v.mode === 'inh')) return undefined; // unknown, or no operand
-  const allowed = [...new Set(d.variants.map(syntaxOf))].join('  ');
+  const allowed = [...new Set(d.variants.map(operandSyntax))].join('  ');
   if (!operand) return { kind: 'missing', message: `Missing operand — ${mn} needs one of: ${allowed}` };
   const used = modeOf(mn, operand);
   if (used.mode === 'bad') return { kind: 'bad', message: `Bad operand '${operand}' — ${used.reason}` };
@@ -87,4 +88,4 @@ function checkImmediateMarker(mnemonic, operand) {
   return { offset, message: `Illegal character '#' — '#' marks immediate data and may only stand at the start of the operand, e.g. ${mn} #5` };
 }
 
-module.exports = { modeOf, checkOperand, checkImmediateMarker, hashPositions, BRANCHES };
+module.exports = { modeOf, operandSyntax, checkOperand, checkImmediateMarker, hashPositions, BRANCHES };
