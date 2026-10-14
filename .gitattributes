@@ -1,2 +1,4 @@
 # Shell scripts run in WSL / Linux: keep LF line endings on every checkout
 *.sh text eol=lf
+# Examples with a BOM, CR line endings or Windows-1252: keep their bytes exactly
+flisp-asm-src/test/examples/*.sflisp -text

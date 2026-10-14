@@ -1,0 +1,17 @@
+; 11 - Line endings
+; qaflisp ends a line at LF (Linux, macOS) or CR LF (Windows) - this file
+; mixes both, that is fine. An old Mac editor ends lines with CR only:
+; VS Code shows a line break there, qaflisp does not. It reads the next
+; line as part of this one - as a comment - and its line numbers shift.
+;
+; Try it:
+;   - Line 14 ends with CR only: qaflisp never assembles line 15.
+;   - Press Ctrl+S (or use the quick fix): VS Code saves uniform line
+;     endings and the warning disappears. git checkout restores the example.
+
+            ORG     $20             ; OK
+Start       LDA     #1              ; OK
+            INCA                    ; WARNING: this line ends with CR only            INCA                    ; OK: qaflisp reads this line as a comment
+            STA     $FB             ; OK: this line and the next end with LF only
+            BRA     Start           ; OK
+            END

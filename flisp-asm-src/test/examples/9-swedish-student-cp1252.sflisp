@@ -1,0 +1,25 @@
+; 9 - The same characters in Windows-1252 (an older editor or code page)
+; This file is not UTF-8: VS Code shows the letters å, ä, ö as question
+; marks until you reopen it: click "UTF-8" in the status bar, "Reopen with Encoding",
+; "Western (Windows 1252)". The messages are the same either way.
+;
+; Try it - compare with 8-swedish-student.sflisp:
+;   - Line 22: "Klart på" is 8 bytes here (one byte per letter), so
+;     Tecken in line 23 is at $2F = $27 + 8 - hover over it.
+;   - Line 23: 'ö' is only a warning here - qaflisp writes $F6, but a
+;     UTF-8 copy of the file would fail. Write the value as a number.
+;   - Labels and symbols with å, ä, ö are errors in every encoding.
+
+; Rinnande ljus - laboration 2, grupp 7 (Åsa Lindström & Björn Ek)
+
+            ORG     $20             ; OK
+Start       LDA     #1              ; OK: börja med lysdiod 0
+Loop        STA     $FB             ; OK: tänd lysdioden
+            LSLA                    ; OK: nästa lysdiod åt vänster
+            BNE     Loop            ; OK: tills alla åtta är klara
+Färdig      BRA     Start           ; ERROR: ä in a label
+
+Text        FCS     "Klart på"      ; WARNING: å in a string - 1 byte here
+Tecken      FCB     'ö'             ; WARNING: the value depends on the code page
+Slut        FCB     0               ; OK
+            END

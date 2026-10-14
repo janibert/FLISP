@@ -1,13 +1,14 @@
 // Tests for the examples in test/examples/. Runs without VS Code.
 // Every code line there ends with "; OK", "; ERROR" or "; WARNING": the live check must report
 // exactly that. If qaflisp is found, it must report an error on every ERROR line and on no other
-// line, apart from the listed exceptions.
+// line, apart from the listed exceptions. The files are read like the extension reads them
+// (test/source-file.js): some examples are about encodings, a BOM and line endings.
 
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { analyze } = require('../src/symbols');
+const { readSource, diagnosticsOf, editorLineOf, splitLines } = require('./source-file');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 
 const tests = [];
@@ -21,14 +22,15 @@ const QAFLISP_SILENT = {
   '5-org-rmb-first-pass.sflisp': [26, 30],
 };
 
-const expectations = (source) => source.split(/\r?\n/)
+const expectations = (source) => splitLines(source)
   .map((text, line) => ({ line, tag: (/;\s*(OK|ERROR|WARNING)\b/.exec(text) || [])[1] }))
   .filter((e) => e.tag);
 
 for (const name of files) {
   test(`${name}: the live check reports what the comments say`, () => {
-    const source = fs.readFileSync(path.join(dir, name), 'utf8');
-    const diagnostics = analyze(source).diagnostics;
+    const read = readSource(path.join(dir, name));
+    const { source } = read;
+    const diagnostics = diagnosticsOf(read);
     const wrong = [];
     for (const { line, tag } of expectations(source)) {
       const here = diagnostics.filter((d) => d.line === line);
@@ -51,11 +53,13 @@ if (realExe) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flisp-examples-'));
   for (const name of files) {
     test(`${name}: qaflisp reports an error exactly on the ERROR lines`, async () => {
-      const source = fs.readFileSync(path.join(dir, name), 'utf8');
+      const read = readSource(path.join(dir, name));
+      const { source } = read;
       const file = path.join(tmp, name);
-      fs.writeFileSync(file, source); // a copy, so that qaflisp's output files stay out of the repository
+      fs.writeFileSync(file, read.bytes); // a copy, so that qaflisp's output files stay out of the repository
       const r = await runQaflisp(realExe, file, { warnings: true });
-      const theirs = new Set(r.messages.filter((m) => m.severity === 'error').map((m) => m.line - 1));
+      const editorLine = editorLineOf(read);
+      const theirs = new Set(r.messages.filter((m) => m.severity === 'error').map((m) => editorLine(m.line)));
       const silent = new Set((QAFLISP_SILENT[name] || []).map((n) => n - 1));
       const wrong = [];
       for (const { line, tag } of expectations(source)) {

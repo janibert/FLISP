@@ -110,6 +110,24 @@ test('file bytes: strings are counted in the encoding of the file (cp1252: one b
   }
 });
 
+test('examples: VS Code shows what the OK / ERROR / WARNING comments say (also BOM, CR, Windows-1252)', async () => {
+  const dir = path.join(__dirname, '..', 'examples');
+  const wrong = [];
+  for (const name of fs.readdirSync(dir).filter((n) => n.endsWith('.sflisp')).sort()) {
+    const doc = await openBytes(`examples-${name}`, fs.readFileSync(path.join(dir, name))); // a copy: Ctrl+S would change the example
+    await sleep(500);
+    const diagnostics = vscode.languages.getDiagnostics(doc.uri);
+    for (let line = 0; line < doc.lineCount; line++) {
+      const tag = (/;\s*(OK|ERROR|WARNING)\b/.exec(doc.lineAt(line).text) || [])[1];
+      const here = diagnostics.filter((d) => d.range.start.line === line);
+      const got = here.some((d) => d.severity === vscode.DiagnosticSeverity.Error) ? 'ERROR' : here.length ? 'WARNING' : 'OK';
+      if ((tag || 'OK') !== got) wrong.push(`${name}:${line + 1} expected ${tag || 'nothing'}, got ${got} ${here.map((d) => d.message).join('; ')}`);
+    }
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  }
+  assert.deepStrictEqual(wrong, []);
+});
+
 test('hover: address of a label, description of an instruction', async () => {
   const doc = await openFile('hover.sflisp', SOURCE);
   assert.match(await hoverText(doc, 4, 6), /Start[\s\S]*\$20/);

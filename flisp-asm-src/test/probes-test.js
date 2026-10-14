@@ -19,6 +19,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { analyze } = require('../src/symbols');
+const { inspectBytes } = require('../src/fileBytes');
+const { readSource, diagnosticsOf, editorLineOf, splitLines } = require('./source-file');
 const { findQaflisp, runQaflisp } = require('../src/qaflisp');
 const m = require('../src/mnemonics');
 
@@ -33,11 +35,11 @@ for (const n of fs.readdirSync(probeDir).filter((f) => f.endsWith('.sflisp')).so
 for (const n of fs.readdirSync(__dirname).filter((f) => f.endsWith('.sflisp')).sort()) sources[n] = path.join(__dirname, n);
 const exampleDir = path.join(__dirname, 'examples');
 for (const n of fs.readdirSync(exampleDir).filter((f) => f.endsWith('.sflisp')).sort()) sources[`examples/${n}`] = path.join(exampleDir, n);
-const read = (file) => fs.readFileSync(file, 'utf8');
+const read = readSource; // bytes, encoding and text as the extension sees them
 
-function snapshotOf(source) {
-  const a = analyze(source);
-  const diagnostics = a.diagnostics.slice()
+function snapshotOf(src) {
+  const a = analyze(src.source, { encoding: src.encoding });
+  const diagnostics = diagnosticsOf(src)
     .sort((x, y) => x.line - y.line || x.start - y.start || (x.message < y.message ? -1 : 1))
     .map((d) => `${d.line + 1}:${d.start}-${d.end} ${d.severity}: ${d.message}`);
   const layout = [...a.layout.lines].map(([line, l]) => `${line + 1}: ${l.address} +${l.size}`);
@@ -52,7 +54,7 @@ test('snapshot: live-check messages and addresses are unchanged', () => {
     console.log(`      snapshot written: ${Object.keys(current).length} files`);
     return;
   }
-  const expected = JSON.parse(read(snapshotFile));
+  const expected = JSON.parse(fs.readFileSync(snapshotFile, 'utf8'));
   const wrong = [];
   for (const name of new Set([...Object.keys(expected), ...Object.keys(current)])) {
     if (!expected[name]) { wrong.push(`${name}: new file, not in the snapshot`); continue; }
@@ -71,7 +73,7 @@ test('snapshot: live-check messages and addresses are unchanged', () => {
 test('every live-check message has a kind (code branches on the kind, never on the text)', () => {
   const missing = [];
   for (const [name, file] of Object.entries(sources)) {
-    for (const d of analyze(read(file)).diagnostics) if (!/^[a-z][A-Za-z0-9]*$/.test(d.kind || '')) missing.push(`${name}:${d.line + 1} ${d.message}`);
+    for (const d of diagnosticsOf(read(file))) if (!/^[a-z][A-Za-z0-9]*$/.test(d.kind || '')) missing.push(`${name}:${d.line + 1} ${d.message}`);
   }
   assert.deepStrictEqual(missing, []);
 });
@@ -85,18 +87,20 @@ const realExe = findQaflisp({
 });
 
 // "20 F0 01   17. Start  LDA #1" -> line 16: { address 0x20, bytes 2 } (the listing shows at most 6 bytes)
-function readListing(file) {
+function readListing(file, editorLine = (n) => n - 1) {
   const listing = new Map();
   for (const l of fs.readFileSync(file, 'latin1').split(/\r?\n/)) {
     const r = /^([0-9A-F]{2})((?: [0-9A-F]{2})*)\s+(\d+)\.(.*)$/.exec(l);
-    if (r) listing.set(+r[3] - 1, { address: parseInt(r[1], 16), bytes: r[2].trim() ? r[2].trim().split(' ').length : 0, text: r[4] });
+    if (r) listing.set(editorLine(+r[3]), { address: parseInt(r[1], 16), bytes: r[2].trim() ? r[2].trim().split(' ').length : 0, text: r[4] });
   }
   return listing;
 }
 
-function layoutDifferences(name, source, listing) {
+function layoutDifferences(name, src, listing) {
   const wrong = [];
-  for (const [line, ours] of analyze(source).layout.lines) {
+  const joined = src.info.loneCrLines.length ? src.info.loneCrLines[0] : Infinity; // qaflisp joins the next line to it
+  for (const [line, ours] of analyze(src.source, { encoding: src.encoding }).layout.lines) {
+    if (line > joined) break;
     const theirs = listing.get(line);
     if (!theirs || /^\s*\S*\s+(EQU|ORG|END)\b/i.test(theirs.text)) continue; // no code; the listing shows the value
     const sizeOk = /\bRMB\b/i.test(theirs.text) || theirs.bytes === Math.min(ours.size, 6); // RMB is listed with one byte
@@ -109,21 +113,23 @@ function layoutDifferences(name, source, listing) {
 
 if (realExe) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'flisp-probes-'));
-  const assemble = async (name, source) => {
+  const assemble = async (name, src) => {
     const file = path.join(tmp, name.replace(/[\\/]/g, '-'));
-    fs.writeFileSync(file, source); // a copy: qaflisp's output files stay out of the repository
+    fs.writeFileSync(file, src.bytes); // a copy: qaflisp's output files stay out of the repository
     const r = await runQaflisp(realExe, file, { listFile: true, warnings: true });
-    return { r, listing: readListing(file.replace(/\.sflisp$/, '.lst')) };
+    const editorLine = editorLineOf(src); // a lone CR joins lines for qaflisp
+    for (const m of r.messages) m.line = editorLine(m.line) + 1;
+    return { r, listing: readListing(file.replace(/\.sflisp$/, '.lst'), editorLine) };
   };
 
   test('real qaflisp: layout equals the listing, live errors are where qaflisp reports errors', async () => {
     const wrong = [];
     for (const [name, file] of Object.entries(sources)) {
-      const source = read(file);
-      const lines = source.split(/\r?\n/);
-      const { r, listing } = await assemble(name, source);
-      wrong.push(...layoutDifferences(name, source, listing));
-      const ours = new Set(analyze(source).diagnostics.map((d) => d.line));
+      const src = read(file);
+      const lines = splitLines(src.source);
+      const { r, listing } = await assemble(name, src);
+      wrong.push(...layoutDifferences(name, src, listing));
+      const ours = new Set(diagnosticsOf(src).map((d) => d.line));
       for (const msg of r.messages.filter((x) => x.severity === 'error')) {
         const line = msg.line - 1;
         if (/^Phase error/.test(msg.message) || /^\S*\s+(MOVE|CMJEQ)\b/i.test(lines[line] || '')) continue;
@@ -133,7 +139,7 @@ if (realExe) {
       const theirErrors = r.messages.filter((x) => x.severity === 'error');
       const theirs = new Set(theirErrors.map((x) => x.line - 1));
       const phase = theirErrors.find((x) => /^Phase error/.test(x.message)); // qaflisp reports nothing after it
-      const live = analyze(source).diagnostics.filter((x) => x.severity === 'error');
+      const live = diagnosticsOf(src).filter((x) => x.severity === 'error');
       for (const d of live) {
         if (phase && d.line >= phase.line - 1) continue;
         if (d.kind === 'pass1') continue; // reported at its cause (ORG/RMB), qaflisp at a later line or not at all
@@ -156,9 +162,10 @@ if (realExe) {
       for (const op of forms) lines.push(`\t${mn}${op ? `\t${op}` : ''}`);
     }
     const source = `${lines.join('\n')}\n`;
-    const { listing } = await assemble('all-forms.sflisp', source);
+    const src = { source, bytes: Buffer.from(source), encoding: 'utf8', info: inspectBytes(Buffer.from(source)) };
+    const { listing } = await assemble('all-forms.sflisp', src);
     assert.ok(listing.size > 1000, `only ${listing.size} listing lines`);
-    assert.deepStrictEqual(layoutDifferences('all-forms', source, listing), []);
+    assert.deepStrictEqual(layoutDifferences('all-forms', src, listing), []);
   });
 
   tests.push(['(cleanup)', () => fs.rmSync(tmp, { recursive: true, force: true })]);

@@ -1,0 +1,37 @@
+; 8 - Characters outside ASCII (UTF-8, as VS Code saves files)
+; FLISP and DigiFlisp know only 7-bit ASCII. Letters like å, ä, ö are
+; fine in comments - but not in labels, symbols, strings or characters.
+; Below: a running light, as a Swedish student might write it.
+;
+; Try it:
+;   - Line 27: rename the label Fördröj to Fordroj, and in line 21
+;     the JSR operand too: both errors disappear.
+;   - Line 34: "Klart på" is 9 bytes in UTF-8 (å takes 2 bytes).
+;     Hover over Tecken in line 35: $39 = $30 + 9 bytes.
+;   - Line 35: in UTF-8, 'ö' has 2 bytes between the quotes - no
+;     character constant for qaflisp. Write the value as a number.
+;   - Compare with 9-swedish-student-cp1252.sflisp (same code, other encoding).
+
+; Rinnande ljus - laboration 2, grupp 7 (Åsa Lindström & Björn Ek)
+; Lysdioderna på port $FB tänds en i taget, från höger till vänster.
+
+            ORG     $20             ; OK
+Start       LDA     #1              ; OK: börja med lysdiod 0 (längst till höger)
+Loop        STA     $FB             ; OK: tänd lysdioden på utporten
+            JSR     Fördröj         ; ERROR: ö in a symbol
+            LSLA                    ; OK: nästa lysdiod åt vänster
+            BNE     Loop            ; OK: tills alla åtta är klara
+            BRA     Start           ; OK: börja om från början
+
+; Fördröjning: räkna ner A från 255 till 0, så att ögat hinner se lysdioden
+Fördröj     PSHA                    ; ERROR: ö in a label
+            LDA     #$FF            ; OK: räknare för fördröjningen
+Vanta       DECA                    ; OK: an ASCII label ("vänta" without ä)
+            BNE     Vanta           ; OK
+            PULA                    ; OK: hämta tillbaka lysdiodens bit
+            RTS                     ; OK: tillbaka till huvudprogrammet
+
+Text        FCS     "Klart på"      ; WARNING: å in a string - 2 bytes in UTF-8
+Tecken      FCB     'ö'             ; ERROR: no character constant in UTF-8
+Slut        FCB     0               ; OK
+            END

@@ -254,6 +254,8 @@ qaflisp reads the raw bytes of the file, while VS Code hides some of them. The l
 | UTF-16 | cannot read the file | error; save as UTF-8 |
 | lines ending with **CR only** (old Mac format, or mixed line endings from other editors) | no line break: two lines become one, line numbers shift | warning; quick fix: save with Ctrl+S — VS Code writes uniform line endings |
 
+To try it, open the [examples](https://github.com/janibert/FLISP/tree/main/flisp-asm-src/test/examples) 8 to 11: a running light by a Swedish student in UTF-8 and in Windows-1252, a file with a BOM and one with mixed line endings.
+
 CRLF (Windows) and LF (Linux, macOS) both work. The encoding (UTF-8 or a single-byte code page such as Windows-1252 / ISO 8859-1) is detected from the bytes; for a pure ASCII file the setting `files.encoding` decides — which does not matter as long as the program is ASCII.
 
 ## Limitations

@@ -1,0 +1,16 @@
+﻿; 10 - Byte order mark   ; ERROR: an invisible BOM stands before this line
+; Some editors (e.g. Notepad in older Windows versions) start a UTF-8 file
+; with a byte order mark (BOM). VS Code hides it - the status bar says
+; "UTF-8 with BOM". qaflisp reads it as part of line 1 and reports
+; "Illegal mnemonic"; if line 1 were "ORG $20", the ORG would be lost.
+;
+; Try it:
+;   - Click "UTF-8 with BOM" in the status bar, "Save with Encoding",
+;     "UTF-8": the error in line 1 disappears (or use the quick fix).
+;     git checkout restores the example.
+
+            ORG     $20             ; OK
+Start       LDA     #1              ; OK
+            STA     $FB             ; OK
+            BRA     Start           ; OK
+            END

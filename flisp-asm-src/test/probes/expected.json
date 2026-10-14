@@ -2711,6 +2711,56 @@
   ],
   "stoppedAt": null
  },
+ "examples/10-byte-order-mark.sflisp": {
+  "diagnostics": [
+   "1:0-74 error: The file starts with an invisible byte order mark (UTF-8 with BOM) — qaflisp reads it as part of line 1 (\"Illegal mnemonic\") and loses this line. Save it without BOM: click \"UTF-8 with BOM\" in the status bar, then \"Save with Encoding\" → \"UTF-8\""
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 32 +0",
+   "13: 32 +2",
+   "14: 34 +2",
+   "15: 36 +2",
+   "16: 38 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/11-line-endings.sflisp": {
+  "diagnostics": [
+   "14:0-74 warning: This line ends with CR only — qaflisp sees no line break here, reads the next line as part of this one, and its line numbers are shifted from here on. Press Ctrl+S: VS Code saves the file with uniform line endings"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 32 +0",
+   "13: 32 +2",
+   "14: 34 +1",
+   "15: 35 +1",
+   "16: 36 +2",
+   "17: 38 +2",
+   "18: 40 +0"
+  ],
+  "stoppedAt": null
+ },
  "examples/2-branch-backward.sflisp": {
   "diagnostics": [
    "15:20-24 error: Branch target 0 ($0) is 130 bytes back — a branch reaches only −128…+127 bytes from the next instruction (qaflisp: \"Displacement is out of range\"); use JMP (with the opposite branch around it for a conditional branch)",
@@ -2965,6 +3015,89 @@
    "33: 87 +0",
    "34: 256 +0",
    "35: 256 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/8-swedish-student.sflisp": {
+  "diagnostics": [
+   "21:21-22 error: Illegal character 'ö' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "27:1-2 error: Illegal character 'ö' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "34:20-30 warning: 'å' is not 7-bit ASCII — qaflisp writes the bytes of the file (in this UTF-8 file 2 bytes), and DigiFlisp shows only ASCII; use such characters only in comments",
+   "35:20-23 error: Illegal character — in a UTF-8 file 'ö' has 2 bytes, so qaflisp does not read 'ö' as a character constant; FLISP uses 7-bit ASCII — write the value as a number"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 0 +0",
+   "16: 0 +0",
+   "17: 0 +0",
+   "18: 32 +0",
+   "19: 32 +2",
+   "20: 34 +2",
+   "21: 36 +0",
+   "22: 36 +1",
+   "23: 37 +2",
+   "24: 39 +2",
+   "25: 41 +0",
+   "26: 41 +0",
+   "27: 41 +0",
+   "28: 41 +2",
+   "29: 43 +1",
+   "30: 44 +2",
+   "31: 46 +1",
+   "32: 47 +1",
+   "33: 48 +0",
+   "34: 48 +9",
+   "35: 57 +0",
+   "36: 57 +1",
+   "37: 58 +0"
+  ],
+  "stoppedAt": null
+ },
+ "examples/9-swedish-student-cp1252.sflisp": {
+  "diagnostics": [
+   "20:1-2 error: Illegal character 'ä' — outside comments FLISP uses only 7-bit ASCII (labels and symbols: A–Z, a–z, 0–9, _); use letters like å, ä, ö, ü only in comments",
+   "22:20-30 warning: 'å' is not 7-bit ASCII — qaflisp writes the bytes of the file (one byte of the code page of this file), and DigiFlisp shows only ASCII; use such characters only in comments",
+   "23:20-23 warning: 'ö' is not 7-bit ASCII — its value depends on the code page of the file, and in a UTF-8 file qaflisp rejects it; write the value as a number"
+  ],
+  "layout": [
+   "1: 0 +0",
+   "2: 0 +0",
+   "3: 0 +0",
+   "4: 0 +0",
+   "5: 0 +0",
+   "6: 0 +0",
+   "7: 0 +0",
+   "8: 0 +0",
+   "9: 0 +0",
+   "10: 0 +0",
+   "11: 0 +0",
+   "12: 0 +0",
+   "13: 0 +0",
+   "14: 0 +0",
+   "15: 32 +0",
+   "16: 32 +2",
+   "17: 34 +2",
+   "18: 36 +1",
+   "19: 37 +2",
+   "20: 39 +0",
+   "21: 39 +0",
+   "22: 39 +8",
+   "23: 47 +1",
+   "24: 48 +1",
+   "25: 49 +0"
   ],
   "stoppedAt": null
  }
