@@ -12,8 +12,6 @@ Write, check and assemble programs for the FLISP processor (FLexible Instruction
 
 Install [DigiFlisp](https://www.gbgmv.se/studies.html) first, the extension finds its `qaflisp` automatically. Upload the generated `.fmem` files into the FLISP Computer to execute your program.
 
-Write your programs in plain 7-bit ASCII — letters like å, ä, ö or ü only in comments. The extension warns about anything qaflisp reads differently than VS Code shows it (other characters, an invisible BOM, unusual line endings).
-
 ## Features
 
 - **Checks while you type** — most mistakes are underlined before you assemble: wrong addressing modes, undefined labels, numbers like `0a`, branches that are too far, values that do not fit in a byte. You also get a warning where qaflisp accepts the code **without a message** but probably does something else than you meant, e.g. `ASLA Data` or `FCB 1,2 3,4`.
