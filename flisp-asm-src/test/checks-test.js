@@ -67,6 +67,11 @@ test('non-ASCII: error outside comments, strings and character constants depend 
   assert.strictEqual(nop('singleByte'), 0x20 + 2 + 2);
 });
 
+test("non-ASCII character constants have no known value (VS Code may show a Windows-1252 'ö' as U+FFFD)", () => {
+  const kinds = (src) => analyze(src, { encoding: 'singleByte' }).diagnostics.map((d) => d.kind);
+  assert.deepStrictEqual(kinds("\tFCB\t'�'\nK\tEQU\t'�'\n\tLDA\t#K\n"), ['nonAsciiChar', 'nonAsciiChar']);
+});
+
 test('lines are split like VS Code does: CRLF, LF and a lone CR', () => {
   assert.deepStrictEqual(analyze('\tLDA\tA1\r\n\tLDA\tA2\n\tLDA\tA3\r\tLDA\tA4').diagnostics.map((d) => d.line), [0, 1, 2, 3]);
 });

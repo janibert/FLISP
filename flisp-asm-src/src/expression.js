@@ -169,7 +169,8 @@ function parse(text, valueOf = () => undefined) {
     if (t.type === 'number') return numberValue(t.text);
     if (t.type === 'char') {
       if (t.text.length !== 3 || t.text[2] !== "'") fail(t, 'charConstant', "Character constant without closing quote — write 'A'");
-      return t.text.charCodeAt(1);
+      // 'ö': the value depends on the encoding of the file (VS Code may even show U+FFFD) - unknown
+      return NON_ASCII.test(t.text[1]) ? undefined : t.text.charCodeAt(1);
     }
     if (t.type === 'symbol') {
       if (RESERVED.has(t.text.toUpperCase())) fail(t, 'reservedWord', `Illegal use of reserved word '${t.text}' — register names cannot be used in expressions`);
