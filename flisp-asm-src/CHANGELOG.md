@@ -1,20 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.11.0
 
-- Live check: `LDA #1` in column 1 also defines the label `LDA`, as in qaflisp, so a second `LDA …` in column 1 is reported as a multiple definition.
-- Live check: a comma inside a character constant (`CMPA #','`, `LDA ',',X`) is no longer taken for an index register; such lines were wrongly reported as errors and shifted all later addresses.
-- Live check: directives without their operand (`ORG`, `RMB`, `FCB`, `FCS`, `K EQU`) and `EQU` without a label are reported, as qaflisp does. Such an `ORG` or `RMB` no longer stops the address computation (qaflisp ignores the line), so branch ranges and addresses below it are still checked.
-- Live check: `FCS` follows qaflisp more closely: an operand that is no string (`FCS Text`, `FCS 'A'`) is reported; `FCS ""` is no empty string for qaflisp, it reads on to the next `"` or the end of the line (comment included), and the addresses below now account for that; words after the closing quote are ignored instead of reported as undefined symbols. Warnings where qaflisp is silent: a string starting with `""` (`FCS ""x"` writes `"x`) and text after the closing quote (`FCS "a""b"` writes only `a`).
-- Live check: an undefined start symbol after `END` (`END Strat`) is a warning, not an error — qaflisp only warns and assembles the file.
-- Assembling a file in a folder with letters like `Ö` or `å` (`C:\Users\Björn\…`) showed qaflisp's errors in the notification but not in the editor; they were attached to a garbled path in *Problems*. The output channel now shows such paths correctly too.
-- qaflisp messages are no longer placed on the wrong lines when the file is edited while qaflisp runs (e.g. with *Assemble on Save* and auto save); such a result is only written to the output channel.
-- *Assemble* (F7) on an unsaved file with *Assemble on Save* no longer starts qaflisp twice; qaflisp runs for one file one at a time, so its output files cannot be written by two processes at once.
-- The read-only copy of a file in a diff view (Source Control) no longer gets its own live diagnostics, so errors are not listed twice in *Problems*.
-- **Characters outside 7-bit ASCII** (å, ä, ö, ü, €, …): FLISP and DigiFlisp know only ASCII, so such characters belong in comments only. In labels, mnemonics and operands they are an error with a clear message (instead of follow-up errors); in a string (`FCS "på"`) they get a warning, and their size is counted as qaflisp does — the bytes of the file's encoding (2 bytes for `å` in UTF-8, 1 in a single-byte code page), so later addresses stay right; a character constant `'å'` is an error in a UTF-8 file (as in qaflisp) and a warning otherwise.
-- **What VS Code hides but qaflisp reads**: a byte order mark (UTF-8 with BOM — qaflisp loses line 1) and UTF-16 files are errors; lines that end with a lone CR (old Mac format, or mixed line endings from other editors — qaflisp joins such lines, so its line numbers shift) get a warning. Quick fixes: *Save with uniform line endings* and *Save with Encoding*. The encoding of the file (UTF-8 or a single-byte code page such as Windows-1252) is detected from its bytes.
-- Linux and macOS: an installed `qaflisp` (PATH, DigiFlisp folder) is now preferred over a Windows `qaflisp.exe` lying in the project folder.
-- Shift+Tab with several cursors: every cursor goes back to its previous column, also when blanks are deleted before another cursor.
+- **Characters outside 7-bit ASCII** (å, ä, ö, ü, €, …) belong in comments only, because FLISP and DigiFlisp know only ASCII. In labels, mnemonics and operands they are now an error with a clear message; in an `FCS` string they get a warning, and their size is counted as qaflisp does, so later addresses stay right.
+- **What VS Code hides but qaflisp reads**: a byte order mark (qaflisp loses line 1) and UTF-16 files are errors, lines ending with a lone CR get a warning (qaflisp joins them, its line numbers shift). Quick fixes save the file with uniform line endings or another encoding.
+- **Closer to qaflisp**: directives without their operand and `EQU` without a label are reported; `FCS` is read exactly as qaflisp reads it (`FCS ""` reads on to the next `"`, text after the closing quote is ignored — with a warning); a comma in a character constant (`CMPA #','`) is no longer taken for an index register; an undefined start symbol after `END` is only a warning; `LDA #1` in column 1 also defines the label `LDA`.
+- **Assembling**: errors are shown in the editor also for files in folders with letters like `Ö` or `å`; a result is no longer placed on the wrong lines when the file was edited meanwhile; F7 with *Assemble on Save* no longer runs qaflisp twice.
+- Linux and macOS: an installed `qaflisp` is preferred over a Windows `qaflisp.exe` in the project folder.
+- Fixes: no duplicate diagnostics for the copy of a file in a diff view; Shift+Tab with several cursors moves every cursor.
 
 ## 0.10.1
 
