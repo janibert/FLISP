@@ -64,8 +64,10 @@ function candidatePaths({ configured, sourceDir, workspaceRoots = [], envPath = 
   dirs.push(...digiflispDirs);
   const seen = new Set();
   const result = [];
-  for (const d of dirs) {
-    for (const name of EXE_NAMES) {
+  // Name by name: on Linux and macOS a native qaflisp anywhere comes before a qaflisp.exe (that
+  // one runs only through WSL interop or Wine, e.g. a copy from Windows in the project folder).
+  for (const name of EXE_NAMES) {
+    for (const d of dirs) {
       const p = path.join(d, name);
       const key = process.platform === 'win32' ? p.toLowerCase() : p;
       if (!seen.has(key)) {

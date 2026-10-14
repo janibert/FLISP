@@ -71,6 +71,14 @@ test('candidatePaths walks up to the workspace folder, then the PATH', () => {
   assert.deepStrictEqual(dirs, [src, path.join(root, 'lab'), root, bin]);
 });
 
+if (process.platform !== 'win32') {
+  test('candidatePaths (Linux, macOS): a native qaflisp anywhere comes before a qaflisp.exe', () => {
+    const root = path.resolve('/ws');
+    const c = candidatePaths({ sourceDir: root, workspaceRoots: [root], envPath: path.resolve('/bin') });
+    assert.deepStrictEqual(c.map((p) => path.basename(p)), ['qaflisp', 'qaflisp', 'qaflisp.exe', 'qaflisp.exe']);
+  });
+}
+
 test('candidatePaths does not walk above the source folder outside the workspace', () => {
   const src = path.resolve('/elsewhere/lab');
   const c = candidatePaths({ sourceDir: src, workspaceRoots: [path.resolve('/ws')] });
