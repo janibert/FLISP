@@ -45,6 +45,8 @@ const args = [
   '--disable-workspace-trust',
   '--skip-welcome',
   '--skip-release-notes',
+  // Linux without a setuid chrome-sandbox (VS Code unpacked from the tarball, e.g. in WSL)
+  ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
   workspace,
 ];
 console.log(`      (VS Code: ${exe})`);

@@ -34,6 +34,7 @@ npm run build:grammar  # generates syntaxes/flisp.tmLanguage.json from the templ
 npm test             # all tests: grammar up to date?, qaflisp integration, live check, snapshot, grammar
 npm run test:update-snapshot  # after an intended change of messages or addresses (see below)
 npm run test:vscode  # tests inside the installed VS Code (opens a window for a few seconds)
+npm run test:wsl     # on Windows: all of the above on Linux, in WSL (see below)
 npm run package      # creates flisp-asm-<version>.vsix (regenerates the grammar first)
 ```
 
@@ -69,6 +70,8 @@ To develop without packaging: open the repository folder in VS Code and press `F
 ```
 
 `test/vscode/suite.js` runs inside a real VS Code and is not part of `npm test`: `npm run test:vscode` (`test/vscode/run.js`) starts the installed VS Code with the extension from this folder, a temporary workspace and empty user settings, runs the suite and closes VS Code again. It checks live diagnostics and how they follow an edit, hover, definition, references, outline, rename, and the assemble command: qaflisp's messages become diagnostics, the live check steps back on their lines, and editing a line drops its outdated qaflisp message (skipped if no qaflisp is found). VS Code is found through the `code` command on the `PATH`; otherwise set `VSCODE_EXECUTABLE` to its executable.
+
+`npm run test:wsl` (on Windows) runs `npm test` and the VS Code tests on Linux in WSL, with the Linux qaflisp and a Linux VS Code: `npm run test:wsl -- Ubuntu-24.04` picks the distribution (or set `FLISP_WSL_DISTRO`), otherwise the default one is used. On Linux itself run `bash test/wsl/run.sh`. No sudo is needed in WSL: unpack the official tarballs of Node.js into `~/tools/node`, of VS Code into `~/tools/vscode`, and DigiFlisp for Linux into `~/digiflisp` (or use installed ones on the `PATH`). WSLg shows the VS Code window; without a VS Code only the host tests are skipped.
 
 `test/qaflisp-output.fmem` is real qaflisp output (deliberately not named `sample.fmem`, so that assembling the sample does not overwrite it). `test/sample.sflisp` assembles with qaflisp without errors, except for the lab instructions and the deliberately wrong line `LDA #1` in column 1.
 
@@ -134,6 +137,7 @@ test/examples-test.js            checks the OK / ERROR / WARNING comments in tes
 test/probes-test.js              snapshot of all messages and addresses; layout and errors compared with qaflisp
 test/tokenize-test.js            scope test
 test/vscode/run.js, suite.js     tests inside the installed VS Code (npm run test:vscode)
+test/wsl/run.js, run.sh          all tests on Linux in WSL (npm run test:wsl)
 test/sample.sflisp               sample code for the test
 test/examples/                   examples to try the live check in the editor, one topic per file
 test/probes/                     probe files from measuring qaflisp; expected.json = snapshot for probes-test.js
