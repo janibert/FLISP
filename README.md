@@ -180,4 +180,4 @@ If you set `editor.tokenColorCustomizations.textMateRules` in your own settings,
 The extension's own code is MIT-licensed, © 2026 Jan Ebert — see [`LICENSE`](LICENSE).
 The bundled `qaflisp.exe` and the DigiFlisp icon belong to GMV (Göteborgs MikroVaror) and are distributed under the DigiFlisp software license — see [`flisp-asm-src/THIRD-PARTY-NOTICES.md`](flisp-asm-src/THIRD-PARTY-NOTICES.md).
 
-This project is not affiliated with or endorsed by GMV.
+This project is not affiliated with or endorsed by GMV, nor by Chalmers or any other university or course.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.1
+
+- Documentation only: the extension is now found when searching for `sflisp` or `fmem`; it is also listed under *Linters*, *Formatters* and *Education*; the description mentions the live check; the extension states that it is not directly affiliated with Chalmers or any university or course.
+
 ## 0.11.0
 
 - **Characters outside 7-bit ASCII** (å, ä, ö, ü, €, …) belong in comments only, because FLISP and DigiFlisp know only ASCII. In labels, mnemonics and operands they are now an error with a clear message; in an `FCS` string they get a warning, and their size is counted as qaflisp does, so later addresses stay right.

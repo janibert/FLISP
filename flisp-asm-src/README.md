@@ -1,6 +1,6 @@
 # FLISP Assembly for VS Code
 
-Write, check and assemble programs for the FLISP processor (FLexible Instruction Set Processor), as used in the Grudat labs with DigiFlisp.
+Write, check and assemble programs for the FLISP (FLexible Instruction Set Processor), as used in the "Grundläggande datorteknik" labs with DigiFlisp.
 
 ![A FLISP running-light program highlighted in VS Code; the hover over Count shows its address](https://raw.githubusercontent.com/janibert/FLISP/main/flisp-asm-src/images/running-light.png)
 
@@ -36,4 +36,4 @@ Install [DigiFlisp](https://www.gbgmv.se/studies.html) first, the extension find
 
 The extension's own files are MIT-licensed, © 2026 Jan Ebert — see [LICENSE](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/LICENSE).
 
-*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp. The bundled `qaflisp.exe` and the DigiFlisp icon belong to GMV and are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/THIRD-PARTY-NOTICES.md).*
+*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp, nor by Chalmers or any other university or course. The bundled `qaflisp.exe` and the DigiFlisp icon belong to GMV and are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](https://github.com/janibert/FLISP/blob/main/flisp-asm-src/THIRD-PARTY-NOTICES.md).*

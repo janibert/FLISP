@@ -267,4 +267,4 @@ CRLF (Windows) and LF (Linux, macOS) both work. The encoding (UTF-8 or a single-
 
 ---
 
-*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp. The bundled `qaflisp.exe` and the DigiFlisp icon are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](../flisp-asm-src/THIRD-PARTY-NOTICES.md).*
+*This extension is not affiliated with or endorsed by GMV (Göteborgs MikroVaror), the maker of DigiFlisp and qaflisp, nor by Chalmers or any other university or course. The bundled `qaflisp.exe` and the DigiFlisp icon are used under the DigiFlisp software license — see [THIRD-PARTY-NOTICES.md](../flisp-asm-src/THIRD-PARTY-NOTICES.md).*

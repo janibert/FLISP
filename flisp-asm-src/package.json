@@ -1,8 +1,8 @@
 {
   "name": "flisp-asm",
   "displayName": "FLISP Assembly",
-  "description": "Syntax highlighting and assembling for FLISP assembly, as used with DigiFlisp.",
-  "version": "0.11.0",
+  "description": "Syntax highlighting, live checking and assembling for FLISP assembly, as used with DigiFlisp.",
+  "version": "0.11.1",
   "publisher": "janibert",
   "author": "Jan Ebert",
   "license": "MIT",
@@ -20,7 +20,10 @@
     "vscode": "^1.63.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Education",
+    "Linters",
+    "Formatters"
   ],
   "keywords": [
     "flisp",
@@ -28,6 +31,11 @@
     "qaflisp",
     "assembly",
     "assembler",
+    "chalmers",
+    "datorteknik",
+    "sflisp",
+    "gmv",
+    "fmem",
     "asm"
   ],
   "main": "./extension.js",
